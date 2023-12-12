@@ -1,0 +1,72 @@
+@startuml
+abstract class Metric {
+  - isBatched: boolean
+
+  + calculate(...): Result
+  # _preprocess(...): ProcessedData
+  # _calculateCore(processed_data: ProcessedData): Result
+  + isBatched(): boolean
+}
+
+class OrographyRMSE {
+  - usetorch: boolean
+
+  + preprocess(real_data: RealData, fake_data: FakeData, obs_data: ObsData): ProcessedData
+  + calculateCore(processed_data: ProcessedData): Result
+}
+Metric <|-- OrographyRMSE
+abstract class Configurable {
+  + fromConfig(config_data: Union[str, Dict]): Configurable
+}
+
+class Preprocessor extends Configurable {
+  + process_batch(batch: List): ProcessedBatch
+}
+
+class MemoryCache {
+  - cache: Dict
+
+  + add_to_cache(key: str, data: Any): void
+  + is_cached(key: str): boolean
+}
+
+class Dataset extends Configurable {
+  - data_folder: str
+  - preprocessor: Preprocessor
+  - cache: MemoryCache
+
+  + load_data(file_path: str): RawData
+  + preprocess_batch(batch: List): ProcessedBatch
+  + is_dataset_cached(): boolean
+  + __iter__(): Iterator
+}
+
+class ExperimentSet extends Configurable{
+  - datasetA: Dataset
+  - datasetB: Dataset
+  - datasetC: Dataset
+  - metrics: List[Metric]
+
+  + run(): void
+}
+
+class MainProcess {
+  - datasets: List[Dataset>
+  - metrics: List[Metric]
+  - preprocessor: Preprocessor
+  - config: GlobalConfig
+
+  + setPreprocessor(preprocessor: Preprocessor): void
+  + setGlobalConfig(config: GlobalConfig): void
+  + runExperiments(sets: List[ExperimentSet>): void
+}
+
+Metric <|-- MetricB
+MainProcess -- ExperimentSet
+Preprocessor <|-- BasicPreprocessor
+Preprocessor <|-- AdvancedPreprocessor
+Dataset -- MemoryCache
+ExperimentSet -- Dataset
+Preprocessor -- ExperimentSet
+Metric -- ExperimentSet
+@enduml
