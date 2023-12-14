@@ -1,40 +1,4 @@
 experiments:
-  - name: Experiment1
-    real_dataset_config:
-      name: DatasetReal
-      data_folder: path_to_data_folder_real
-      batch_size: 32
-      preprocessor_config:
-        name: BasicPreprocessor
-        args:
-          arg1: value1
-          arg2: value2
-    fake_dataset_config:
-      name: DatasetFake
-      data_folder: path_to_data_folder_fake
-      batch_size: 32
-      preprocessor_config:
-        name: Preprocessor
-        args:
-          arg1: value1
-          arg2: value2
-    obs_dataset_config:
-      name: DatasetObs
-      data_folder: path_to_data_folder_obs
-      batch_size: 32
-      preprocessor_config:
-        name: Preprocessor
-        args:
-          arg1: value1
-          arg2: value2
-    metrics_list:
-      - name: OrographyRMSE_01
-        type: OrographyRMSE
-        is_batched: True
-        args:
-          usetorch: False
-      - name: OrographyRMSE
-    output_path: experiment1_output
-
-  - name: Experiment2
-    config_file: path_to_config_file.yml
+  - exp1.yml
+  - exp1.yml
+  - exp1.yml

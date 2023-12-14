@@ -5,7 +5,7 @@ import yaml
 
 class Configurable:
     @classmethod
-    def fromConfig(cls, config_data):
+    def fromConfig(cls, config_data, **kwargs):
         if not isinstance(config_data, (str, dict)):
             raise TypeError("Invalid type for config_data. Expected str (file path) or dict.")
 
@@ -19,9 +19,8 @@ class Configurable:
         if not isinstance(config_data, dict):
             raise TypeError("Invalid type for config_data. Expected dict after loading from YAML.")
 
-        instance = cls(config_data)
+        instance = cls(config_data, **kwargs)
         for key, value in config_data.items():
-            logging.info(f"Setting {key} to {value}")
             setattr(instance, key, value)
 
         return instance

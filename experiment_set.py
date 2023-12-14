@@ -1,9 +1,9 @@
 import logging
+from multiprocessing import Manager, Process
 
 from dataset import Dataset
 from configurable import Configurable
 from metrics.metrics import Metric
-
 
 
 class ExperimentSet(Configurable):
@@ -44,26 +44,26 @@ class ExperimentSet(Configurable):
                 usetorch: False
 
         """
-        print(Metric.__subclasses__())
         self.metrics = [Metric.fromName(metric) for metric in config_data['metrics_list']]
-        print(self.metrics)
         self.batched_metrics = [metric for metric in self.metrics if metric.isBatched]
         self.not_batched_metrics = [metric for metric in self.metrics if not metric.isBatched]
+        use_cache = self.not_batched_metrics is []
+        logging.info(f"Using cache: {use_cache}")
 
-        self.datasetReal = Dataset.fromConfig( config_data['real_dataset_config'])
-        self.datasetFake = Dataset.fromConfig( config_data['fake_dataset_config'])
-        self.datasetObs = Dataset.fromConfig( config_data['obs_dataset_config'])
+        self.datasetReal = Dataset.fromConfig(config_data['real_dataset_config'], use_cache=use_cache)
+        self.datasetFake = Dataset.fromConfig(config_data['fake_dataset_config'], use_cache=use_cache)
+        self.datasetObs = Dataset.fromConfig(config_data['obs_dataset_config'], use_cache=use_cache)
 
     def run(self, index):
-        logging.info(f"Running ExperimentSet {index}")
+        logging.info(f"Running ExperimentSet {self.name}")
 
         for (batch_real, batch_fake, batch_obs) in zip(self.datasetReal, self.datasetFake, self.datasetObs):
             for metric in self.batched_metrics:
                 res = metric.calculate(batch_real, batch_fake, batch_obs)
-
+                logging.info(f"{self.name} : Metric {metric.name} result: {res}")
 
         for metric in self.not_batched_metrics:
-                res = metric.calculate(self.datasetReal.get_all_data(), self.datasetFake.get_all_data(), self.datasetObs.get_all_data())
-
-
+            res = metric.calculate(self.datasetReal.get_all_data(), self.datasetFake.get_all_data(),
+                                   self.datasetObs.get_all_data())
+            logging.info(f"Metric {metric.name} result: {res}")
         logging.info(f"ExperimentSet {index} completed")

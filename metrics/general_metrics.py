@@ -6,9 +6,9 @@ import numpy as np
 
 class OrographyRMSE(Metric):
 
-    def __init__(self, is_batched, usetorch=False):
-        super().__init__(is_batched)
-        self.usetorch = usetorch
+    def __init__(self, usetorch=False):
+        super().__init__(isBatched=True)
+        self.usetorch = False
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
         # No additional preprocessing is needed for orography_RMSE
@@ -22,5 +22,4 @@ class OrographyRMSE(Metric):
             res = torch.sqrt(((fake_orog - real_orog) ** 2).mean())
         else:
             res = np.sqrt(((fake_orog - real_orog) ** 2).mean())
-
         return res

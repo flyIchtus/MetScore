@@ -1,19 +1,28 @@
 from abc import ABC, abstractmethod
+import logging
+
+from configurable import Configurable
 
 
-class Metric(ABC, object):
-    def __init__(self, is_batched):
-        self.isBatched = is_batched
+class Metric(ABC, Configurable):
+    isBatched: bool
+
+    def __init__(self, isBatched=False):
+        self.isBatched = isBatched
 
     @classmethod
-    def fromName(cls,metric):
+    def fromName(cls, metric):
+        logging.debug(f"Creating metric {metric}")
         for subclass in Metric.__subclasses__():
-            if subclass.__name__ == metric['name']:
-                metric_cls = subclass(metric["is_batched"], **metric['args'])
+            if subclass.__name__ == metric['type']:
+                # metric["is_batched"], **metric['args']
+                if 'args' not in metric:
+                    metric['args'] = {}
+                metric_cls = subclass.fromConfig(metric, **metric['args'])
                 return metric_cls
 
-        raise Exception(f"Metric {metric['name']} not found")
-
+        raise Exception(f"Metric {metric['type']} not found, check config file. "
+                        f"List of available metrics: {Metric.__subclasses__()}")
 
     def calculate(self, *args, **kwargs):
 

@@ -1,3 +1,5 @@
+import numpy as np
+
 from configurable import Configurable
 
 
@@ -14,5 +16,4 @@ class Preprocessor(Configurable):
         super().__init__()
 
     def process_batch(self, batch):
-        # Implementation de la logique de preprocessing
-        pass
+        return batch

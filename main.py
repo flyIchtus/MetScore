@@ -6,7 +6,6 @@ from concurrent.futures import ThreadPoolExecutor
 import yaml
 
 from experiment_set import ExperimentSet
-from metrics.metrics import Metric
 
 
 def load_yaml(yaml_path):
@@ -58,14 +57,11 @@ def main():
         # Initialize a list to store the results of each experiment
         all_experiment_results = []
 
-        # print(config)
-
         # Run each experiment in parallel
         with ThreadPoolExecutor() as executor:
             for experiment_config in config["experiments"]:
-                print(experiment_config)
                 experiment_set = ExperimentSet.fromConfig(experiment_config)
-                experiment_result = list(executor.map(experiment_set.run, range(len(experiment_set))))
+                experiment_result = list(executor.map(experiment_set.run, range(len(config["experiments"]))))
                 all_experiment_results.append(experiment_result)
 
         logger.info("Program completed.")

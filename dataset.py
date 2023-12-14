@@ -1,36 +1,40 @@
 import os
+import threading
 
 import numpy as np
 
 from configurable import Configurable
 
-# #
-# class Preprocessor(Configurable):
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#
-#     def process_batch(self, batch):
-#         # Implementation de la logique de preprocessing
-#         pass
 from transforms.preprocessor import Preprocessor
 
+def thread_safe_semaphore(func):
+    def wrapper(self, file_path):
+        with self.load_data_semaphore:
+            return func(self, file_path)
+    return wrapper
 
 class MemoryCache:
-    def __init__(self):
+    def __init__(self, use_cache):
         self.cache = {}
+        self.use_cache = use_cache
 
     def add_to_cache(self, key, data):
-        self.cache[key] = data
+        if self.use_cache:
+            self.cache[key] = data
 
     def is_cached(self, key):
+        if not self.use_cache:
+            return False
         return key in self.cache
 
     def get_from_cache(self, key):
+        if not self.use_cache:
+            return None
         return self.cache[key]
 
 # TODO: voir si c'est pas mieux d'utiliser la classe de torch
 class Dataset(Configurable):
-    def __init__(self, config_data):
+    def __init__(self, config_data, use_cache=True):
         """
         Sample for config yml file:
         data_folder: path to data folder
@@ -43,11 +47,14 @@ class Dataset(Configurable):
         """
         super().__init__()
         self.preprocessor = Preprocessor.fromConfig(config_data['preprocessor_config'])
-        self.cache = MemoryCache()
+        self.cache = MemoryCache(use_cache)
         self.file_list = os.listdir(config_data['data_folder'])
+        self.load_data_semaphore = threading.Semaphore()
 
+    @thread_safe_semaphore
     def load_data(self, file_path):
         # Charger les données depuis le fichier .npy
+        # TODO: utilisre une semaphore pour éviter les conflits si jamais (@thread_safe_semaphore)
         return np.load(file_path)
 
     def _preprocess_batch(self, batch):
@@ -78,12 +85,11 @@ class Dataset(Configurable):
             for file in batch_files:
                 file_path = os.path.join(self.data_folder, file)
                 if not self.cache.is_cached(file_path):
-                    data = self.load_data(file_path)
+                    data = self._preprocess_batch(self.load_data(file_path))
                     self.cache.add_to_cache(file_path, data)
                 else:
                     data = self.cache.get_from_cache(file_path)
 
                 batch_data.append(data)
 
-            # TODO: avant le cache
-            yield self.preprocess_batch(batch_data)
+            yield np.array(batch_data)
