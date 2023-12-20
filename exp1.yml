@@ -1,8 +1,8 @@
 name: Experiment1
 real_dataset_config:
   name: DatasetReal
-  data_folder: samples
-  batch_size: 32
+  data_folder: /scratch/mrmn/moldovang/databases/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+  batch_size: 1
   preprocessor_config:
     name: BasicPreprocessor
     args:
@@ -10,8 +10,8 @@ real_dataset_config:
       arg2: value2
 fake_dataset_config:
   name: DatasetFake
-  data_folder: samples
-  batch_size: 32
+  data_folder: /scratch/mrmn/moldovang/tests_CGAN/normal_['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']_reduced/samples
+  batch_size: 1
   preprocessor_config:
     name: Preprocessor
     args:
@@ -19,8 +19,9 @@ fake_dataset_config:
       arg2: value2
 obs_dataset_config:
   name: DatasetObs
-  data_folder: samples
-  batch_size: 32
+  data_folder: /scratch/mrmn/moldovang/obs_databases/obs_reduced_npy
+  batch_size: 1
+  crop_indices: [180, 436, 500, 756]
   preprocessor_config:
     name: Preprocessor
     args:

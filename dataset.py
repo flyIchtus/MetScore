@@ -4,6 +4,8 @@ import threading
 import numpy as np
 
 from configurable import Configurable
+from useful_funcs import obs_clean
+from abc import ABC, abstractmethod 
 
 from transforms.preprocessor import Preprocessor
 
@@ -51,13 +53,16 @@ class Dataset(Configurable):
         self.file_list = os.listdir(config_data['data_folder'])
         self.load_data_semaphore = threading.Semaphore()
 
-    @thread_safe_semaphore
+    #@thread_safe_semaphore
+    @abstractmethod
     def load_data(self, file_path):
         # Charger les données depuis le fichier .npy
         # TODO: utilisre une semaphore pour éviter les conflits si jamais (@thread_safe_semaphore)
-        return np.load(file_path)
+        #return np.load(file_path)
+        pass
 
     def _preprocess_batch(self, batch):
+
         return self.preprocessor.process_batch(batch)
 
     def is_dataset_cached(self):
@@ -93,3 +98,18 @@ class Dataset(Configurable):
                 batch_data.append(data)
 
             yield np.array(batch_data)
+
+class Obs_dataset(Dataset):
+        def load_data(self, file_path):
+            
+            return obs_clean(np.load(file_path), self.crop_indices)#objet porté par obs_dataset
+
+class Fake_dataset(Dataset):
+        def load_data(self, file_path):
+
+            return np.load(file_path)
+
+class Real_dataset(Dataset):
+        def load_data(self, file_path):
+
+            return np.load(file_path)
