@@ -1,0 +1,16 @@
+stat_folder: "stat_files/"
+stat_version: "rr" # the name of the stat file is for ex: 'mean_[stat_version]_log_ppx.npy'
+
+rr_transform:
+  log_transform_iteration: 1
+  symetrization: False
+  gaussian_std: 0 # Threshold between rain and no rain to add a gaussian noise where rr < gaussian_std.
+normalization:
+  type: "minmax" # choose between "mean" or "minmax" or "None" if "None", the following yaml options are not used.
+  #  "mean"   normalization is -> sample = (sample - mean)/max_std           where max_std is max(|samples-mean|)
+  # "minmax"  normalization is -> sample = -1 + 2(sample-min)/(max-min)
+  
+  per_pixel: False # is the normalization applied with a global values to each pixel or specific pixel values ?
+  # if per_pixel is True :
+  for_rr:
+    blur_iteration: 1 # the number of time a gaussian convolution is applied to the grid containing the max/min/mean/max_std

@@ -9,9 +9,7 @@ class Preprocessor(Configurable):
         """
         Sample for config yml file:
         name: Preprocessor
-        args:
-            arg1: value1
-            arg2: value2
+        config_file: where/your/config/file is
         """
         super().__init__()
 
