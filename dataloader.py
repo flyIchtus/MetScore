@@ -56,14 +56,13 @@ class DateDataloader(DataLoader):
     def __next__(self):
         if self.current_index < self.data_length:
             fake_samples = [self.fake_dataset[self.current_index + i] for i in range(self.batch_size)]
-            fake_dates = [sample['date'] for sample in fake_samples]
             real_samples, obs_samples = [], []
-            for date in fake_dates:
+            for _, date in fake_samples:
                 real_samples.append(self.real_dataset[date])
                 obs_samples.append(self.obs_dataset[date])
 
             self.current_index += self.batch_size
 
-            yield fake_samples, real_samples, obs_samples
+            return fake_samples, real_samples, obs_samples
         else:
             raise StopIteration

@@ -103,7 +103,7 @@ class ObsDataset(Dataset):
 
     def __getitem__(self, date):
         # TODO : faire avec le .csv
-        file_path = os.path.join(self.data_folder, date)
+        file_path = os.path.join(self.data_folder, self.file_list[date])
         if not self.cache.is_cached(file_path):
             data = self.load_data(file_path)
             self.cache.add_to_cache(file_path, data)
@@ -116,11 +116,33 @@ class ObsDataset(Dataset):
 
 
 class FakeDataset(Dataset):
+
+    def __getitem__(self, index):
+        # TODO : faire avec le .csv
+        file_path = os.path.join(self.data_folder, index)
+        date = None
+        if not self.cache.is_cached(file_path):
+            data = self.load_data(file_path)
+            self.cache.add_to_cache(file_path, data)
+        else:
+            data = self.cache.get_from_cache(file_path)
+        return data, date
+
     def load_data(self, file_path):
         return np.load(file_path)
 
 
 class RealDataset(Dataset):
+
+    def __getitem__(self, date):
+        # TODO : faire avec le .csv
+        file_path = os.path.join(self.data_folder, self.file_list[date])
+        if not self.cache.is_cached(file_path):
+            data = self.load_data(file_path)
+            self.cache.add_to_cache(file_path, data)
+        else:
+            data = self.cache.get_from_cache(file_path)
+        return data
 
     def load_data(self, file_path):
         return np.load(file_path)
