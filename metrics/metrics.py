@@ -4,11 +4,12 @@ import logging
 from configurable import Configurable
 
 
-class Metric(ABC, Configurable):
+class Metric(ABC):
     isBatched: bool
 
-    def __init__(self, isBatched=False):
+    def __init__(self, isBatched=False, name=None):
         self.isBatched = isBatched
+        self.name = name
 
     @classmethod
     def fromName(cls, metric):
@@ -18,7 +19,7 @@ class Metric(ABC, Configurable):
                 # metric["is_batched"], **metric['args']
                 if 'args' not in metric:
                     metric['args'] = {}
-                metric_cls = subclass.fromConfig(metric, **metric['args'])
+                metric_cls = subclass(metric, **metric['args'])
                 return metric_cls
 
         raise Exception(f"Metric {metric['type']} not found, check config file. "

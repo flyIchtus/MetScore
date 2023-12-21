@@ -13,7 +13,6 @@ General metrics
 
 
 import numpy as np
-import properscoring as ps
 
 
 ############################ General simple metrics ###########################

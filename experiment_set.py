@@ -1,7 +1,8 @@
 import logging
 from multiprocessing import Manager, Process
 
-from dataset import Obs_dataset, Real_dataset, Fake_dataset
+from dataloader import DataLoader
+from dataset import Dataset
 from configurable import Configurable
 from metrics.metrics import Metric
 
@@ -49,23 +50,24 @@ class ExperimentSet(Configurable):
         self.not_batched_metrics = [metric for metric in self.metrics if not metric.isBatched]
         use_cache = self.not_batched_metrics is []
         logging.info(f"Using cache: {use_cache}")
-        
-        self.datasetReal = Real_dataset.fromConfig(config_data['real_dataset_config'], use_cache=use_cache)
-        self.datasetFake = Fake_dataset.fromConfig(config_data['fake_dataset_config'], use_cache=use_cache)
-        self.datasetObs = Obs_dataset.fromConfig(config_data['obs_dataset_config'], use_cache=use_cache)
-        
-        
+        self.dataloader = DataLoader.fromConfig(config_data['dataloaders'], use_cache=use_cache)
+
     def run(self, index):
         logging.info(f"Running ExperimentSet {self.name}")
 
-        for (batch_real, batch_fake, batch_obs) in zip(self.datasetReal, self.datasetFake, self.datasetObs): 
-            print(batch_real.shape, batch_fake.shape, batch_obs.shape)
+        batched_metric_results = {metric.name: [] for metric in self.batched_metrics}
+
+        for (batch_fake, batch_real, batch_obs) in self.dataloader:
             for metric in self.batched_metrics:
-                res = metric.calculate(batch_real, batch_fake, batch_obs)
-                logging.info(f"{self.name} : Metric {metric.name} result: {res}")
+                res = metric.calculate(batch_fake, batch_real, batch_obs)
+                batched_metric_results[metric.name].append(res)
+
+        for metric_name, results in batched_metric_results.items():
+            # TODO moyenne par batch ?
+            average_result = sum(results) / len(results)
+            logging.info(f"{self.name} : Metric {metric_name} result: {average_result}")
 
         for metric in self.not_batched_metrics:
-            res = metric.calculate(self.datasetReal.get_all_data(), self.datasetFake.get_all_data(),
-                                   self.datasetObs.get_all_data())
+            res = metric.calculate(self.dataloader.get_all_data())
             logging.info(f"Metric {metric.name} result: {res}")
         logging.info(f"ExperimentSet {index} completed")
