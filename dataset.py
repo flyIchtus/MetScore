@@ -118,7 +118,6 @@ class ObsDataset(Dataset):
 class FakeDataset(Dataset):
 
     def __getitem__(self, index):
-        # TODO : faire avec le .csv
         file_path = os.path.join(self.data_folder, index)
         date = None
         if not self.cache.is_cached(file_path):

@@ -63,6 +63,6 @@ class DateDataloader(DataLoader):
 
             self.current_index += self.batch_size
 
-            return fake_samples, real_samples, obs_samples
+            return [fake_sample[0] for fake_sample in fake_samples], real_samples, obs_samples
         else:
             raise StopIteration
