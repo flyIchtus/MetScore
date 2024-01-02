@@ -10,7 +10,10 @@ real_dataset_config:
   var_indices: [1,2,3] #where to find the variables in dataset samples
   crop_indices: [0,256,0,256]
   preprocessor_config:
-    name: BasicPreprocessor
+    name: ForwardrrPreprocessor
+    variables: ['u','v','t2m']
+    real_var_indices: [1,2,3] #where to find the variables in stat files
+    configDir: /where/to/find/configFile/
     configFile: real_processor_config_model.yml
 fake_dataset_config:
   name: DatasetFake
@@ -22,7 +25,10 @@ fake_dataset_config:
   var_indices: [0,1,2] #where to find the variables in dataset samples
   crop_indices: [0,256,0,256]
   preprocessor_config:
-    name: Preprocessor
+    name: BasicPreprocessor
+    variables: ['u','v','t2m']
+    real_var_indices: [1,2,3] #where to find the variables in stat files
+    configDir: /where/to/find/configFile/
     configFile: fake_processor_config_model.yml
 obs_dataset_config:
   name: DatasetObs
@@ -33,7 +39,10 @@ obs_dataset_config:
   var_indices: [0,1,2]
   crop_indices: [180,436,500,756]
   preprocessor_config:
-    name: Preprocessor
+    name: ObsPreprocessor
+    variables: ['ff','dd','rr']
+    real_var_indices: [0,1,2]
+    configDir: /where/to/find/configFile/
     configFile: obs_processor_config_model.yml
 metrics_list:
   - name: OrographyRMSE
