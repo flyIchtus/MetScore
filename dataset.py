@@ -4,14 +4,19 @@ import threading
 import numpy as np
 
 from configurable import Configurable
+from useful_funcs import obs_clean
+from abc import ABC, abstractmethod
 
 from transforms.preprocessor import Preprocessor
+
 
 def thread_safe_semaphore(func):
     def wrapper(self, file_path):
         with self.load_data_semaphore:
             return func(self, file_path)
+
     return wrapper
+
 
 class MemoryCache:
     def __init__(self, use_cache):
@@ -32,6 +37,7 @@ class MemoryCache:
             return None
         return self.cache[key]
 
+
 # TODO: voir si c'est pas mieux d'utiliser la classe de torch
 class Dataset(Configurable):
     def __init__(self, config_data, use_cache=True):
@@ -48,16 +54,19 @@ class Dataset(Configurable):
         super().__init__()
         self.preprocessor = Preprocessor.fromConfig(config_data['preprocessor_config'])
         self.cache = MemoryCache(use_cache)
+
         self.file_list = os.listdir(config_data['data_folder'])
         self.load_data_semaphore = threading.Semaphore()
 
-    @thread_safe_semaphore
+    # @thread_safe_semaphore
+    @abstractmethod
     def load_data(self, file_path):
         # Charger les données depuis le fichier .npy
         # TODO: utilisre une semaphore pour éviter les conflits si jamais (@thread_safe_semaphore)
-        return np.load(file_path)
+        pass
 
     def _preprocess_batch(self, batch):
+
         return self.preprocessor.process_batch(batch)
 
     def is_dataset_cached(self):
@@ -77,19 +86,62 @@ class Dataset(Configurable):
 
         return [self.cache.get_from_cache(file_path) for file_path in self.file_list]
 
-    def __iter__(self):
-        batch_size = self.batch_size
-        for i in range(0, len(self.file_list), batch_size):
-            batch_files = self.file_list[i:i + batch_size]
-            batch_data = []
-            for file in batch_files:
-                file_path = os.path.join(self.data_folder, file)
-                if not self.cache.is_cached(file_path):
-                    data = self._preprocess_batch(self.load_data(file_path))
-                    self.cache.add_to_cache(file_path, data)
-                else:
-                    data = self.cache.get_from_cache(file_path)
+    def __len__(self):
+        return len(self.file_list)
 
-                batch_data.append(data)
+    def __getitem__(self, idx):
+        file_path = os.path.join(self.data_folder, self.file_list[idx])
+        if not self.cache.is_cached(file_path):
+            data = self.load_data(file_path)
+            self.cache.add_to_cache(file_path, data)
+        else:
+            data = self.cache.get_from_cache(file_path)
+        return data
 
-            yield np.array(batch_data)
+
+class ObsDataset(Dataset):
+
+    def __getitem__(self, date):
+        # TODO : faire avec le .csv
+        file_path = os.path.join(self.data_folder, self.file_list[date])
+        if not self.cache.is_cached(file_path):
+            data = self.load_data(file_path)
+            self.cache.add_to_cache(file_path, data)
+        else:
+            data = self.cache.get_from_cache(file_path)
+        return data
+
+    def load_data(self, file_path):
+        return obs_clean(np.load(file_path), self.crop_indices)
+
+
+class FakeDataset(Dataset):
+
+    def __getitem__(self, index):
+        file_path = os.path.join(self.data_folder, index)
+        date = None
+        if not self.cache.is_cached(file_path):
+            data = self.load_data(file_path)
+            self.cache.add_to_cache(file_path, data)
+        else:
+            data = self.cache.get_from_cache(file_path)
+        return data, date
+
+    def load_data(self, file_path):
+        return np.load(file_path)
+
+
+class RealDataset(Dataset):
+
+    def __getitem__(self, date):
+        # TODO : faire avec le .csv
+        file_path = os.path.join(self.data_folder, self.file_list[date])
+        if not self.cache.is_cached(file_path):
+            data = self.load_data(file_path)
+            self.cache.add_to_cache(file_path, data)
+        else:
+            data = self.cache.get_from_cache(file_path)
+        return data
+
+    def load_data(self, file_path):
+        return np.load(file_path)

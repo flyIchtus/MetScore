@@ -1,34 +1,32 @@
 name: Experiment1
-real_dataset_config:
-  name: DatasetReal
-  data_folder: samples
+dataloaders:
   batch_size: 32
-  preprocessor_config:
-    name: BasicPreprocessor
-    args:
-      arg1: value1
-      arg2: value2
-fake_dataset_config:
-  name: DatasetFake
-  data_folder: samples
-  batch_size: 32
-  preprocessor_config:
-    name: Preprocessor
-    args:
-      arg1: value1
-      arg2: value2
-obs_dataset_config:
-  name: DatasetObs
-  data_folder: samples
-  batch_size: 32
-  preprocessor_config:
-    name: Preprocessor
-    args:
-      arg1: value1
-      arg2: value2
+  real_dataset_config:
+    name: DatasetReal
+    data_folder: samples
+    preprocessor_config:
+      name: BasicPreprocessor
+      args:
+        arg1: value1
+        arg2: value2
+  fake_dataset_config:
+    name: DatasetFake
+    data_folder: samples
+    preprocessor_config:
+      name: Preprocessor
+      args:
+        arg1: value1
+        arg2: value2
+  obs_dataset_config:
+    name: DatasetObs
+    data_folder: samples
+    crop_indices: [180, 436, 500, 756]
+    preprocessor_config:
+      name: Preprocessor
+      args:
+        arg1: value1
+        arg2: value2
 metrics_list:
   - name: OrographyRMSE
-    type: OrographyRMSE
-  - name: OrographyRMSE-2
     type: OrographyRMSE
 output_path: experiment1_output

@@ -30,28 +30,47 @@ class MemoryCache {
   + is_cached(key: str): boolean
 }
 
-class Dataset extends Configurable {
+abstract class Dataset extends Configurable {
   - data_folder: str
-  - preprocessor: Preprocessor
-  - cache: MemoryCache
 
-  + load_data(file_path: str): RawData
+  # load_data(file_path: str): RawData
   + preprocess_batch(batch: List): ProcessedBatch
   + is_dataset_cached(): boolean
-  + __iter__(): Iterator
+  + __get__(index): data
 }
 
-class ExperimentSet extends Configurable{
-  - datasetA: Dataset
-  - datasetB: Dataset
-  - datasetC: Dataset
-  - metrics: List[Metric]
+class RealDataset extends Dataset {
+  + __get__(date): data
+  + load_data(file_path: str): RealData
+}
 
-  + run(): void
+class FakeDataset extends Dataset {
+  + load_data(file_path: str): FakeData
+}
+
+class ObsDataset extends Dataset {
+  + __get__(date): data
+  + load_data(file_path: str): ObsData
+}
+
+class DataLoader extends Configurable {
+  - data_length: int
+  - current_index: int
+
+  + __iter__(): Iterator
+  + __next__(): Tuple[ProcessedBatch, ProcessedBatch, ProcessedBatch]
+  + __len__(): int
+  - _collate_fn(batch: List): Tuple[ProcessedBatch, ProcessedBatch, ProcessedBatch]
+}
+
+class ExperimentSet extends Configurable {
+  - dataloader: DataLoader
+
+  + run(index: int): void
 }
 
 class MainProcess {
-  - datasets: List[Dataset>
+  - datasets: List[Dataset]
   - metrics: List[Metric]
   - preprocessor: Preprocessor
   - config: GlobalConfig
@@ -62,11 +81,14 @@ class MainProcess {
 }
 
 Metric <|-- MetricB
-MainProcess -- ExperimentSet
 Preprocessor <|-- BasicPreprocessor
 Preprocessor <|-- AdvancedPreprocessor
-Dataset -- MemoryCache
-ExperimentSet -- Dataset
-Preprocessor -- ExperimentSet
-Metric -- ExperimentSet
+Dataset o-- "1" MemoryCache
+MainProcess o-- "n" ExperimentSet
+ExperimentSet o-- DataLoader
+DataLoader o-- "1" RealDataset
+DataLoader o-- "1" FakeDataset
+DataLoader o-- "1" ObsDataset
+Dataset o-- "1" Preprocessor
+ExperimentSet o-- "n" Metric
 @enduml

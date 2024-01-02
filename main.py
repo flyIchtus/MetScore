@@ -61,7 +61,7 @@ def main():
         with ThreadPoolExecutor() as executor:
             for experiment_config in config["experiments"]:
                 experiment_set = ExperimentSet.fromConfig(experiment_config)
-                experiment_result = list(executor.map(experiment_set.run, range(len(config["experiments"]))))
+                experiment_result = list(executor.map(experiment_set.run, range(len(config["experiments"]))[-1:]))
                 all_experiment_results.append(experiment_result)
 
         logger.info("Program completed.")
