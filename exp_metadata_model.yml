@@ -25,7 +25,7 @@ fake_dataset_config:
   var_indices: [0,1,2] #where to find the variables in dataset samples
   crop_indices: [0,256,0,256]
   preprocessor_config:
-    name: BasicPreprocessor
+    name: Preprocessor
     variables: ['u','v','t2m']
     real_var_indices: [1,2,3] #where to find the variables in stat files
     configDir: /where/to/find/configFile/
