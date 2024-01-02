@@ -7,9 +7,14 @@ from configurable import Configurable
 class Metric(ABC):
     isBatched: bool
 
-    def __init__(self, isBatched=False, name=None):
+    def __init__(self, isBatched=False, names=['metric'], var_channel=2, var_indices=[0,1,2], real_var_indices=[1,2,3]):
         self.isBatched = isBatched
-        self.name = name
+        self.names = names
+        # which channel of the data samples the variable indices are gonna be on. It should be either
+        self.var_channel = var_channel 
+        self.var_indices = var_indices # which indices to select (for different variables)
+        self.real_var_indices = real_var_indices # which indices to select (for different variables, in case of real data)
+
 
     @classmethod
     def fromName(cls, metric):
