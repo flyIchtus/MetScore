@@ -5,8 +5,29 @@ import metrics.sliced_wasserstein as SWD
 import metrics.wasserstein_distances as WD
 import metrics.quantiles_metric as quant
 import metrics.multivariate as multiv
+import metrics.brier_score as BS
+import metrics.CRPS_calc as CRPS_calc
+import metrics.skill_spread as SP
+import metrics.spectral_variance as spvar
+import metrics.rank_histogram as RH
+import metrics.bias_ensemble as BE
+import metrics.mean_bias as mb
+import metrics.skill_spread_deviation as skspd
 
 from metrics.metrics import Metric
+
+#######################################################################
+#######################################################################
+#######################################################################
+ 
+######################## Global Metrics ###############################
+
+#######################################################################
+#######################################################################
+#######################################################################
+
+
+
 
 #######################################################################
 ######################### PointWise Wasserstein Distance estimations ##
@@ -17,17 +38,7 @@ class W1CenterNUMPY(Metric):
         super().__init__(isBatched=False, names=['W1_Center'])
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        # selecting only the right indices for variables
-        # for that we use np.take, which copies data. 
-        # While this is surely costly, at first hand we want to do so 
-        # because not all metrics might use the same variables
-    
-        if len(self.var_indices)==fake_data.shape[self.var_channel]:
-            return {'real_data': real_data,
-                    'fake_data': fake_data}
-        else:       
-            return {'real_data': real_data.take(indices=self.real_var_indices, axis=self.var_channel),
-                    'fake_data': fake_data.take(indices=self.var_indices, axis=self.var_channel)}
+        return self.preprocess_dist(fake_data, real_data)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -40,17 +51,7 @@ class W1RandomNUMPY(Metric):
         super().__init__(isBatched=False, names=['W1_random'])
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        # selecting only the right indices for variables
-        # for that we use np.take, which copies data. 
-        # While this is surely costly, at first hand we want to do so 
-        # because not all metrics might use the same variables
-    
-        if len(self.var_indices)==fake_data.shape[self.var_channel]:
-            return {'real_data': real_data,
-                    'fake_data': fake_data}
-        else:       
-            return {'real_data': real_data.take(indices=self.real_var_indices, axis=self.var_channel),
-                    'fake_data': fake_data.take(indices=self.var_indices, axis=self.var_channel)}
+        return self.preprocess_dist(fake_data, real_data)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -63,17 +64,7 @@ class pwW1(Metric):
         super().__init__(isBatched=False, names=['pw_W1'])
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        # selecting only the right indices for variables
-        # for that we use np.take, which copies data. 
-        # While this is surely costly, at first hand we want to do so 
-        # because not all metrics might use the same variables
-    
-        if len(self.var_indices)==fake_data.shape[self.var_channel]:
-            return {'real_data': real_data,
-                    'fake_data': fake_data}
-        else:       
-            return {'real_data': real_data.take(indices=self.real_var_indices, axis=self.var_channel),
-                    'fake_data': fake_data.take(indices=self.var_indices, axis=self.var_channel)}
+        return self.preprocess_dist(fake_data, real_data)}
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -95,17 +86,7 @@ class SWDall(Metric):
 
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        # selecting only the right indices for variables
-        # for that we use np.take, which copies data. 
-        # While this is surely costly, at first hand we want to do so 
-        # because not all metrics might use the same variables
-    
-        if len(self.var_indices)==fake_data.shape[self.var_channel]:
-            return {'real_data': real_data,
-                    'fake_data': fake_data}
-        else:       
-            return {'real_data': real_data.take(indices=self.real_var_indices, axis=self.var_channel),
-                    'fake_data': fake_data.take(indices=self.var_indices, axis=self.var_channel)}
+        return self.preprocess_dist(fake_data, real_data)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -120,16 +101,7 @@ class SWDallTorch(Metric):
         self.names = self.sliced_w1_torch.get_metric_names()
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        # selecting only the right indices for variables
-        # for that we use np.take, which copies data. 
-        # While this is surely costly, at first hand we want to do so 
-        # because not all metrics might use the same variables        
-        if len(self.var_indices)!=fake_data.shape[self.var_channel]:
-            return {'real_data': real_data,
-                    'fake_data': fake_data}
-        else:       
-            return {'real_data': real_data.take(indices=self.real_var_indices, axis=self.var_channel),
-                    'fake_data': fake_data.take(indices=self.var_indices, axis=self.var_channel)}
+        return self.preprocess_dist(fake_data, real_data)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -149,16 +121,7 @@ class spectralCompute(Metric):
         super().__init__(isBatched=False)
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        # selecting only the right indices for variables
-        # for that we use np.take, which copies data. 
-        # While this is surely costly, at first hand we want to do so 
-        # because not all metrics might use the same variables   
-        if len(self.var_indices)!=fake_data.shape[self.var_channel]:
-            fake_data_p = fake_data.take(indices=self.var_indices, axis=self.var_channel)
-        else:
-            fake_data_p = fake_data
-
-        return fake_data_p
+        return self.preprocess_standalone(fake_data)
 
     def _calculateCore(self, processed_data):
         return spec.PowerSpectralDensity(processed_data)
@@ -171,22 +134,7 @@ class spectralDist(Metric):
         super().__init__(isBatched=False)
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        # selecting only the right indices for variables
-        # for that we use np.take, which copies data. 
-        # While this is surely costly, at first hand we want to do so 
-        # because not all metrics might use the same variables        
-        if len(self.var_indices)!=fake_data.shape[self.var_channel]:
-            fake_data_p = fake_data.take(indices=self.var_indices, axis=self.var_channel)
-        else:
-            fake_data_p = fake_data
-
-        if len(self.real_var_indices)!=real_data.shape[self.var_channel]:
-            real_data_p = real_data.take(indices=self.real_var_indices, axis=self.var_channel)
-        else:
-            real_data_p = real_data
-        
-        return {'real_data': real_data_p,
-                'fake_data': fake_data_p}
+        return self.preprocess_dist(fake_data, real_data)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -199,23 +147,7 @@ class spectralDistMultidates(Metric):
         super().__init__(isBatched=False)
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        # selecting only the right indices for variables
-        # for that we use np.take, which copies data. 
-        # While this is surely costly, at first hand we want to do so 
-        # because not all metrics might use the same variables
-
-        if len(self.var_indices)!=fake_data.shape[self.var_channel]:
-            fake_data_p = fake_data.take(indices=self.var_indices, axis=self.var_channel)
-        else:
-            fake_data_p = fake_data
-
-        if len(self.real_var_indices)!=real_data.shape[self.var_channel]:
-            real_data_p = real_data.take(indices=self.real_var_indices, axis=self.var_channel)
-        else:
-            real_data_p = real_data
-        
-        return {'real_data': real_data_p,
-                'fake_data': fake_data_p}
+        return self.preprocess_dist(fake_data, real_data)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -236,16 +168,7 @@ class lsMetric(Metric):
         self.scale = scale
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        # selecting only the right indices for variables
-        # for that we use np.take, which copies data. 
-        # While this is surely costly, at first hand we want to do so 
-        # because not all metrics might use the same variables
-        if len(self.var_indices)!=fake_data.shape[self.var_channel]:
-            fake_data_p = fake_data.take(indices=self.var_indices, axis=self.var_channel)
-        else:
-            fake_data_p = fake_data
-
-        return fake_data_p
+        return self.preprocess_standalone(fake_data)
 
     def _calculateCore(self, processed_data):
         return ls.length_scales(processed_data, self.scale)
@@ -257,26 +180,10 @@ class lsDist(Metric):
     """
     def __init__(self, scale=2.5):
         super().__init__(isBatched=False, names = ['Lcorr_u', 'Lcorr_v', 'Lcorr_t2m'])
-
         self.scale = scale
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        # selecting only the right indices for variables
-        # for that we use np.take, which copies data. 
-        # While this is surely costly, at first hand we want to do so 
-        # because not all metrics might use the same variables
-        if len(self.var_indices)!=fake_data.shape[self.var_channel]:
-            fake_data_p = fake_data.take(indices=self.var_indices, axis=self.var_channel)
-        else:
-            fake_data_p = fake_data
-
-        if len(self.real_var_indices)!=real_data.shape[self.var_channel]:
-            real_data_p = real_data.take(indices=self.real_var_indices, axis=self.var_channel)
-        else:
-            real_data_p = real_data
-        
-        return {'real_data': real_data_p,
-                'fake_data': fake_data_p}
+        return self.preprocess_dist(fake_data, real_data)
             
     def _calculateCore(self, processed_data):
 
@@ -296,16 +203,8 @@ class Quantiles(Metric):
         self.qlist = qlist
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        # selecting only the right indices for variables
-        # for that we use np.take, which copies data. 
-        # While this is surely costly, at first hand we want to do so 
-        # because not all metrics might use the same variables
-        if len(self.var_indices)!=fake_data.shape[self.var_channel]:
-            fake_data_p = fake_data.take(indices=self.var_indices, axis=self.var_channel)
-        else:
-            fake_data_p = fake_data
+        return self.preprocess_standalone(fake_data)
 
-        return fake_data_p
     
     def _calculateCore(self, processed_data):
         return quant.quantiles(processed_data, self.qlist)
@@ -316,22 +215,7 @@ class QuantilesScore(Metric):
         self.qlist = qlist
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        # selecting only the right indices for variables
-        # for that we use np.take, which copies data. 
-        # While this is surely costly, at first hand we want to do so 
-        # because not all metrics might use the same variables
-        if len(self.var_indices)!=fake_data.shape[self.var_channel]:
-            fake_data_p = fake_data.take(indices=self.var_indices, axis=self.var_channel)
-        else:
-            fake_data_p = fake_data
-
-        if len(self.real_var_indices)!=real_data.shape[self.var_channel]:
-            real_data_p = real_data.take(indices=self.real_var_indices, axis=self.var_channel)
-        else:
-            real_data_p = real_data
-        
-        return {'real_data': real_data_p,
-                'fake_data': fake_data_p}
+        return self.preprocess_dist(fake_data, real_data)
     
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -347,25 +231,275 @@ class MultivarCorr(Metric):
         super().__init__(isBatched=False)
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        # selecting only the right indices for variables
-        # for that we use np.take, which copies data. 
-        # While this is surely costly, at first hand we want to do so 
-        # because not all metrics might use the same variables
-        if len(self.var_indices)!=fake_data.shape[self.var_channel]:
-            fake_data_p = fake_data.take(indices=self.var_indices, axis=self.var_channel)
-        else:
-            fake_data_p = fake_data
-
-        if len(self.real_var_indices)!=real_data.shape[self.var_channel]:
-            real_data_p = real_data.take(indices=self.real_var_indices, axis=self.var_channel)
-        else:
-            real_data_p = real_data
-
-        return {'real_data': real_data_p,
-                'fake_data': fake_data_p}
+        return self.preprocess_dist(fake_data, real_data)
     
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
         fake_data = processed_data['fake_data']
 
         return multiv.multi_variate_correlations(real_data, fake_data)
+
+#######################################################################
+#######################################################################
+#######################################################################
+ 
+######################### Ensemble Metrics ############################
+
+#######################################################################
+#######################################################################
+#######################################################################
+
+
+
+#####################################################################
+############################ CRPS ###################################
+#####################################################################
+
+class ensembleCRPS(Metric):
+    def __init__(self):
+        super().__init__(isBatched=True, names=['CRPSff', 'CRPSdd','CRPSt2m'], debiasing=False)
+        self.debiasing = debiasing
+
+    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+
+    def _calculateCore(self, processed_data):
+        real_data = processed_data['real_data']
+        fake_data = processed_data['fake_data']
+        obs_data = processed_data['obs_data']
+
+        return CRPS_calc.ensemble_crps(obs_data,real_data,fake_data, debiasing=self.debiasing)
+
+class crpsMultiDates(Metric):
+    def __init__(self):
+        super().__init__(isBatched=True, names=['CRPSff', 'CRPSdd','CRPSt2m'], debiasing=False)
+        self.debiasing = debiasing
+
+    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+
+    def _calculateCore(self, processed_data):
+        real_data = processed_data['real_data']
+        fake_data = processed_data['fake_data']
+        obs_data = processed_data['obs_data']
+
+        return CRPS_calc.crps_multi_dates(obs_data,real_data,fake_data, debiasing=self.debiasing)
+
+class crpsDiffMultiDates(Metric):
+    def __init__(self):
+        super().__init__(isBatched=False, names=['CRPSff', 'CRPSdd','CRPSt2m'], debiasing=False)
+        self.debiasing = debiasing
+
+    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+
+    def _calculateCore(self, processed_data):
+        real_data = processed_data['real_data']
+        fake_data = processed_data['fake_data']
+        obs_data = processed_data['obs_data']
+
+        return CRPS_calc.crps_vs_aro_multi_dates(obs_data,real_data,fake_data, debiasing=self.debiasing)
+
+#####################################################################
+############################ Brier ##################################
+#####################################################################
+
+class brierScore(Metric):
+    def __init__(self):
+        super().__init__(isBatched=True, names=['Brierff', 'Brierdd','Briert2m'], debiasing=False)
+        self.debiasing = debiasing
+
+    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+
+    def _calculateCore(self, processed_data):
+        real_data = processed_data['real_data']
+        fake_data = processed_data['fake_data']
+        obs_data = processed_data['obs_data']
+
+        return BS.brier_score(obs_data,real_data,fake_data, debiasing=self.debiasing)
+
+#####################################################################
+############################ Skill-Spread ###########################
+#####################################################################
+
+class skillSpread(Metric):
+    def __init__(self):
+        super().__init__(isBatched=True, names=['Skspff', 'Skspdd','Skspt2m'], debiasing=False)
+        self.debiasing = debiasing
+
+    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+
+    def _calculateCore(self, processed_data):
+        real_data = processed_data['real_data']
+        fake_data = processed_data['fake_data']
+        obs_data = processed_data['obs_data']
+
+        return SP.skill_spread(obs_data,real_data,fake_data, debiasing=self.debiasing)
+
+class skillSpreadDeviationMultidates(Metric):
+    def __init__(self):
+        super().__init__(isBatched=True, names=['Skspff', 'Skspdd','Skspt2m'], debiasing=False)
+        self.debiasing = debiasing
+
+    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+
+    def _calculateCore(self, processed_data):
+        real_data = processed_data['real_data']
+        fake_data = processed_data['fake_data']
+        obs_data = processed_data['obs_data']
+
+        return skspd.skill_spread_deviation_multidates(obs_data,real_data,fake_data, debiasing=self.debiasing)
+
+class thresholdedSkillSpreadDeviationMultidates(Metric):
+    def __init__(self):
+        super().__init__(isBatched=True, names=['Skspff', 'Skspdd','Skspt2m'], debiasing=False)
+        self.debiasing = debiasing
+
+    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+
+    def _calculateCore(self, processed_data):
+        real_data = processed_data['real_data']
+        fake_data = processed_data['fake_data']
+        obs_data = processed_data['obs_data']
+
+        return skspd.thresholded_skill_spread_deviation_multidates(obs_data,real_data,fake_data, debiasing=self.debiasing)
+
+
+
+#####################################################################
+############################ Rank Histogram #########################
+#####################################################################
+
+class rankHistogram(Metric):
+    def __init__(self):
+        super().__init__(isBatched=True, names=['Skspff', 'Skspdd','Skspt2m'], debiasing=False)
+        self.debiasing = debiasing
+
+    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+
+    def _calculateCore(self, processed_data):
+        real_data = processed_data['real_data']
+        fake_data = processed_data['fake_data']
+        obs_data = processed_data['obs_data']
+
+        return RH.rank_histo(obs_data,real_data,fake_data)
+
+
+#####################################################################
+############################ Reliability ############################
+#####################################################################
+
+class relDiagram(Metric):
+    def __init__(self):
+        super().__init__(isBatched=True, names=['Relff', 'Reldd','Relt2m'], debiasing=False)
+        self.debiasing = debiasing
+
+    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+
+    def _calculateCore(self, processed_data):
+        real_data = processed_data['real_data']
+        fake_data = processed_data['fake_data']
+        obs_data = processed_data['obs_data']
+
+        return RD.rel_diag(obs_data,real_data,fake_data)
+
+#####################################################################
+############################ Bias ###################################
+#####################################################################
+
+class biasEnsemble(Metric):
+    def __init__(self):
+        super().__init__(isBatched=True, names=['Biasff', 'Biasdd','Biast2m'])
+        self.debiasing = debiasing
+
+    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+
+    def _calculateCore(self, processed_data):
+        real_data = processed_data['real_data']
+        fake_data = processed_data['fake_data']
+        obs_data = processed_data['obs_data']
+
+        return BE.bias_ens(obs_data,real_data,fake_data)
+
+class meanBias(Metric):
+    def __init__(self):
+        super().__init__(isBatched=True, names=['Biasff', 'Biasdd','Biast2m'])
+        self.debiasing = debiasing
+
+    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+
+    def _calculateCore(self, processed_data):
+        real_data = processed_data['real_data']
+        fake_data = processed_data['fake_data']
+        obs_data = processed_data['obs_data']
+
+        return mb.mean_bias(obs_data,real_data,fake_data)
+
+
+#####################################################################
+############################ Spread only ############################
+#####################################################################
+
+class variance(Metric):
+    def __init__(self):
+        super().__init__(isBatched=True, names=['varu', 'varv','vart2m'])
+
+    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+        return self.preprocess_standalone(fake_data)
+
+    def _calculateCore(self, processed_data):
+        fake_data = processed_data['fake_data']
+
+        return BE.bias_ens(obs_data,real_data,fake_data)
+
+class varianceDiff(Metric):
+    def __init__(self):
+        super().__init__(isBatched=True, names=['var_diff_u', 'var_diff_v','var_diff_t2m'])
+
+    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+        return self.preprocess_dist(fake_data, real_data)
+
+    def _calculateCore(self, processed_data):
+        real_data = processed_data['real_data']
+        fake_data = processed_data['fake_data']
+
+        return GM.variance_diff(real_data,fake_data)
+
+class stdDiff(Metric):
+    def __init__(self):
+        super().__init__(isBatched=True, names=['std_diff_u', 'std_diff_v','std_diff_t2m'])
+
+    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+        return self.preprocess_dist(fake_data, real_data)
+
+    def _calculateCore(self, processed_data):
+        real_data = processed_data['real_data']
+        fake_data = processed_data['fake_data']
+
+        return GM.std_diff(real_data,fake_data)
+
+
+class relStdDiff(Metric):
+    def __init__(self):
+        super().__init__(isBatched=True, names=['rel_std_diff_u', 'rel_std_diff_v','rel_std_diff_t2m'])
+
+    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+        return self.preprocess_dist(fake_data, real_data)
+
+    def _calculateCore(self, processed_data):
+        real_data = processed_data['real_data']
+        fake_data = processed_data['fake_data']
+
+        return GM.relative_std_diff(real_data,fake_data)
+
+#####################################################################
+############################ Spectral analysis ######################
+#####################################################################
