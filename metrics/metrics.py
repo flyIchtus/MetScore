@@ -16,6 +16,7 @@ class Metric(ABC):
         self.var_channel = var_channel 
         self.var_indices = var_indices # which indices to select (for different variables)
         self.real_var_indices = real_var_indices # which indices to select (for different variables, in case of real data)
+        self.obs_var_indices = obs_var_indices # which indices to select (for different variables, in case of obs data)
 
 
     @classmethod

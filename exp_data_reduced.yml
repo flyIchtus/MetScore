@@ -43,7 +43,7 @@ obs_dataset_config:
   preprocessor_config:
     name: Preprocessor
     variables: ['ff','dd','rr']
-    real_var_indices: [0,1,2]
+    real_var_indices: [1,2,3]
     configDir: /linkhome/rech/genlxx01/ult26bn/MetScore/
     configFile: obs_processor_config_model.yml
 metrics_list:
