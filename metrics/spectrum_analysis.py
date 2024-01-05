@@ -19,7 +19,7 @@ Include :
 from scipy.fftpack import dct, idct,fft, ifft
 import numpy as np
 import matplotlib.pyplot as plt
-import wind_comp as wc
+import metrics.wind_comp as wc
 from copy import deepcopy
 
 ################## DCT ########################################################

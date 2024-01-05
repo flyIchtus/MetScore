@@ -117,7 +117,7 @@ class SWDallTorch(Metric):
     def __init__(self, image_shape=(256,256)):
         super().__init__(isBatched=False)
         self.sliced_w1_torch = SWD.SWD_API(image_shape=image_shape, numpy=False)
-        self.names = sliced_w1_torch.get_metric_names()
+        self.names = self.sliced_w1_torch.get_metric_names()
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
         # selecting only the right indices for variables
@@ -291,7 +291,7 @@ class lsDist(Metric):
 
 qlist = [0.01,0.1,0.9,0.99]
 class Quantiles(Metric):
-     def __init__(self, qlist = [0.01,0.1,0.9,0.99]):
+    def __init__(self, qlist = [0.01,0.1,0.9,0.99]):
         super().__init__(isBatched=False)
         self.qlist = qlist
 
@@ -311,7 +311,7 @@ class Quantiles(Metric):
         return quant.quantiles(processed_data, self.qlist)
 
 class QuantilesScore(Metric):
-     def __init__(self, qlist = [0.01,0.1,0.9,0.99]):
+    def __init__(self, qlist = [0.01,0.1,0.9,0.99]):
         super().__init__(isBatched=False)
         self.qlist = qlist
 
@@ -343,7 +343,7 @@ class QuantilesScore(Metric):
 #####################################################################
 
 class MultivarCorr(Metric):
-     def __init__(self, names=['Corr_r','Corr_f']):
+    def __init__(self, names=['Corr_r','Corr_f']):
         super().__init__(isBatched=False)
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):

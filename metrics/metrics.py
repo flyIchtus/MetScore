@@ -24,7 +24,8 @@ class Metric(ABC):
                 # metric["is_batched"], **metric['args']
                 if 'args' not in metric:
                     metric['args'] = {}
-                metric_cls = subclass(metric, **metric['args'])
+                metric_cls = subclass(**metric['args'])
+                print(metric_cls._preprocess, metric_cls._calculateCore)
                 return metric_cls
 
         raise Exception(f"Metric {metric['type']} not found, check config file. "
