@@ -1,7 +1,7 @@
 import logging
 from multiprocessing import Manager, Process
 
-from dataloader import DataLoader
+from dataloader import DateDataloader
 from dataset import Dataset
 from configurable import Configurable
 from metrics.metrics import Metric
@@ -50,7 +50,10 @@ class ExperimentSet(Configurable):
         self.not_batched_metrics = [metric for metric in self.metrics if not metric.isBatched]
         use_cache = self.not_batched_metrics is []
         logging.info(f"Using cache: {use_cache}")
-        self.dataloader = DataLoader.fromConfig(config_data['dataloaders'], use_cache=use_cache)
+        
+        
+        
+        self.dataloader = DateDataloader.fromConfig(config_data['dataloaders'], use_cache=use_cache)
 
     def run(self, index):
         logging.info(f"Running ExperimentSet {self.name}")

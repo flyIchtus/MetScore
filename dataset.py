@@ -58,6 +58,7 @@ class Dataset(Configurable):
         self.file_list = os.listdir(config_data['data_folder'])
         self.load_data_semaphore = threading.Semaphore()
 
+
     # @thread_safe_semaphore
     @abstractmethod
     def load_data(self, file_path):
@@ -101,9 +102,11 @@ class Dataset(Configurable):
 
 class ObsDataset(Dataset):
 
-    def __getitem__(self, date):
+    def __getitem__(self, date, index, LT, dh):
         # TODO : faire avec le .csv
-        file_path = os.path.join(self.data_folder, self.file_list[date])
+        #file_path = os.path.join(self.data_folder, self.file_list[date])
+        file_path = self.data_folder + '/obs' + date.replace('-', '') + '_' +str((index%LT+1)*dh) + '.npy'
+
         if not self.cache.is_cached(file_path):
             data = self.load_data(file_path)
             self.cache.add_to_cache(file_path, data)
@@ -117,9 +120,9 @@ class ObsDataset(Dataset):
 
 class FakeDataset(Dataset):
 
-    def __getitem__(self, index):
-        file_path = os.path.join(self.data_folder, index)
-        date = None
+    def __getitem__(self, date, index, LT, dh):
+        file_path = self.data_folder + '/genFsemble_' + date + '_' +str((index%LT+1)*dh) + '_1000' + '.npy'
+#        date = None
         if not self.cache.is_cached(file_path):
             data = self.load_data(file_path)
             self.cache.add_to_cache(file_path, data)

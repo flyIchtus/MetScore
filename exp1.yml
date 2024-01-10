@@ -1,9 +1,15 @@
 name: Experiment1
 dataloaders:
-  batch_size: 32
+  batch_size: 1
+  path_to_csv: /scratch/mrmn/moldovang/databases/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+  csv_file: Large_lt_test_labels.csv
+  date_start: '2021-08-14'
+  date_end: '2021-08-15'
+  Lead_Times : 15
+  dh : 3 
   real_dataset_config:
     name: DatasetReal
-    data_folder: samples
+    data_folder: /scratch/mrmn/moldovang/databases/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
     preprocessor_config:
       name: BasicPreprocessor
       args:
@@ -11,7 +17,7 @@ dataloaders:
         arg2: value2
   fake_dataset_config:
     name: DatasetFake
-    data_folder: samples
+    data_folder: /scratch/mrmn/moldovang/tests_CGAN/normal_['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']_reduced/samples
     preprocessor_config:
       name: Preprocessor
       args:
@@ -19,7 +25,7 @@ dataloaders:
         arg2: value2
   obs_dataset_config:
     name: DatasetObs
-    data_folder: samples
+    data_folder: /scratch/mrmn/moldovang/obs_databases/obs_reduced_npy
     crop_indices: [180, 436, 500, 756]
     preprocessor_config:
       name: Preprocessor
