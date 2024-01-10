@@ -128,7 +128,7 @@ class FakeDataset(Dataset):
             self.cache.add_to_cache(file_path, data)
         else:
             data = self.cache.get_from_cache(file_path)
-        return data, date
+        return data
 
     def load_data(self, file_path):
         return np.load(file_path)
@@ -136,14 +136,30 @@ class FakeDataset(Dataset):
 
 class RealDataset(Dataset):
 
-    def __getitem__(self, date):
-        # TODO : faire avec le .csv
-        file_path = os.path.join(self.data_folder, self.file_list[date])
-        if not self.cache.is_cached(file_path):
-            data = self.load_data(file_path)
-            self.cache.add_to_cache(file_path, data)
-        else:
-            data = self.cache.get_from_cache(file_path)
+    def __getitem__(self, date, index, LT, dh, df0):
+        file_names = []
+
+        names = df0[(df0['Date']==date+'T21:00:00Z') & (df0['LeadTime']==(index%LT+1)*dh-1)]['Name'].to_list()        
+        file_names.append([self.data_folder + '/' + n + '.npy' for n in names])
+        #file_path = os.path.join(self.data_folder, self.file_list[date])
+
+            
+        arrays = []
+        for file_name in file_names[0]:
+            
+            if not self.cache.is_cached(file_name):
+                data_s = np.expand_dims(self.load_data(file_name), axis=0)
+
+                arrays.append(data_s)
+                data = np.concatenate(arrays, axis=0)
+                self.cache.add_to_cache(file_name, data_s)
+            
+            else:
+                
+                data_s = self.cache.get_from_cache(file_name)
+                arrays.append(data_s)
+                data = np.concatenate(arrays, axis=0)
+
         return data
 
     def load_data(self, file_path):

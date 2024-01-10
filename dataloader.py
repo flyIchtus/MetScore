@@ -41,8 +41,8 @@ class DataLoader(Configurable):
         """
         super().__init__()
         
-        df0 = pd.read_csv(config_data['path_to_csv'] + '/'+ config_data['csv_file'])
-        df_extract = df0[(df0['Date']>=config_data['date_start']) & (df0['Date']<config_data['date_end'])]
+        self.df0 = pd.read_csv(config_data['path_to_csv'] + '/'+ config_data['csv_file'])
+        df_extract = self.df0[(self.df0['Date']>=config_data['date_start']) & (self.df0['Date']<config_data['date_end'])]
 
         self.liste_dates = df_extract['Date'].unique().tolist()
         self.liste_dates_repl = [date_string.replace('T21:00:00Z', '') for date_string in self.liste_dates]
@@ -97,10 +97,14 @@ class DateDataloader(DataLoader):
             #fake_samples = [self.fake_dataset[self.current_index + i] for i in range(self.batch_size)]
             fake_samples = [self.fake_dataset.__getitem__(self.liste_dates_rep[self.current_index + i], self.current_index + i, self.Lead_Times, self.dh) for i in range(self.batch_size)]
             obs_samples = [self.obs_dataset.__getitem__(self.liste_dates_rep[self.current_index + i], self.current_index + i, self.Lead_Times, self.dh) for i in range(self.batch_size)]
-            real_samples, obs_samples = [], []
-            for _, date in fake_samples:
-                real_samples.append(self.real_dataset[date])
-                obs_samples.append(self.obs_dataset[date])
+            real_samples = [self.real_dataset.__getitem__(self.liste_dates_rep[self.current_index + i], self.current_index + i, self.Lead_Times, self.dh, self.df0) for i in range(self.batch_size)]
+
+            print(real_samples[0].shape, obs_samples[0].shape, fake_samples[0].shape)
+            print(stop)
+            # real_samples, obs_samples = [], []
+            # for _, date in fake_samples:
+            #     real_samples.append(self.real_dataset[date])
+            #     obs_samples.append(self.obs_dataset[date])
 
             self.current_index += self.batch_size
 
