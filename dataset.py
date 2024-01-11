@@ -102,9 +102,9 @@ class Dataset(Configurable):
 
 class ObsDataset(Dataset):
 
-    def __getitem__(self, date, index, LT, dh):
-        # TODO : faire avec le .csv
-        #file_path = os.path.join(self.data_folder, self.file_list[date])
+    def __getitem__(self, items):
+        date, index, LT, dh = items
+        # TODO : faire du generique
         file_path = self.data_folder + '/obs' + date.replace('-', '') + '_' +str((index%LT+1)*dh) + '.npy'
 
         if not self.cache.is_cached(file_path):
@@ -120,7 +120,9 @@ class ObsDataset(Dataset):
 
 class FakeDataset(Dataset):
 
-    def __getitem__(self, date, index, LT, dh):
+    def __getitem__(self, items):
+        date, index, LT, dh = items
+        # TODO : faire du generique
         file_path = self.data_folder + '/genFsemble_' + date + '_' +str((index%LT+1)*dh) + '_1000' + '.npy'
 #        date = None
         if not self.cache.is_cached(file_path):
@@ -136,14 +138,13 @@ class FakeDataset(Dataset):
 
 class RealDataset(Dataset):
 
-    def __getitem__(self, date, index, LT, dh, df0):
+    def __getitem__(self, items):
+        date, index, LT, dh, df0 = items
         file_names = []
 
-        names = df0[(df0['Date']==date+'T21:00:00Z') & (df0['LeadTime']==(index%LT+1)*dh-1)]['Name'].to_list()        
-        file_names.append([self.data_folder + '/' + n + '.npy' for n in names])
-        #file_path = os.path.join(self.data_folder, self.file_list[date])
+        names = df0[(df0['Date']==date+'T21:00:00Z') & (df0['LeadTime']==(index%LT+1)*dh-1)]['Name'].to_list()
 
-            
+        file_names.append([os.path.join(self.data_folder, name +'.npy') for name in names])
         arrays = []
         for file_name in file_names[0]:
             
