@@ -6,8 +6,8 @@ import numpy as np
 
 class OrographyRMSE(Metric):
 
-    def __init__(self, usetorch=False):
-        super().__init__(isBatched=True)
+    def __init__(self,name):
+        super().__init__(name, isBatched=True)
         self.usetorch = False
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):

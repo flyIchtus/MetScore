@@ -17,7 +17,7 @@ import numpy as np
 
 ############################ General simple metrics ###########################
 
-def obs_clean(obs, crop_indices) :
+def obs_clean(obs: object, crop_indices: object)  -> object:
     
     
     """

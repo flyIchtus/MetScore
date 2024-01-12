@@ -7,7 +7,7 @@ from configurable import Configurable
 class Metric(ABC):
     isBatched: bool
 
-    def __init__(self, isBatched=False, name=None):
+    def __init__(self, name,  isBatched=False):
         self.isBatched = isBatched
         self.name = name
 
@@ -19,7 +19,7 @@ class Metric(ABC):
                 # metric["is_batched"], **metric['args']
                 if 'args' not in metric:
                     metric['args'] = {}
-                metric_cls = subclass(metric, **metric['args'])
+                metric_cls = subclass(metric['name'], **metric['args'])
                 return metric_cls
 
         raise Exception(f"Metric {metric['type']} not found, check config file. "

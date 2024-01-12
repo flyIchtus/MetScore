@@ -50,20 +50,20 @@ class ExperimentSet(Configurable):
         self.not_batched_metrics = [metric for metric in self.metrics if not metric.isBatched]
         use_cache = self.not_batched_metrics is []
         logging.info(f"Using cache: {use_cache}")
-        
-        
-        
+
         self.dataloader = DateDataloader.fromConfig(config_data['dataloaders'], use_cache=use_cache)
 
     def run(self, index):
         logging.info(f"Running ExperimentSet {self.name}")
 
         batched_metric_results = {metric.name: [] for metric in self.batched_metrics}
+        print(batched_metric_results)
 
         for (batch_fake, batch_real, batch_obs) in self.dataloader:
             for metric in self.batched_metrics:
                 res = metric.calculate(batch_fake, batch_real, batch_obs)
                 batched_metric_results[metric.name].append(res)
+                print(batched_metric_results)
 
         for metric_name, results in batched_metric_results.items():
             # TODO moyenne par batch ?
