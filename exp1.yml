@@ -6,6 +6,7 @@ dataloaders:
   date_start: '2021-08-14'
   date_end: '2021-08-15'
   Lead_Times : 15
+  start_time : 21 # 21:00. Arome simulations in the dataset start at 21:00 
   dh : 3 
   real_dataset_config:
     name: DatasetReal

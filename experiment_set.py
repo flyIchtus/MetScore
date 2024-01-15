@@ -60,6 +60,7 @@ class ExperimentSet(Configurable):
         print(batched_metric_results)
 
         for (batch_fake, batch_real, batch_obs) in self.dataloader:
+            #print(batch_fake.shape, batch_real.shape)
             for metric in self.batched_metrics:
                 res = metric.calculate(batch_fake, batch_real, batch_obs)
                 batched_metric_results[metric.name].append(res)

@@ -7,6 +7,8 @@ from configurable import Configurable
 from useful_funcs import obs_clean
 from abc import ABC, abstractmethod
 
+from datetime import datetime, timedelta
+
 from transforms.preprocessor import Preprocessor
 
 
@@ -107,15 +109,29 @@ class Dataset(Configurable):
 
 
 class ObsDataset(Dataset):
-    def __init__(self, config_data, dh, LT, use_cache=True):
+    def __init__(self, config_data, dh, LT, start_time, use_cache=True):
         super().__init__(config_data, use_cache)
+
+        self.config_data=config_data
         self.dh = dh
         self.LT = LT
+        self.start_time = start_time
         self.filename_format = config_data.get('filename_format', "obs{date}_{formatted_index}")
+
 
     def _get_filename(self, items):
         formatted_index = (items[1] % self.LT + 1) * self.dh
-        return self._get_full_path(self.filename_format.format(date=items[0].replace('-', ''), formatted_index= 0 if formatted_index==24 else formatted_index))
+        real_hour = self.start_time + (items[1] % self.LT + 1)* self.dh
+        date_index = int(np.floor(real_hour/24.))
+
+        date_0 = datetime.strptime(items[0], '%Y-%m-%d')
+        next_date_1 = date_0 + timedelta(days=1)
+        next_date_2 = date_0 + timedelta(days=2)
+        date_1 = next_date_1.strftime('%Y-%m-%d')
+        date_2 = next_date_2.strftime('%Y-%m-%d')
+        dates=[items[0], date_1, date_2] # considering 45 hours of lead time available, there are three possible observation dates
+        print(dates[date_index].replace('-', ''), real_hour%24)
+        return self._get_full_path(self.filename_format.format(date=dates[date_index].replace('-', ''), formatted_index= real_hour%24))
 
     def _load_file(self, file_path):
         print(file_path)

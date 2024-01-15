@@ -80,7 +80,7 @@ class DateDataloader(DataLoader):
         # Instanciation des datasets dans DateDataloader
         self.real_dataset = RealDataset.fromConfig(config_data['real_dataset_config'], dh=config_data['dh'], LT=config_data['Lead_Times'], use_cache=use_cache)
         self.fake_dataset = FakeDataset.fromConfig(config_data['fake_dataset_config'], dh=config_data['dh'], LT=config_data['Lead_Times'], use_cache=use_cache)
-        self.obs_dataset = ObsDataset.fromConfig(config_data['obs_dataset_config'], dh=config_data['dh'], LT=config_data['Lead_Times'], use_cache=use_cache)
+        self.obs_dataset = ObsDataset.fromConfig(config_data['obs_dataset_config'], dh=config_data['dh'], LT=config_data['Lead_Times'], start_time=config_data['start_time'], use_cache=use_cache)
 
 
         self.df0 = pd.read_csv(os.path.join(config_data['path_to_csv'], config_data['csv_file']))
@@ -102,7 +102,7 @@ class DateDataloader(DataLoader):
                             for i in range(self.batch_size)]
 
             self.current_index += min(self.batch_size, self._data_length - self.current_index)
-
+         
             return fake_samples[0], real_samples[0], obs_samples
         else:
             raise StopIteration
