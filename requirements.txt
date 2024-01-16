@@ -2,3 +2,8 @@ PyYaml
 torch
 numpy
 tqdm
+pandas
+scipy
+matplotlib
+pyproj
+properscoring

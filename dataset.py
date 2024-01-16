@@ -120,7 +120,6 @@ class ObsDataset(Dataset):
 
 
     def _get_filename(self, items):
-        formatted_index = (items[1] % self.LT + 1) * self.dh
         real_hour = self.start_time + (items[1] % self.LT + 1)* self.dh
         date_index = int(np.floor(real_hour/24.))
 
@@ -130,12 +129,20 @@ class ObsDataset(Dataset):
         date_1 = next_date_1.strftime('%Y-%m-%d')
         date_2 = next_date_2.strftime('%Y-%m-%d')
         dates=[items[0], date_1, date_2] # considering 45 hours of lead time available, there are three possible observation dates
-        print(dates[date_index].replace('-', ''), real_hour%24)
+        # print(dates[date_index].replace('-', ''), real_hour%24)
         return self._get_full_path(self.filename_format.format(date=dates[date_index].replace('-', ''), formatted_index= real_hour%24))
 
     def _load_file(self, file_path):
-        print(file_path)
+        # print(file_path)
         return obs_clean(np.load(file_path), self.crop_indices)
+
+    def get_all_data(self, liste_dates_rep):
+        all_data = []
+        if not self.is_dataset_cached():
+            for idx, date in enumerate(liste_dates_rep):
+                # use __getitem__ to load and preprocess data
+                all_data.append(self.__getitem__((date, idx)))
+        return np.array(all_data)
 
 
 class FakeDataset(Dataset):
@@ -151,16 +158,25 @@ class FakeDataset(Dataset):
     def _load_file(self, file_path):
         return np.load(file_path)
 
+    def get_all_data(self, liste_dates_rep):
+        all_data = []
+        if not self.is_dataset_cached():
+            for idx, date in enumerate(liste_dates_rep):
+                # use __getitem__ to load and preprocess data
+                all_data.append(self.__getitem__((date, idx)))
+        return np.array(all_data)
+
 
 class RealDataset(Dataset):
-    def __init__(self, config_data, dh, LT, use_cache=True):
+    def __init__(self, config_data, dh, LT, df0, use_cache=True):
         super().__init__(config_data, use_cache)
         self.dh = dh
         self.LT = LT
+        self.df0 = df0
 
     def _get_filename(self, items):
-        date, index, df0 = items
-        names = df0[(df0['Date'] == f"{date}T21:00:00Z") & (df0['LeadTime'] == (index % self.LT + 1) * self.dh - 1)][
+        date, index = items
+        names = self.df0[(self.df0['Date'] == f"{date}T21:00:00Z") & (self.df0['LeadTime'] == (index % self.LT + 1) * self.dh - 1)][
             'Name'].to_list()
         file_names = [self._get_full_path(name) for name in names]
         return file_names
@@ -172,3 +188,11 @@ class RealDataset(Dataset):
             arrays.append(data_s)
             data = np.concatenate(arrays, axis=0)
         return data
+
+    def get_all_data(self, liste_dates_rep):
+        all_data = []
+        if not self.is_dataset_cached():
+            for idx, date in enumerate(liste_dates_rep):
+                # use __getitem__ to load and preprocess data
+                all_data.append(self.__getitem__((date, idx)))
+        return np.array(all_data)

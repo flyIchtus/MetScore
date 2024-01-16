@@ -56,15 +56,15 @@ class ExperimentSet(Configurable):
     def run(self, index):
         logging.info(f"Running ExperimentSet {self.name}")
 
-        batched_metric_results = {metric.name: [] for metric in self.batched_metrics}
-        print(batched_metric_results)
+        batched_metric_results = {metric.names[0]: [] for metric in self.batched_metrics}
+        # print(batched_metric_results)
 
         for (batch_fake, batch_real, batch_obs) in self.dataloader:
             #print(batch_fake.shape, batch_real.shape)
             for metric in self.batched_metrics:
                 res = metric.calculate(batch_fake, batch_real, batch_obs)
-                batched_metric_results[metric.name].append(res)
-                print(batched_metric_results)
+                batched_metric_results[metric.names[0]].append(res)
+                # print(batched_metric_results)
 
         for metric_name, results in batched_metric_results.items():
             # TODO moyenne par batch ?
@@ -72,6 +72,7 @@ class ExperimentSet(Configurable):
             logging.info(f"{self.name} : Metric {metric_name} result: {average_result}")
 
         for metric in self.not_batched_metrics:
-            res = metric.calculate(self.dataloader.get_all_data())
-            logging.info(f"Metric {metric.name} result: {res}")
+            r, f, o = self.dataloader.get_all_data()
+            res = metric.calculate(r, f, o)
+            logging.info(f"Metric {metric.names} result: {res}")
         logging.info(f"ExperimentSet {index} completed")
