@@ -7,11 +7,11 @@ from configurable import Configurable
 class Metric(ABC):
     isBatched: bool
 
-    def __init__(self, isBatched=False, name=['metric'],
+    def __init__(self, isBatched=False, names=['metric'],
                 var_channel=1, obs_var_channel=1,
                 var_indices=[0,1,2], real_var_indices=[1,2,3], obs_var_indices=[0,1,2]):
         self.isBatched = isBatched
-        self.names = name
+        self.names = names
         # which channel of the data samples the variable indices are gonna be on. It should be either
         self.var_channel = var_channel 
         self.var_indices = var_indices # which indices to select (for different variables)
@@ -34,7 +34,7 @@ class Metric(ABC):
         raise Exception(f"Metric {metric['type']} not found, check config file. "
                         f"List of available metrics: {Metric.__subclasses__()}")
 
-    def calculate(self, fake_data, real_data, obs_data):
+    def calculate(self,real_data,fake_data,obs_data):
 
         processed_data = self._preprocess(fake_data, real_data, obs_data)
         result = self._calculateCore(processed_data)
@@ -65,7 +65,6 @@ class Metric(ABC):
             fake_data_p = fake_data.take(indices=self.var_indices, axis=self.var_channel)
         else:
             fake_data_p = fake_data # no copy in this case
-
         if len(self.real_var_indices)!=real_data.shape[self.var_channel]:
             real_data_p = real_data.take(indices=self.real_var_indices, axis=self.var_channel)
         else:
@@ -80,7 +79,7 @@ class Metric(ABC):
                 'fake_data': fake_data_p,
                 'obs_data': obs_data_p}
 
-    def preprocess_dist(self,real_data, fake_data):
+    def preprocess_dist(self,real_data,fake_data):
         assert real_data is not None
         # selecting only the right indices for variables
         # for that we use np.take, which copies data. 
@@ -90,12 +89,10 @@ class Metric(ABC):
             fake_data_p = fake_data.take(indices=self.var_indices, axis=self.var_channel)
         else:
             fake_data_p = fake_data # no copy in this case
-
         if len(self.real_var_indices)!=real_data.shape[self.var_channel]:
             real_data_p = real_data.take(indices=self.real_var_indices, axis=self.var_channel)
         else:
             real_data_p = real_data # no copy in this case
-        
         return {'real_data': real_data_p,
                 'fake_data': fake_data_p}
 

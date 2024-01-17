@@ -139,7 +139,7 @@ class ObsDataset(Dataset):
     def get_all_data(self, liste_dates_rep):
         all_data = []
         if not self.is_dataset_cached():
-            for idx, date in enumerate(liste_dates_rep):
+            for idx, date in enumerate(liste_dates_rep[:2]):
                 # use __getitem__ to load and preprocess data
                 all_data.append(self.__getitem__((date, idx)))
         return np.array(all_data)
@@ -161,10 +161,14 @@ class FakeDataset(Dataset):
     def get_all_data(self, liste_dates_rep):
         all_data = []
         if not self.is_dataset_cached():
-            for idx, date in enumerate(liste_dates_rep):
+            for idx, date in enumerate(liste_dates_rep[:2]):
                 # use __getitem__ to load and preprocess data
                 all_data.append(self.__getitem__((date, idx)))
-        return np.array(all_data)
+        
+        res = np.array(all_data)
+        Shape = res.shape
+        res = res.reshape(Shape[0] * Shape[1],Shape[2], Shape[3], Shape[4])
+        return res
 
 
 class RealDataset(Dataset):
@@ -192,7 +196,10 @@ class RealDataset(Dataset):
     def get_all_data(self, liste_dates_rep):
         all_data = []
         if not self.is_dataset_cached():
-            for idx, date in enumerate(liste_dates_rep):
+            for idx, date in enumerate(liste_dates_rep[:2]):
                 # use __getitem__ to load and preprocess data
                 all_data.append(self.__getitem__((date, idx)))
-        return np.array(all_data)
+        res = np.array(all_data)
+        Shape = res.shape
+        res = res.reshape(Shape[0] * Shape[1],Shape[2], Shape[3], Shape[4])
+        return res

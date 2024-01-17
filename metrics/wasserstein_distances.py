@@ -124,7 +124,6 @@ def W1_random_NUMPY(real_data, fake_data, pixel_num=4096):
     Channel_size = real_data.shape[1]
     
     dist = np.array([0.], dtype=np.float32)
-    
     for i in range(pixel_num):
         for c in range(Channel_size):
             real = np.sort(real_data[:,c,i],axis=0)

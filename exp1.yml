@@ -1,7 +1,8 @@
 name: Experiment1
 dataloaders:
   batch_size: 1
-  path_to_csv: data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+  maxNsamples: 16
+  path_to_csv: /gpfsscratch/rech/woz/commun/data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
   csv_file: Large_lt_test_labels.csv
   date_start: '2021-08-14'
   date_end: '2021-08-15'
@@ -9,31 +10,54 @@ dataloaders:
   start_time : 21 # 21:00. Arome simulations in the dataset start at 21:00 
   dh : 3 
   real_dataset_config:
+      
     name: DatasetReal
-    data_folder: data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+    data_folder: /gpfsscratch/rech/woz/commun/data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+    variables: ['u','v','t2m']
+    sizeH: 256
+    sizeW: 256
+    var_indices: [1,2,3] #where to find the variables in dataset samples
+    crop_indices: [0,256,0,256]
     preprocessor_config:
-      name: BasicPreprocessor
-      args:
-        arg1: value1
-        arg2: value2
+        name: Preprocessor
+        variables: ['u','v','t2m']
+        real_var_indices: [1,2,3] #where to find the variables in stat files
+        configDir: /where/to/find/configFile/
+        configFile: real_processor_config_model.yml
+
   fake_dataset_config:
     name: DatasetFake
-    data_folder: data/normal_['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']_reduced/samples
+    data_folder: /gpfsscratch/rech/woz/commun/data/normal_['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']_reduced/samples
+    variables: ['u','v','t2m']
+    sizeH: 256
+    sizeW: 256
+    var_indices: [0,1,2] #where to find the variables in dataset samples
+    crop_indices: [0,256,0,256]
     preprocessor_config:
-      name: Preprocessor
-      args:
-        arg1: value1
-        arg2: value2
+        name: Preprocessor
+        variables: ['u','v','t2m']
+        real_var_indices: [1,2,3] #where to find the variables in stat files
+        configDir: /where/to/find/configFile/
+        configFile: fake_processor_config_model.yml
+    
   obs_dataset_config:
     name: DatasetObs
-    data_folder: data/obs_reduced_npy
+    data_folder: /gpfsscratch/rech/woz/commun/data/obs_reduced_npy
     crop_indices: [180, 436, 500, 756]
+    variables: ['ff','dd','t2m']
+    var_indices: [0,1,2]
+    crop_indices: [180,436,500,756]
     preprocessor_config:
-      name: Preprocessor
-      args:
-        arg1: value1
-        arg2: value2
+        name: Preprocessor
+        variables: ['ff','dd','rr']
+        real_var_indices: [0,1,2]
+        configDir: /where/to/find/configFile/
+        configFile: obs_processor_config_model.yml
+
 metrics_list:
-  - name: W1RandomNUMPY
-    type: W1RandomNUMPY
+  - name: W1CenterNUMPY
+    type: W1CenterNUMPY
+  - name: spectralCompute
+    type: spectralCompute
 output_path: experiment1_output
+

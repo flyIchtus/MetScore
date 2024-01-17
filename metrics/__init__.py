@@ -22,7 +22,7 @@ class W1CenterNUMPY(Metric):
         super().__init__(isBatched=False, names=['W1_Center'])
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_dist(fake_data, real_data)
+        return self.preprocess_dist(real_data,fake_data)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -32,23 +32,22 @@ class W1CenterNUMPY(Metric):
 
 class W1RandomNUMPY(Metric):
     def __init__(self, name):
-        super().__init__(isBatched=False, name=['W1_random'])
+        super().__init__(isBatched=False, names=['W1_random'], var_channel=1)
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_dist(fake_data, real_data)
+        return self.preprocess_dist(real_data,fake_data)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
         fake_data = processed_data['fake_data']
-
-        return WD.W1_random_NUMPY(fake_data, real_data)
+        return WD.W1_random_NUMPY(real_data,fake_data)
 
 class pwW1(Metric):
     def __init__(self, name):
         super().__init__(isBatched=False, names=['pw_W1'])
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_dist(fake_data, real_data)
+        return self.preprocess_dist(real_data,fake_data)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -70,7 +69,7 @@ class SWDall(Metric):
 
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_dist(fake_data, real_data)
+        return self.preprocess_dist(real_data,fake_data)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -85,7 +84,7 @@ class SWDallTorch(Metric):
         self.names = self.sliced_w1_torch.get_metric_names()
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_dist(fake_data, real_data)
+        return self.preprocess_dist(real_data,fake_data)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -118,20 +117,20 @@ class spectralDist(Metric):
         super().__init__(isBatched=False)
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_dist(fake_data, real_data)
+        return self.preprocess_dist(real_data,fake_data)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
         fake_data = processed_data['fake_data']
 
-        return spec.PSD_compare(real_data, fake_data)
+        return spec.PSD_compare(real_data,fake_data)
 
 class spectralDistMultidates(Metric):
     def __init__(self, name):
         super().__init__(isBatched=False)
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_dist(fake_data, real_data)
+        return self.preprocess_dist(real_data,fake_data)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -167,7 +166,7 @@ class lsDist(Metric):
         self.scale = scale
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_dist(fake_data, real_data)
+        return self.preprocess_dist(real_data,fake_data)
             
     def _calculateCore(self, processed_data):
 
@@ -199,7 +198,7 @@ class QuantilesScore(Metric):
         self.qlist = qlist
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_dist(fake_data, real_data)
+        return self.preprocess_dist(real_data,fake_data)
     
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -215,7 +214,7 @@ class MultivarCorr(Metric):
         super().__init__(isBatched=False)
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_dist(fake_data, real_data)
+        return self.preprocess_dist(real_data,fake_data)
     
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -449,7 +448,7 @@ class varianceDiff(Metric):
         super().__init__(isBatched=True, names=['var_diff_u', 'var_diff_v','var_diff_t2m'])
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_dist(fake_data, real_data)
+        return self.preprocess_dist(real_data,fake_data)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -462,7 +461,7 @@ class stdDiff(Metric):
         super().__init__(isBatched=True, names=['std_diff_u', 'std_diff_v','std_diff_t2m'])
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_dist(fake_data, real_data)
+        return self.preprocess_dist(real_data,fake_data)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -476,7 +475,7 @@ class relStdDiff(Metric):
         super().__init__(isBatched=True, names=['rel_std_diff_u', 'rel_std_diff_v','rel_std_diff_t2m'])
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_dist(fake_data, real_data)
+        return self.preprocess_dist(real_data,fake_data)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']

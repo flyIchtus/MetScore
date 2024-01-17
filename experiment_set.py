@@ -70,9 +70,14 @@ class ExperimentSet(Configurable):
             # TODO moyenne par batch ?
             average_result = sum(results) / len(results)
             logging.info(f"{self.name} : Metric {metric_name} result: {average_result}")
-
-        for metric in self.not_batched_metrics:
+        
+        if self.not_batched_metrics is not []:
             r, f, o = self.dataloader.get_all_data()
+            r,f = self.dataloader.randomize_and_cut(r,f)
+        for metric in self.not_batched_metrics:
             res = metric.calculate(r, f, o)
-            logging.info(f"Metric {metric.names} result: {res}")
+            if res.size<25:
+                logging.info(f"Metric {metric.names} result: {res}")
+            else:
+                logging.info(f"Metric {metric.names} : too long result to print")
         logging.info(f"ExperimentSet {index} completed")
