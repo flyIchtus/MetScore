@@ -24,8 +24,9 @@ dataloaders:
         name: Preprocessor
         variables: ['u','v','t2m']
         real_var_indices: [1,2,3] #where to find the variables in stat files
-        configDir: .
+        configDir: /scratch/mrmn/moldovang/MetScore/
         configFile: real_processor_config_model.yml
+        real_data_dir: data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
 
   fake_dataset_config:
     name: DatasetFake
@@ -39,8 +40,9 @@ dataloaders:
         name: ReverserrPreprocessor
         variables: ['u','v','t2m']
         real_var_indices: [1,2,3] #where to find the variables in stat files
-        configDir: .
+        configDir: /scratch/mrmn/moldovang/MetScore/
         configFile: fake_processor_config_model.yml
+        real_data_dir: data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
     
   obs_dataset_config:
     name: DatasetObs
@@ -57,8 +59,8 @@ dataloaders:
         configFile: obs_processor_config_model.yml
 
 metrics_list:
-  - name: biasEnsemble
-    type: biasEnsemble   
+  - name: ensembleCRPS
+    type: ensembleCRPS   
   - name: W1CenterNUMPY
     type: W1CenterNUMPY
   - name: spectralCompute

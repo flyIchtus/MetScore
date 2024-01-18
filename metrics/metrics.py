@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 import logging
+import copy
+import metrics.wind_comp as wc
+import numpy as np
 
 from configurable import Configurable
 #import wind_comp as wc
@@ -64,10 +67,12 @@ class Metric(ABC):
         # While this is surely costly, at first hand we want to do so 
         # because not all metrics might use the same variables
 
+        print(fake_data.shape)
         if len(self.var_indices)!=fake_data.shape[self.var_channel]:
             fake_data_p = fake_data.take(indices=self.var_indices, axis=self.var_channel)
         else:
             fake_data_p = fake_data # no copy in this case
+
         if len(self.real_var_indices)!=real_data.shape[self.var_channel]:
             real_data_p = real_data.take(indices=self.real_var_indices, axis=self.var_channel)
         else:
@@ -79,26 +84,23 @@ class Metric(ABC):
             obs_data_p = obs_data # no copy in this case
         
         
-        
-    #     fake_data_pp = copy.deepcopy(fake_data_p)
-    #     obs_data_pp = copy.deepcopy(obs_data_p[0])
-    #     real_data_pp = copy.deepcopy(real_data_p)
+        fake_data_pp = copy.deepcopy(fake_data_p)
+        obs_data_pp = copy.deepcopy(obs_data_p[0])
+        real_data_pp = copy.deepcopy(real_data_p)
 
-    #     fake_data_pp[:,0], fake_data_pp[:,1] = wc.computeWindDir(fake_data_pp[:,0], fake_data_pp[:,1])
-    #     real_ens_p[:,0], real_ens_p[:,1] = wc.computeWindDir(real_ens_p[:,0], real_ens_p[:,1])
-    # if debiasing == True : 
-    #     X_p = wc.debiasing(X_p, real_ens_p)
+        fake_data_pp[:,0], fake_data_pp[:,1] = wc.computeWindDir(fake_data_pp[:,0], fake_data_pp[:,1])
+        real_data_pp[:,0], real_data_pp[:,1] = wc.computeWindDir(real_data_pp[:,0], real_data_pp[:,1])
 
-    # angle_dif = wc.angle_diff(X_p[:,1], cond_p[1])
+        angle_dif = wc.angle_diff(fake_data_pp[:,1], obs_data_pp[1])
 
 
-    # X_p[:,1] = angle_dif
-    # cond_p[1,~np.isnan(cond_p[1])] = 0.
+        fake_data_pp[:,1] = angle_dif
+        obs_data_pp[1,~np.isnan(obs_data_pp[1])] = 0.
 
         
-        return {'real_data': real_data_p,
-                'fake_data': fake_data_p,
-                'obs_data': obs_data_p}
+        return {'real_data': real_data_pp,
+                'fake_data': fake_data_pp,
+                'obs_data': obs_data_pp}
 
     def preprocess_dist(self,real_data,fake_data):
         assert real_data is not None
