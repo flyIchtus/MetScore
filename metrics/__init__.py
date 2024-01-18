@@ -240,7 +240,7 @@ class MultivarCorr(Metric):
 #
 class ensembleCRPS(Metric):
     def __init__(self, name):
-        super().__init__(isBatched=True, name=['CRPSff', 'CRPSdd','CRPSt2m'])
+        super().__init__(isBatched=True, names=['CRPSff', 'CRPSdd','CRPSt2m'])
         self.debiasing = False
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
@@ -399,17 +399,17 @@ class relDiagram(Metric):
 class biasEnsemble(Metric):
     def __init__(self, name):
         super().__init__(isBatched=True, names=['Biasff', 'Biasdd','Biast2m'])
-        self.debiasing = debiasing
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, debiasing=None):
+        
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data, debiasing)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
         fake_data = processed_data['fake_data']
         obs_data = processed_data['obs_data']
 
-        return BE.bias_ens(obs_data,real_data,fake_data)
+        return BE.bias_ens(obs_data,fake_data,real_data)
 
 class meanBias(Metric):
     def __init__(self, name):

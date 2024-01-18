@@ -1,8 +1,10 @@
 name: Experiment1
+debiasing : True
+
 dataloaders:
   batch_size: 1
   maxNsamples: 16
-  path_to_csv: /gpfsscratch/rech/woz/commun/data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+  path_to_csv: data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
   csv_file: Large_lt_test_labels.csv
   date_start: '2021-08-14'
   date_end: '2021-08-15'
@@ -12,7 +14,7 @@ dataloaders:
   real_dataset_config:
       
     name: DatasetReal
-    data_folder: /gpfsscratch/rech/woz/commun/data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+    data_folder: data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
     variables: ['u','v','t2m']
     sizeH: 256
     sizeW: 256
@@ -22,27 +24,27 @@ dataloaders:
         name: Preprocessor
         variables: ['u','v','t2m']
         real_var_indices: [1,2,3] #where to find the variables in stat files
-        configDir: /where/to/find/configFile/
+        configDir: .
         configFile: real_processor_config_model.yml
 
   fake_dataset_config:
     name: DatasetFake
-    data_folder: /gpfsscratch/rech/woz/commun/data/normal_['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']_reduced/samples
+    data_folder: data/normal_['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']_reduced/samples
     variables: ['u','v','t2m']
     sizeH: 256
     sizeW: 256
     var_indices: [0,1,2] #where to find the variables in dataset samples
     crop_indices: [0,256,0,256]
     preprocessor_config:
-        name: Preprocessor
+        name: ReverserrPreprocessor
         variables: ['u','v','t2m']
         real_var_indices: [1,2,3] #where to find the variables in stat files
-        configDir: /where/to/find/configFile/
+        configDir: .
         configFile: fake_processor_config_model.yml
     
   obs_dataset_config:
     name: DatasetObs
-    data_folder: /gpfsscratch/rech/woz/commun/data/obs_reduced_npy
+    data_folder: data/obs_reduced_npy
     crop_indices: [180, 436, 500, 756]
     variables: ['ff','dd','t2m']
     var_indices: [0,1,2]
@@ -55,6 +57,8 @@ dataloaders:
         configFile: obs_processor_config_model.yml
 
 metrics_list:
+  - name: biasEnsemble
+    type: biasEnsemble   
   - name: W1CenterNUMPY
     type: W1CenterNUMPY
   - name: spectralCompute

@@ -13,7 +13,7 @@ import properscoring as ps
 import numpy as np
 import metrics.wind_comp as wc
 import copy
-import CRPS as psc
+import CRPS.CRPS as psc
 from multiprocessing import Pool
 
 def ensemble_crps(cond, real_ens, X, debiasing = False):
@@ -31,7 +31,7 @@ def ensemble_crps(cond, real_ens, X, debiasing = False):
     """
 
     X_p = copy.deepcopy(X)
-    cond_p = copy.deepcopy(cond)
+    cond_p = copy.deepcopy(cond[0])
     real_ens_p = copy.deepcopy(real_ens)
 
     X_p[:,0], X_p[:,1] = wc.computeWindDir(X_p[:,0], X_p[:,1])
@@ -45,8 +45,6 @@ def ensemble_crps(cond, real_ens, X, debiasing = False):
     X_p[:,1] = angle_dif
     cond_p[1,~np.isnan(cond_p[1])] = 0.
 
-
-    # crps = ps.crps_ensemble(cond_p,X_p, axis = 0)
     
     ################################################## CRPS with another method ##################################
     print(cond_p.shape)
@@ -58,7 +56,7 @@ def ensemble_crps(cond, real_ens, X, debiasing = False):
     X_p_dd = X_p[:,1,~np.isnan(cond_p[1])]
     X_p_t2m = X_p[:,2,~np.isnan(cond_p[2])]
     
-    print(X_p_ff.shape, X_p_dd.shape, X_p_t2m.shape)
+    print(X_p_ff.max(), X_p_dd.max(), X_p_t2m.max())
     
     crps_res = np.zeros((3,1))
     sm = 0.
@@ -83,14 +81,12 @@ def ensemble_crps(cond, real_ens, X, debiasing = False):
     crps_res[2] = sm / len(cond_p_t2m)    
 
     print(crps_res)
-    #cond
    
     return crps_res
 
 
 def fcrps_calc(data):
     cond_p, X_p = data[0], data[1]
-    #print(cond_p, X_p.shape)
     crps,fcrps,acrps = psc(X_p,cond_p).compute()
 
 
@@ -160,7 +156,6 @@ def crps_multi_dates(cond, X, real_ens, debiasing = False):
     data = [ (cf, Xf) for cf, Xf in zip(cond_p_ff, X_p_ff)]
     with Pool(32) as p:
        res = p.map(fcrps_calc, data)
-    #print(res, res[0].shape)
     res_ff = np.nanmean(np.array(res), axis=0)
     
     data = [ (cf, Xf) for cf, Xf in zip(cond_p_t2m, X_p_t2m)]

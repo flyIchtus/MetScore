@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 import logging
 
 from configurable import Configurable
+#import wind_comp as wc
+#import Metscore.useful_funcs as uf
 
 
 class Metric(ABC):
@@ -34,9 +36,9 @@ class Metric(ABC):
         raise Exception(f"Metric {metric['type']} not found, check config file. "
                         f"List of available metrics: {Metric.__subclasses__()}")
 
-    def calculate(self,real_data,fake_data,obs_data):
-
-        processed_data = self._preprocess(fake_data, real_data, obs_data)
+    def calculate(self,real_data,fake_data,obs_data, debiasing=None):
+        
+        processed_data = self._preprocess(fake_data, real_data, obs_data, debiasing)
         result = self._calculateCore(processed_data)
 
         return result
@@ -54,13 +56,14 @@ class Metric(ABC):
     def isBatched(self):
         return self.isBatched
 
-    def preprocess_cond_obs(self, real_data, fake_data, obs_data):
+    def preprocess_cond_obs(self, real_data, fake_data, obs_data, debiasing):
         assert real_data is not None
         assert obs_data is not None
         # selecting only the right indices for variables
         # for that we use np.take, which copies data. 
         # While this is surely costly, at first hand we want to do so 
-        # because not all metrics might use the same variables        
+        # because not all metrics might use the same variables
+
         if len(self.var_indices)!=fake_data.shape[self.var_channel]:
             fake_data_p = fake_data.take(indices=self.var_indices, axis=self.var_channel)
         else:
@@ -74,6 +77,24 @@ class Metric(ABC):
             obs_data_p = obs_data.take(indices=self.obs_var_indices, axis=self.obs_var_channel)
         else:
             obs_data_p = obs_data # no copy in this case
+        
+        
+        
+    #     fake_data_pp = copy.deepcopy(fake_data_p)
+    #     obs_data_pp = copy.deepcopy(obs_data_p[0])
+    #     real_data_pp = copy.deepcopy(real_data_p)
+
+    #     fake_data_pp[:,0], fake_data_pp[:,1] = wc.computeWindDir(fake_data_pp[:,0], fake_data_pp[:,1])
+    #     real_ens_p[:,0], real_ens_p[:,1] = wc.computeWindDir(real_ens_p[:,0], real_ens_p[:,1])
+    # if debiasing == True : 
+    #     X_p = wc.debiasing(X_p, real_ens_p)
+
+    # angle_dif = wc.angle_diff(X_p[:,1], cond_p[1])
+
+
+    # X_p[:,1] = angle_dif
+    # cond_p[1,~np.isnan(cond_p[1])] = 0.
+
         
         return {'real_data': real_data_p,
                 'fake_data': fake_data_p,

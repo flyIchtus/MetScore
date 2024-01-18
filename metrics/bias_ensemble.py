@@ -41,7 +41,11 @@ def bias_ens(cond, X,real_ens, debiasing = False):
     #     Bias = real_ens_p[i] - Gan_avg_mem
     #     #Bias[1] = 0.
     #     X_p[i*N_a:(i+1)*N_a] = X_p[i*N_a:(i+1)*N_a] + Bias 
-        
+    
+    print(X_p.shape, real_ens_p.shape, cond_p.shape)
+    
+    print(X_p[:,0].max(), X_p[:,1].max(), X_p[:,2].max(), real_ens_p[:,0].max(), real_ens_p[:,1].max(), real_ens_p[:,2].max())
+
     X_p[:,0], X_p[:,1] = wc.computeWindDir(X_p[:,0], X_p[:,1])
     real_ens_p[:,0], real_ens_p[:,1] = wc.computeWindDir(real_ens_p[:,0], real_ens_p[:,1])
     

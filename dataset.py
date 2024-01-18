@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 
 from transforms.preprocessor import Preprocessor
+from transforms.rrPreprocessor import ReverserrPreprocessor
 
 
 def thread_safe_semaphore(func):
@@ -54,7 +55,16 @@ class Dataset(Configurable):
                 arg2: value2
         """
         super().__init__()
-        self.preprocessor = Preprocessor.fromConfig(config_data.get('preprocessor_config', {'Preprocessor'}))
+        
+        preprocessor_name = config_data['preprocessor_config']['name']
+        preprocessor_class = globals().get(preprocessor_name, None)
+
+        if preprocessor_class is None:
+            raise ValueError(f"Invalid preprocessor name: {preprocessor_name}")
+
+        self.preprocessor = preprocessor_class.fromConfig(config_data['preprocessor_config'])
+        #print(config_data['preprocessor_config']['name'])
+        #self.preprocessor = Preprocessor.fromConfig(config_data['preprocessor_config'])
         self.cache = MemoryCache(use_cache)
         self.file_list = os.listdir(config_data['data_folder'])
         self.load_data_semaphore = threading.Semaphore()
@@ -77,6 +87,7 @@ class Dataset(Configurable):
         return preprocessed_data
 
     def _preprocess_batch(self, batch):
+        print(self.preprocessor)
         return self.preprocessor.process_batch(batch)
 
     def is_dataset_cached(self):
