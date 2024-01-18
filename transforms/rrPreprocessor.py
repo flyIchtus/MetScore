@@ -8,11 +8,15 @@ import yaml
 
 class rrPreprocessor(Pre.Preprocessor):
     def __init__(self, config_data):
-        super.__init__()
+        super().__init__(config_data)
+        self.config_data = config_data
         self.config_dir = config_data['configDir']
+        self.real_data_dir = config_data['real_data_dir']
+        print(self.config_dir)
         with open(self.config_dir + config_data['configFile'], 'r') as f:
             self.config_yaml = yaml.safe_load(f)
-        self.crop_size = (self.config_yaml.sizeH, self.config_yaml.sizeW)
+            
+        self.crop_size = (self.config_yaml['sizeH'], self.config_yaml['sizeW'])
         self.real_var_indices = config_data['real_var_indices']
         self.maxs, self.mins, self.means, self.stds = self.init_normalization()
         if self.stds is not None:
@@ -50,11 +54,11 @@ class rrPreprocessor(Pre.Preprocessor):
         std_or_min_filename += ".npy"
         print(f"Normalization set to {normalization_type}")
         stat_folder = self.config_yaml["stat_folder"]
-        file_path = os.path.join(real_data_dir, stat_folder, mean_or_max_filename)
+        file_path = os.path.join(self.real_data_dir, stat_folder, mean_or_max_filename)
         means_or_maxs = np.load(file_path).astype('float32')
         print(f"{str1} file found")
 
-        file_path = os.path.join(real_data_dir, stat_folder, std_or_min_filename)
+        file_path = os.path.join(self.real_data_dir, stat_folder, std_or_min_filename)
         stds_or_mins = np.load(file_path).astype('float32')
         print(f"{str2} file found")
         return means_or_maxs, stds_or_mins
@@ -71,11 +75,13 @@ class rrPreprocessor(Pre.Preprocessor):
                 data = data * self.stds[np.newaxis, self.real_var_indices, np.newaxis, np.newaxis] + self.means[np.newaxis, self.real_var_indices, np.newaxis, np.newaxis]
             else:
                 data = data * self.stds + self.means
+            
         elif norm_type == "minmax" or norm_type == "quant":
             if not per_pixel:
                 data = ((data + 1) / 2) * (self.maxs[np.newaxis, self.real_var_indices, np.newaxis, np.newaxis] - self.mins[np.newaxis, self.real_var_indices, np.newaxis, np.newaxis]) + self.mins[np.newaxis, self.real_var_indices, np.newaxis, np.newaxis]
             else:
                 data = ((data + 1) / 2) * (self.maxs - self.mins) + self.mins
+
         if 'rr' in self.config_data['variables']:
             rr_idx = self.real_var_indices[0]
             if rr_transform["symetrization"]:
@@ -161,5 +167,5 @@ class ReverserrPreprocessor(rrPreprocessor):
     def __init__(self,config_data):
         super().__init__(config_data)
     
-    def process_batch(batch):
-        self.detransform(batch)
+    def process_batch(self,batch):
+        return self.detransform(batch)

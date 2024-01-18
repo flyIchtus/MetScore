@@ -9,7 +9,7 @@ rr_transform:
   symetrization: False
   gaussian_std: 0 # Threshold between rain and no rain to add a gaussian noise where rr < gaussian_std.
 normalization:
-  type: "minmax" # choose between "mean" or "minmax" or "None" if "None", the following yaml options are not used.
+  type: "mean" # choose between "mean" or "minmax" or "None" if "None", the following yaml options are not used.
   #  "mean"   normalization is -> sample = (sample - mean)/max_std           where max_std is max(|samples-mean|)
   # "minmax"  normalization is -> sample = -1 + 2(sample-min)/(max-min)
   

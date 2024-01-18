@@ -16,7 +16,7 @@ import copy
 import CRPS.CRPS as psc
 from multiprocessing import Pool
 
-def ensemble_crps(cond, real_ens, X, debiasing = False):
+def ensemble_crps(cond_p, real_ens_p, X_p):
     """
     Inputs :
         
@@ -30,20 +30,6 @@ def ensemble_crps(cond, real_ens, X, debiasing = False):
     
     """
 
-    X_p = copy.deepcopy(X)
-    cond_p = copy.deepcopy(cond[0])
-    real_ens_p = copy.deepcopy(real_ens)
-
-    X_p[:,0], X_p[:,1] = wc.computeWindDir(X_p[:,0], X_p[:,1])
-    real_ens_p[:,0], real_ens_p[:,1] = wc.computeWindDir(real_ens_p[:,0], real_ens_p[:,1])
-    if debiasing == True : 
-        X_p = wc.debiasing(X_p, real_ens_p)
-
-    angle_dif = wc.angle_diff(X_p[:,1], cond_p[1])
-
-
-    X_p[:,1] = angle_dif
-    cond_p[1,~np.isnan(cond_p[1])] = 0.
 
     
     ################################################## CRPS with another method ##################################
