@@ -2,7 +2,7 @@ import numpy as np
 import os
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
-import preprocessor as Pre
+import transforms.preprocessor as Pre
 import yaml
 
 

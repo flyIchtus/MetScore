@@ -48,6 +48,7 @@ class ExperimentSet(Configurable):
         self.metrics = [Metric.fromName(metric) for metric in config_data['metrics_list']]
         self.batched_metrics = [metric for metric in self.metrics if metric.isBatched]
         self.not_batched_metrics = [metric for metric in self.metrics if not metric.isBatched]
+        self.config_data = config_data
         use_cache = self.not_batched_metrics is []
         logging.info(f"Using cache: {use_cache}")
 
@@ -62,7 +63,7 @@ class ExperimentSet(Configurable):
         for (batch_fake, batch_real, batch_obs) in self.dataloader:
             #print(batch_fake.shape, batch_real.shape)
             for metric in self.batched_metrics:
-                res = metric.calculate(batch_fake, batch_real, batch_obs)
+                res = metric.calculate(batch_fake, batch_real, batch_obs, self.config_data['debiasing'])
                 batched_metric_results[metric.names[0]].append(res)
                 # print(batched_metric_results)
 
