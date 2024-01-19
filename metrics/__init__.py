@@ -243,8 +243,8 @@ class ensembleCRPS(Metric):
         super().__init__(isBatched=True, names=['CRPSff', 'CRPSdd','CRPSt2m'])
         self.debiasing = False
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None, debiasing=None):
-        return self.preprocess_cond_obs(fake_data, real_data, obs_data, debiasing)
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, debiasing=None, debiasing_mode=None, conditioning_members=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data, debiasing, debiasing_mode, conditioning_members)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']

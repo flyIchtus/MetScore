@@ -39,9 +39,9 @@ class Metric(ABC):
         raise Exception(f"Metric {metric['type']} not found, check config file. "
                         f"List of available metrics: {Metric.__subclasses__()}")
 
-    def calculate(self,real_data,fake_data,obs_data, debiasing=None):
+    def calculate(self,real_data,fake_data,obs_data, debiasing=None, debiasing_mode=None, conditioning_members=None):
         
-        processed_data = self._preprocess(fake_data, real_data, obs_data, debiasing)
+        processed_data = self._preprocess(fake_data, real_data, obs_data, debiasing, debiasing_mode, conditioning_members)
         result = self._calculateCore(processed_data)
 
         return result
@@ -59,7 +59,7 @@ class Metric(ABC):
     def isBatched(self):
         return self.isBatched
 
-    def preprocess_cond_obs(self, real_data, fake_data, obs_data, debiasing):
+    def preprocess_cond_obs(self, real_data, fake_data, obs_data, debiasing, debiasing_mode, conditioning_members):
         assert real_data is not None
         assert obs_data is not None
         # selecting only the right indices for variables
@@ -90,6 +90,12 @@ class Metric(ABC):
 
         fake_data_pp[:,0], fake_data_pp[:,1] = wc.computeWindDir(fake_data_pp[:,0], fake_data_pp[:,1])
         real_data_pp[:,0], real_data_pp[:,1] = wc.computeWindDir(real_data_pp[:,0], real_data_pp[:,1])
+
+        if debiasing == True:
+
+            fake_data_pp = wc.debiasing(fake_data_pp, real_data_pp, conditioning_members, mode = debiasing_mode)
+
+        # debiaising fake data
 
         angle_dif = wc.angle_diff(fake_data_pp[:,1], obs_data_pp[1])
 

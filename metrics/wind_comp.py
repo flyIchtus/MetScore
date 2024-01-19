@@ -112,16 +112,32 @@ def computeWindDir(U,V, xRef=None, yRef=None, proj=None):
 
     return ff, dd3
 
-def debiasing(X_p, real_ens_p):
+def debiasing(X_p, real_ens_p, conditioning_members, mode = None):
 
-    N_a=int(X_p.shape[0]/real_ens_p.shape[0])
-    for i in range(int(real_ens_p.shape[0])):
+
+    if mode == 'SEED':
+        N_a=int(X_p.shape[0]/conditioning_members)
+        for i in range(int(conditioning_members)):
+
+            Gan_avg_mem = np.mean(X_p[i*N_a:(i+1)*N_a], axis = 0)
+            Bias = real_ens_p[i] - Gan_avg_mem
+            Bias[1] = 0.
+            X_p[i*N_a:(i+1)*N_a] = X_p[i*N_a:(i+1)*N_a] + Bias
+        return X_p
+    elif mode == 'ENSAVG':
         
-        Gan_avg_mem = np.mean(X_p[i*N_a:(i+1)*N_a], axis = 0)
-        Bias = real_ens_p[i] - Gan_avg_mem
+        real_ens_p = real_ens_p[0:conditioning_members] #ATTENTION
+        Gan_avg = np.mean(X_p, axis = 0)
+        Real_ens_avg = np.mean(real_ens_p, axis = 0)
+        Bias = Real_ens_avg - Gan_avg
         Bias[1] = 0.
-        X_p[i*N_a:(i+1)*N_a] = X_p[i*N_a:(i+1)*N_a] + Bias
-    return X_p 
+
+        X_p = X_p + Bias
+        return X_p
+
+    else :
+
+        raise Exception("Debiasing method not recognized") 
 
 def debiasing_multi_dates(X_p, real_ens_p):
 
