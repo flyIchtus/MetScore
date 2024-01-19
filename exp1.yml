@@ -1,5 +1,7 @@
 name: Experiment1
 debiasing : True
+debiasing_mode : ENSAVG
+conditioning_members : 16
 
 dataloaders:
   batch_size: 1
@@ -61,9 +63,6 @@ dataloaders:
 metrics_list:
   - name: ensembleCRPS
     type: ensembleCRPS   
-  - name: W1CenterNUMPY
-    type: W1CenterNUMPY
-  - name: spectralCompute
-    type: spectralCompute
+
 output_path: experiment1_output
 

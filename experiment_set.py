@@ -63,7 +63,7 @@ class ExperimentSet(Configurable):
         for (batch_fake, batch_real, batch_obs) in self.dataloader:
             #print(batch_fake.shape, batch_real.shape)
             for metric in self.batched_metrics:
-                res = metric.calculate(batch_fake, batch_real, batch_obs, self.config_data['debiasing'])
+                res = metric.calculate(batch_fake, batch_real, batch_obs, self.config_data['debiasing'], self.config_data['debiasing_mode'], self.config_data['conditioning_members'])
                 batched_metric_results[metric.names[0]].append(res)
                 # print(batched_metric_results)
 
