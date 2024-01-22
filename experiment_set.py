@@ -1,10 +1,12 @@
 import logging
+import numpy as np
 from multiprocessing import Manager, Process
 
 from dataloader import DateDataloader
 from dataset import Dataset
 from configurable import Configurable
 from metrics.metrics import Metric
+
 
 
 class ExperimentSet(Configurable):
@@ -60,10 +62,13 @@ class ExperimentSet(Configurable):
         batched_metric_results = {metric.names[0]: [] for metric in self.batched_metrics}
         # print(batched_metric_results)
 
+        threshold = np.zeros((2,6))
+        threshold[0] = self.config_data['threshold_ff']
+        threshold[1] = self.config_data['threshold_t2m']
         for (batch_fake, batch_real, batch_obs) in self.dataloader:
             #print(batch_fake.shape, batch_real.shape)
             for metric in self.batched_metrics:
-                res = metric.calculate(batch_fake, batch_real, batch_obs, self.config_data['debiasing'], self.config_data['debiasing_mode'], self.config_data['conditioning_members'])
+                res = metric.calculate(batch_fake, batch_real, batch_obs, self.config_data['debiasing'], self.config_data['debiasing_mode'], self.config_data['conditioning_members'], threshold)
                 batched_metric_results[metric.names[0]].append(res)
                 # print(batched_metric_results)
 

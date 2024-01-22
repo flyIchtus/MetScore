@@ -10,74 +10,39 @@ import metrics.wind_comp as wc
 import copy
 
 
-def bias_ens(cond, X,real_ens, debiasing = False):
+def bias_ens(obs_data, fake_data):
     """
     
     Inputs :
         
-        X : N x C x H x W array with N samples
+        fake_data : N x C x H x W array with N samples
         
-        cond : C x H x W array observation
+        obs_data : C x H x W array observation
         
     Returns :
         
-        bias : avg(X) - cond  
+        bias : avg(fake_data) - obs_data  
     
     """
     
-    N, C, H, W  = X.shape
+    N, C, H, W  = fake_data.shape
     
     
-    X_p = copy.deepcopy(X)
-    cond_p = copy.deepcopy(cond)
-    real_ens_p = copy.deepcopy(real_ens)
+    fake_data_p = copy.deepcopy(fake_data)
+    obs_data_p = copy.deepcopy(obs_data)
 
-    ############# DEBIASING U v t2m
 
-    # N_a=int(X_p.shape[0]/real_ens_p.shape[0])
-    # for i in range(int(real_ens_p.shape[0])):
-        
-    #     Gan_avg_mem = np.mean(X_p[i*N_a:(i+1)*N_a], axis = 0)
-    #     Bias = real_ens_p[i] - Gan_avg_mem
-    #     #Bias[1] = 0.
-    #     X_p[i*N_a:(i+1)*N_a] = X_p[i*N_a:(i+1)*N_a] + Bias 
     
-    print(X_p.shape, real_ens_p.shape, cond_p.shape)
+    #print(fake_data_p.shape, obs_data_p.shape)
     
-    print(X_p[:,0].max(), X_p[:,1].max(), X_p[:,2].max(), real_ens_p[:,0].max(), real_ens_p[:,1].max(), real_ens_p[:,2].max())
+    #print(fake_data_p[:,0].max(), fake_data_p[:,1].max(), fake_data_p[:,2].max())
 
-    X_p[:,0], X_p[:,1] = wc.computeWindDir(X_p[:,0], X_p[:,1])
-    real_ens_p[:,0], real_ens_p[:,1] = wc.computeWindDir(real_ens_p[:,0], real_ens_p[:,1])
     
-    ############# DEBIASING ################
-    #X_p_mean = X_p.mean(axis=0)
-    #real_ens_p_mean = real_ens_p.mean(axis=0)
-    #Bias = real_ens_p_mean - X_p_mean
-    #Bias[1] = 0.
     
-    #print(Bias.shape, real_ens_p_mean.shape, real_ens_p.shape, X_p_mean.shape)
-    #X_p = X_p + Bias
-    if debiasing == True : 
+    
+    fake_data_p_mean = np.nanmean(fake_data_p, axis=0)
+    X_bias = fake_data_p_mean - obs_data_p
 
-        X_p = wc.debiasing(X_p, real_ens_p)
-    #N_a=int(X_p.shape[0]/real_ens_p.shape[0])
-    #for i in range(int(real_ens_p.shape[0])):
-        
-    #    Gan_avg_mem = np.mean(X_p[i*N_a:(i+1)*N_a], axis = 0)
-    #    Bias = real_ens_p[i] - Gan_avg_mem
-    #    Bias[1] = 0.
-    #    X_p[i*N_a:(i+1)*N_a] = X_p[i*N_a:(i+1)*N_a] + Bias 
-        
-    ############# DEBIASING ################
-    
-    angle_dif = wc.angle_diff(X_p[:,1], cond_p[1])
-    #print(angle_dif)
-    X_p[:,1] = angle_dif
-    cond_p[1,~np.isnan(cond_p[1])] = 0.
-    
-    
-    X_p_mean = X_p.mean(axis=0)
-    X_bias = X_p_mean - cond_p
 
     return X_bias
 

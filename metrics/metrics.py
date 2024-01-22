@@ -39,10 +39,10 @@ class Metric(ABC):
         raise Exception(f"Metric {metric['type']} not found, check config file. "
                         f"List of available metrics: {Metric.__subclasses__()}")
 
-    def calculate(self,real_data,fake_data,obs_data, debiasing=None, debiasing_mode=None, conditioning_members=None):
+    def calculate(self,real_data,fake_data,obs_data, debiasing=None, debiasing_mode=None, conditioning_members=None, threshold=None):
         
         processed_data = self._preprocess(fake_data, real_data, obs_data, debiasing, debiasing_mode, conditioning_members)
-        result = self._calculateCore(processed_data)
+        result = self._calculateCore(processed_data, threshold)
 
         return result
 
@@ -52,7 +52,7 @@ class Metric(ABC):
         pass
 
     @abstractmethod
-    def _calculateCore(self, processed_data):
+    def _calculateCore(self, processed_data, threshold):
         # Specific calculation logic for each metric
         pass
 
@@ -90,7 +90,7 @@ class Metric(ABC):
 
         fake_data_pp[:,0], fake_data_pp[:,1] = wc.computeWindDir(fake_data_pp[:,0], fake_data_pp[:,1])
         real_data_pp[:,0], real_data_pp[:,1] = wc.computeWindDir(real_data_pp[:,0], real_data_pp[:,1])
-
+        
         if debiasing == True:
 
             fake_data_pp = wc.debiasing(fake_data_pp, real_data_pp, conditioning_members, mode = debiasing_mode)
@@ -102,7 +102,6 @@ class Metric(ABC):
 
         fake_data_pp[:,1] = angle_dif
         obs_data_pp[1,~np.isnan(obs_data_pp[1])] = 0.
-
         
         return {'real_data': real_data_pp,
                 'fake_data': fake_data_pp,

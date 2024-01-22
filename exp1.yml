@@ -2,6 +2,8 @@ name: Experiment1
 debiasing : True
 debiasing_mode : ENSAVG
 conditioning_members : 16
+threshold_ff : [1.39, 2.78, 4.17, 5.56, 8.33, 11.11]
+threshold_t2m : [278.15, 283.15, 288.15, 293.15, 297.15, 303.15]
 
 dataloaders:
   batch_size: 1
@@ -61,8 +63,19 @@ dataloaders:
         configFile: obs_processor_config_model.yml
 
 metrics_list:
+  - name: relDiagram
+    type: relDiagram
   - name: ensembleCRPS
-    type: ensembleCRPS   
+    type: ensembleCRPS
+  - name: brierScore
+    type: brierScore
+  - name: skillSpread
+    type: skillSpread
+  - name: rankHistogram
+    type: rankHistogram
+  - name: biasEnsemble
+    type: biasEnsemble
+
 
 output_path: experiment1_output
 
