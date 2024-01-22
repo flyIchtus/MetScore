@@ -11,6 +11,7 @@ import metrics.skill_spread as SP
 import metrics.spectral_variance as spvar
 import metrics.rank_histogram as RH
 import metrics.bias_ensemble as BE
+import metrics.rel_diagram as RD
 import metrics.mean_bias as mb
 import metrics.skill_spread_deviation as skspd
 from metrics import CRPS_calc
@@ -246,11 +247,10 @@ class ensembleCRPS(Metric):
     def _preprocess(self, fake_data, real_data=None, obs_data=None, debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_cond_obs(fake_data, real_data, obs_data, debiasing, debiasing_mode, conditioning_members)
 
-    def _calculateCore(self, processed_data):
-        real_data = processed_data['real_data']
+    def _calculateCore(self, processed_data, threshold):
         fake_data = processed_data['fake_data']
         obs_data = processed_data['obs_data']
-        return CRPS_calc.ensemble_crps(obs_data,real_data,fake_data)
+        return CRPS_calc.ensemble_crps(obs_data, fake_data)
 
 class crpsMultiDates(Metric):
     def __init__(self, name):
@@ -291,15 +291,14 @@ class brierScore(Metric):
         super().__init__(isBatched=True, names=['Brierff', 'Brierdd','Briert2m'])
         self.debiasing = False
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, debiasing=None, debiasing_mode=None, conditioning_members=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data, debiasing, debiasing_mode, conditioning_members)
 
-    def _calculateCore(self, processed_data):
-        real_data = processed_data['real_data']
+    def _calculateCore(self, processed_data, threshold):
         fake_data = processed_data['fake_data']
         obs_data = processed_data['obs_data']
 
-        return BS.brier_score(obs_data,real_data,fake_data, debiasing=self.debiasing)
+        return BS.brier_score(obs_data,fake_data, threshold)
 
 #####################################################################
 ############################ Skill-Spread ###########################
@@ -310,15 +309,14 @@ class skillSpread(Metric):
         super().__init__(isBatched=True, names=['Skspff', 'Skspdd','Skspt2m'])
         self.debiasing = False
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, debiasing=None, debiasing_mode=None, conditioning_members=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data, debiasing, debiasing_mode, conditioning_members)
 
-    def _calculateCore(self, processed_data):
-        real_data = processed_data['real_data']
+    def _calculateCore(self, processed_data, threshold):
         fake_data = processed_data['fake_data']
         obs_data = processed_data['obs_data']
 
-        return SP.skill_spread(obs_data,real_data,fake_data, debiasing=self.debiasing)
+        return SP.skill_spread(obs_data,fake_data)
 
 class skillSpreadDeviationMultidates(Metric):
     def __init__(self, name):
@@ -358,18 +356,16 @@ class thresholdedSkillSpreadDeviationMultidates(Metric):
 
 class rankHistogram(Metric):
     def __init__(self, name):
-        super().__init__(isBatched=True, names=['Skspff', 'Skspdd','Skspt2m'], debiasing=False)
-        self.debiasing = debiasing
+        super().__init__(isBatched=True, names=['Skspff', 'Skspdd','Skspt2m'])
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, debiasing=None, debiasing_mode=None, conditioning_members=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data, debiasing, debiasing_mode, conditioning_members)
 
-    def _calculateCore(self, processed_data):
-        real_data = processed_data['real_data']
+    def _calculateCore(self, processed_data, threshold):
         fake_data = processed_data['fake_data']
         obs_data = processed_data['obs_data']
 
-        return RH.rank_histo(obs_data,real_data,fake_data)
+        return RH.rank_histo(obs_data,fake_data)
 
 
 #####################################################################
@@ -378,18 +374,17 @@ class rankHistogram(Metric):
 
 class relDiagram(Metric):
     def __init__(self, name):
-        super().__init__(isBatched=True, names=['Relff', 'Reldd','Relt2m'], debiasing=False)
-        self.debiasing = debiasing
+        super().__init__(isBatched=True, names=['Relff', 'Reldd','Relt2m'])
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, debiasing=None, debiasing_mode=None, conditioning_members=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data, debiasing, debiasing_mode, conditioning_members)
 
-    def _calculateCore(self, processed_data):
-        real_data = processed_data['real_data']
+    def _calculateCore(self, processed_data, threshold):
+
         fake_data = processed_data['fake_data']
         obs_data = processed_data['obs_data']
 
-        return RD.rel_diag(obs_data,real_data,fake_data)
+        return RD.rel_diag(obs_data,fake_data, threshold)
 
 #####################################################################
 ############################ Bias ###################################
@@ -399,16 +394,14 @@ class biasEnsemble(Metric):
     def __init__(self, name):
         super().__init__(isBatched=True, names=['Biasff', 'Biasdd','Biast2m'])
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None, debiasing=None):
-        
-        return self.preprocess_cond_obs(fake_data, real_data, obs_data, debiasing)
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, debiasing=None, debiasing_mode=None, conditioning_members=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data, debiasing, debiasing_mode, conditioning_members)
 
-    def _calculateCore(self, processed_data):
-        real_data = processed_data['real_data']
+    def _calculateCore(self, processed_data, threshold):
         fake_data = processed_data['fake_data']
         obs_data = processed_data['obs_data']
 
-        return BE.bias_ens(obs_data,fake_data,real_data)
+        return BE.bias_ens(obs_data,fake_data)
 
 class meanBias(Metric):
     def __init__(self, name):

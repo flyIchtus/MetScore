@@ -16,55 +16,54 @@ import copy
 import CRPS.CRPS as psc
 from multiprocessing import Pool
 
-def ensemble_crps(cond_p, real_ens_p, X_p):
+def ensemble_crps(obs_data, fake_data):
     """
     Inputs :
         
-        X : N x C x H x W array with N samples
+        fake_data : N x C x H x W array with N samples
         
-        cond : N_c x C x H x W array with N_c members
+        obs_data : N_c x C x H x W array with N_c members
         
     Returns :
         
-        avg_crps : C x H x W array containing the result
-    
+        crps_res : 1 x C array containing average CRPS results    
     """
 
 
     
     ################################################## CRPS with another method ##################################
-    print(cond_p.shape)
-    cond_p_ff = cond_p[0,~np.isnan(cond_p[0])]
-    cond_p_dd = cond_p[1,~np.isnan(cond_p[1])]
-    cond_p_t2m = cond_p[2,~np.isnan(cond_p[2])]
+    print(obs_data.shape)
+    obs_data_ff = obs_data[0,~np.isnan(obs_data[0])]
+    obs_data_dd = obs_data[1,~np.isnan(obs_data[1])]
+    obs_data_t2m = obs_data[2,~np.isnan(obs_data[2])]
     
-    X_p_ff = X_p[:,0,~np.isnan(cond_p[0])]
-    X_p_dd = X_p[:,1,~np.isnan(cond_p[1])]
-    X_p_t2m = X_p[:,2,~np.isnan(cond_p[2])]
+    fake_data_ff = fake_data[:,0,~np.isnan(obs_data[0])]
+    fake_data_dd = fake_data[:,1,~np.isnan(obs_data[1])]
+    fake_data_t2m = fake_data[:,2,~np.isnan(obs_data[2])]
     
-    print(X_p_ff.max(), X_p_dd.max(), X_p_t2m.max())
+    #print(fake_data_ff.max(), fake_data_dd.max(), fake_data_t2m.max())
     
     crps_res = np.zeros((3,1))
     sm = 0.
-    for i in range(len(cond_p_ff)):
+    for i in range(len(obs_data_ff)):
         
-        crps,fcrps,acrps = psc(X_p_ff[:,i],cond_p_ff[i]).compute()   
+        crps,fcrps,acrps = psc(fake_data_ff[:,i],obs_data_ff[i]).compute()   
         sm = sm + fcrps
-    crps_res[0] = sm / len(cond_p_ff) 
+    crps_res[0] = sm / len(obs_data_ff) 
     sm = 0.
     
-    for i in range(len(cond_p_dd)):
+    for i in range(len(obs_data_dd)):
         
-        crps,fcrps,acrps = psc(X_p_dd[:,i],cond_p_dd[i]).compute()   
+        crps,fcrps,acrps = psc(fake_data_dd[:,i],obs_data_dd[i]).compute()   
         sm = sm + fcrps
-    crps_res[1] = sm / len(cond_p_dd)
+    crps_res[1] = sm / len(obs_data_dd)
     sm = 0.
 
-    for i in range(len(cond_p_t2m)):
+    for i in range(len(obs_data_t2m)):
         
-        crps,fcrps,acrps = psc(X_p_t2m[:,i],cond_p_t2m[i]).compute()   
+        crps,fcrps,acrps = psc(fake_data_t2m[:,i],obs_data_t2m[i]).compute()   
         sm = sm + fcrps
-    crps_res[2] = sm / len(cond_p_t2m)    
+    crps_res[2] = sm / len(obs_data_t2m)    
 
     print(crps_res)
    
@@ -72,8 +71,8 @@ def ensemble_crps(cond_p, real_ens_p, X_p):
 
 
 def fcrps_calc(data):
-    cond_p, X_p = data[0], data[1]
-    crps,fcrps,acrps = psc(X_p,cond_p).compute()
+    cond_p, fake_data = data[0], data[1]
+    crps,fcrps,acrps = psc(fake_data,cond_p).compute()
 
 
     return fcrps
