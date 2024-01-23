@@ -33,9 +33,9 @@ def bias_ens(obs_data, fake_data):
 
 
     
-    #print(fake_data_p.shape, obs_data_p.shape)
+    #logging.debug(fake_data_p.shape, obs_data_p.shape)
     
-    #print(fake_data_p[:,0].max(), fake_data_p[:,1].max(), fake_data_p[:,2].max())
+    #logging.debug(fake_data_p[:,0].max(), fake_data_p[:,1].max(), fake_data_p[:,2].max())
 
     
     

@@ -1,3 +1,4 @@
+import logging
 import os.path
 
 import numpy as np
@@ -111,12 +112,16 @@ class DateDataloader(DataLoader):
             raise StopIteration
 
     def get_all_data(self):
-        return self._fake_dataset.get_all_data(self.liste_dates_rep), self._real_dataset.get_all_data(self.liste_dates_rep), self._obs_dataset.get_all_data(self.liste_dates_rep)
+        real = self._real_dataset.get_all_data()
+        fake = self._fake_dataset.get_all_data()
+        obs = self._obs_dataset.get_all_data()
+        real, fake = self.randomize_and_cut(real, fake)
+        return real, fake, obs
 
     def randomize_and_cut(self, data1, data2):
         data1shuf = np.random.permutation(data1)
         data2shuf = np.random.permutation(data2)
         cut = min([self.maxNsamples,data1shuf.shape[0],data2shuf.shape[0]])
         if cut<self.maxNsamples:
-            raise RuntimeWarning(f"maxNsamples set to {self.maxNsamples} but not enough samples ({cut}). Continuing with {cut} samples.")
+            logging.warning(f"maxNsamples set to {self.maxNsamples} but not enough samples ({cut}). Continuing with {cut} samples.")
         return data1shuf[:cut], data2shuf[:cut]

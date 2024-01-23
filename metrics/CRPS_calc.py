@@ -8,8 +8,8 @@ Created on Fri Mar 10 14:38:11 2023
 AROME-specific version of CRPS
 
 """
+import logging
 
-import properscoring as ps
 import numpy as np
 import metrics.wind_comp as wc
 import copy
@@ -32,7 +32,7 @@ def ensemble_crps(obs_data, fake_data):
 
     
     ################################################## CRPS with another method ##################################
-    print(obs_data.shape)
+    logging.debug(obs_data.shape)
     obs_data_ff = obs_data[0,~np.isnan(obs_data[0])]
     obs_data_dd = obs_data[1,~np.isnan(obs_data[1])]
     obs_data_t2m = obs_data[2,~np.isnan(obs_data[2])]
@@ -41,7 +41,7 @@ def ensemble_crps(obs_data, fake_data):
     fake_data_dd = fake_data[:,1,~np.isnan(obs_data[1])]
     fake_data_t2m = fake_data[:,2,~np.isnan(obs_data[2])]
     
-    #print(fake_data_ff.max(), fake_data_dd.max(), fake_data_t2m.max())
+    #logging.debug(fake_data_ff.max(), fake_data_dd.max(), fake_data_t2m.max())
     
     crps_res = np.zeros((3,1))
     sm = 0.
@@ -65,7 +65,7 @@ def ensemble_crps(obs_data, fake_data):
         sm = sm + fcrps
     crps_res[2] = sm / len(obs_data_t2m)    
 
-    print(crps_res)
+    logging.debug(crps_res)
    
     return crps_res
 
@@ -146,12 +146,12 @@ def crps_multi_dates(cond, X, real_ens, debiasing = False):
     data = [ (cf, Xf) for cf, Xf in zip(cond_p_t2m, X_p_t2m)]
     with Pool(32) as p:
         res = p.map(fcrps_calc, data)
-        #print(len(res), res[0].shape)
+        #logging.debug(len(res), res[0].shape)
     res_t2m = np.nanmean(np.array(res), axis=0)
 
     crps_res = np.array([res_ff, np.nan, res_t2m])
 
-    print(crps_res, flush=True)
+    logging.debug(crps_res, flush=True)
     
     return crps_res
 
@@ -169,9 +169,9 @@ def crps_vs_aro_multi_dates(cond, X, real_ens, debiasing = False):
         avg_crps :  C array containing the result
     
     """
-    print("aro", flush=True)
+    logging.debug("aro", flush=True)
     crps_aro = crps_multi_dates(cond,real_ens,real_ens,debiasing = False)
-    print("gan", flush=True)
+    logging.debug("gan", flush=True)
     crps_fake = crps_multi_dates(cond,X, real_ens, debiasing=debiasing)
 
     return  - crps_aro + crps_fake

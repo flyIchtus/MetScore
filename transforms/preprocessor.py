@@ -5,7 +5,7 @@ from configurable import Configurable
 
 class Preprocessor(Configurable):
 
-    def __init__(self, config_data):
+    def __init__(self, config_data, **kwargs):
         """
         Sample for config yml file:
         name: Preprocessor
@@ -15,3 +15,5 @@ class Preprocessor(Configurable):
 
     def process_batch(self, batch):
         return batch
+
+

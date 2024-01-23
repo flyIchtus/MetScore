@@ -160,7 +160,7 @@ class SWD_API:
         
         dist = [d * 1e3 for d in dist] # multiply by 10^3
         
-        print(dist,np.mean(dist))
+        logging.debug(dist,np.mean(dist))
         
         return dist + [np.mean(dist)]
     

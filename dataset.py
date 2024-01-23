@@ -1,3 +1,4 @@
+import logging
 import os
 import threading
 
@@ -10,39 +11,49 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 
 from transforms.preprocessor import Preprocessor
-from transforms.rrPreprocessor import ReverserrPreprocessor
 
-
-def thread_safe_semaphore(func):
-    def wrapper(self, file_path):
-        with self.load_data_semaphore:
-            return func(self, file_path)
+def convert_key(func):
+    def wrapper(self, key, *args, **kwargs):
+        if type(key) == list:
+            fusion_key = key[0]
+            for k in key[1:]:
+                assert type(k) == str
+                fusion_key += k
+            key = fusion_key
+        return func(self, key, *args, **kwargs)
 
     return wrapper
-
 
 class MemoryCache:
     def __init__(self, use_cache):
         self.cache = {}
         self.use_cache = use_cache
 
+    @convert_key
     def add_to_cache(self, key, data):
         if self.use_cache:
             self.cache[key] = data
 
+    @convert_key
     def is_cached(self, key):
         if not self.use_cache:
             return False
         return key in self.cache
 
+    @convert_key
     def get_from_cache(self, key):
         if not self.use_cache:
             return None
         return self.cache[key]
 
+    def clear_cache(self):
+        self.cache = {}
 
-# TODO: voir si c'est pas mieux d'utiliser la classe de torch
+
 class Dataset(Configurable):
+
+    required_keys = ['data_folder', 'preprocessor_config']
+
     def __init__(self, config_data, use_cache=True):
         """
         Sample for config yml file:
@@ -55,16 +66,7 @@ class Dataset(Configurable):
                 arg2: value2
         """
         super().__init__()
-        
-        preprocessor_name = config_data['preprocessor_config']['name']
-        preprocessor_class = globals().get(preprocessor_name, None)
-
-        if preprocessor_class is None:
-            raise ValueError(f"Invalid preprocessor name: {preprocessor_name}")
-
-        self.preprocessor = preprocessor_class.fromConfig(config_data['preprocessor_config'])
-        #print(config_data['preprocessor_config']['name'])
-        #self.preprocessor = Preprocessor.fromConfig(config_data['preprocessor_config'])
+        self.preprocessor = Preprocessor.from_typed_config(config_data['preprocessor_config'], **config_data)
         self.cache = MemoryCache(use_cache)
         self.file_list = os.listdir(config_data['data_folder'])
         self.load_data_semaphore = threading.Semaphore()
@@ -87,7 +89,7 @@ class Dataset(Configurable):
         return preprocessed_data
 
     def _preprocess_batch(self, batch):
-        print(self.preprocessor)
+        logging.debug(self.preprocessor)
         return self.preprocessor.process_batch(batch)
 
     def is_dataset_cached(self):
@@ -120,6 +122,9 @@ class Dataset(Configurable):
 
 
 class ObsDataset(Dataset):
+
+    required_keys = ['data_folder', 'preprocessor_config', 'crop_indices']
+
     def __init__(self, config_data, dh, LT, start_time, use_cache=True):
         super().__init__(config_data, use_cache)
 
@@ -140,11 +145,10 @@ class ObsDataset(Dataset):
         date_1 = next_date_1.strftime('%Y-%m-%d')
         date_2 = next_date_2.strftime('%Y-%m-%d')
         dates=[items[0], date_1, date_2] # considering 45 hours of lead time available, there are three possible observation dates
-        # print(dates[date_index].replace('-', ''), real_hour%24)
         return self._get_full_path(self.filename_format.format(date=dates[date_index].replace('-', ''), formatted_index= real_hour%24))
 
     def _load_file(self, file_path):
-        # print(file_path)
+        # logging.debug(file_path)
         return obs_clean(np.load(file_path), self.crop_indices)
 
     def get_all_data(self, liste_dates_rep):
@@ -157,6 +161,9 @@ class ObsDataset(Dataset):
 
 
 class FakeDataset(Dataset):
+
+    required_keys = ['data_folder', 'preprocessor_config', 'crop_indices']
+
     def __init__(self, config_data, dh, LT, use_cache=True):
         super().__init__(config_data, use_cache)
         self.dh = dh
@@ -183,6 +190,9 @@ class FakeDataset(Dataset):
 
 
 class RealDataset(Dataset):
+
+    required_keys = ['data_folder', 'preprocessor_config', 'crop_indices']
+
     def __init__(self, config_data, dh, LT, df0, use_cache=True):
         super().__init__(config_data, use_cache)
         self.dh = dh

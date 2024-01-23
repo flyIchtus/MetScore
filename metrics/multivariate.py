@@ -227,8 +227,8 @@ def multi_variate_correlations(data_real, data_fake):
     data_f=space2batch(data_fake)
     data_r=space2batch(data_real)
     
-    print(data_f.shape)
-    print(data_r.shape)
+    logging.debug(data_f.shape)
+    logging.debug(data_r.shape)
     
    
     bivariates_f, bins_f=var2Var_hist(data_f,bins)
@@ -237,7 +237,7 @@ def multi_variate_correlations(data_real, data_fake):
     out_rf=np.zeros((2, ncouples2//2,bivariates_f.shape[-1],bivariates_f.shape[-1]))
     out_rf[0]=bivariates_r
     out_rf[1]=bivariates_f
-    print('out shape',out_rf.shape)
+    logging.debug('out shape',out_rf.shape)
     return out_rf
 
 

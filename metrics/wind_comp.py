@@ -70,10 +70,10 @@ def angle_diff(beta1, beta2):
     a1 = beta1 - beta2
     a2 = 360 - (beta1 - beta2)
     a3 = -(beta1 - beta2 + 360)
-    #print(np.abs(a1), np.abs(a2), np.abs(a3))
+    #logging.debug(np.abs(a1), np.abs(a2), np.abs(a3))
     a_min = np.minimum(np.abs(a1), np.abs(a2))
     a_min = np.minimum(a_min, np.abs(a3))
-    #print(a_min.shape)
+    #logging.debug(a_min.shape)
     #if a_min == abs(a1):
     #    alpha = a1
     #elif a_min == abs(a2):
@@ -103,7 +103,7 @@ def computeWindDir(U,V, xRef=None, yRef=None, proj=None):
     ff = np.sqrt(U*U + V*V)
 
     dd3 = (180 + 180/np.pi*np.arctan2(U, V))%360
-    #print(dd3)
+    #logging.debug(dd3)
 
     # Prise en compte de la déclinaison des meridiens.
     if None not in (xRef, yRef, proj):

@@ -9,12 +9,12 @@ from configurable import Configurable
 #import Metscore.useful_funcs as uf
 
 
-class Metric(ABC):
+class Metric(ABC, Configurable):
     isBatched: bool
 
     def __init__(self, isBatched=False, names=['metric'],
                 var_channel=1, obs_var_channel=1,
-                var_indices=[0,1,2], real_var_indices=[1,2,3], obs_var_indices=[0,1,2]):
+                var_indices=[0,1,2], real_var_indices=[1,2,3], obs_var_indices=[0,1,2], **kwargs):
         self.isBatched = isBatched
         self.names = names
         # which channel of the data samples the variable indices are gonna be on. It should be either
@@ -23,21 +23,6 @@ class Metric(ABC):
         self.real_var_indices = real_var_indices # which indices to select (for different variables, in case of real data)
         self.obs_var_indices = obs_var_indices # which indices to select (for different variables, in case of obs data)
         self.obs_var_channel = obs_var_channel # which channel of the data samples the variable indices are gonna be on. It should be either
-
-    @classmethod
-    def fromName(cls, metric):
-        logging.debug(f"Creating metric {metric}")
-        for subclass in Metric.__subclasses__():
-            if subclass.__name__ == metric['type']:
-                # metric["is_batched"], **metric['args']
-                if 'args' not in metric:
-                    metric['args'] = {}
-                metric_cls = subclass(name=metric['name'],**metric['args'])
-                print(metric_cls._preprocess, metric_cls._calculateCore)
-                return metric_cls
-
-        raise Exception(f"Metric {metric['type']} not found, check config file. "
-                        f"List of available metrics: {Metric.__subclasses__()}")
 
     def calculate(self,real_data,fake_data,obs_data, debiasing=None, debiasing_mode=None, conditioning_members=None, threshold=None):
         
@@ -67,7 +52,7 @@ class Metric(ABC):
         # While this is surely costly, at first hand we want to do so 
         # because not all metrics might use the same variables
 
-        print(fake_data.shape)
+        logging.debug(fake_data.shape)
         if len(self.var_indices)!=fake_data.shape[self.var_channel]:
             fake_data_p = fake_data.take(indices=self.var_indices, axis=self.var_channel)
         else:

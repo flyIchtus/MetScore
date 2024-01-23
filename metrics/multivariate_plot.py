@@ -23,7 +23,7 @@ if __name__=="__main__":
     RES=res['multivar'].squeeze()
     
     data_r,data_f=RES[22,0], RES[22,1]
-    print(data_r.shape, data_f.shape)
+    logging.debug(data_r.shape, data_f.shape)
     
     
     levels=mlt.define_levels(data_r,5)
