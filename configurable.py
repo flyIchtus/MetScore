@@ -22,23 +22,29 @@ class Configurable:
 
     @classmethod
     def from_typed_config(cls, config_data, **kwargs):
-
         config_data = cls._safe_open(cls, config_data)
-
         type_name = config_data['type']
-        a = cls.__subclasses__()
-        print(cls)
-        print(a)
-        for subclass in cls.__subclasses__() + [cls]:
-            if type_name in subclass.aliases + [subclass.__name__]:
-                _check_config(subclass, config_data, typed=True)
-                instance = subclass(config_data, **kwargs)
-                for key, value in config_data.items():
-                    setattr(instance, key, value)
-                return instance
 
-        raise Exception(f"Type {type_name} non trouvé, veuillez vérifier le fichier de configuration. "
-                        f"Liste des types disponibles : {[el.__name__ for el in cls.__subclasses__()]}")
+        def find_subclass_recursive(parent_cls):
+            for subclass in parent_cls.__subclasses__() + [parent_cls]:
+                if type_name in subclass.aliases + [subclass.__name__]:
+                    _check_config(subclass, config_data, typed=True)
+                    instance = subclass(config_data, **kwargs)
+                    for key, value in config_data.items():
+                        setattr(instance, key, value)
+                    return instance
+                if subclass != parent_cls:
+                    recursive_result = find_subclass_recursive(subclass)
+                    if recursive_result:
+                        return recursive_result
+            return None
+        result = find_subclass_recursive(cls)
+
+        if result is not None:
+            return result
+        else:
+            raise Exception(f"Type {type_name} non trouvé, veuillez vérifier le fichier de configuration. "
+                            f"Liste des types disponibles : {[el.__name__ for el in cls.__subclasses__()]}")
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.__dict__})"

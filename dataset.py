@@ -86,7 +86,9 @@ class Dataset(Configurable):
     def _load_and_preprocess(self, file_path):
         if not self.cache.is_cached(file_path):
             data = self._load_file(file_path)
+            print(data.shape)
             preprocessed_data = self._preprocess_batch(data)
+            print(preprocessed_data.shape)
             self.cache.add_to_cache(file_path, preprocessed_data)
         else:
             preprocessed_data = self.cache.get_from_cache(file_path)

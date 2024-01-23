@@ -21,8 +21,6 @@ class subPreprocessor(Preprocessor):
 class rrPreprocessor(Preprocessor):
     required_keys = ['real_data_dir', 'real_var_indices', 'normalization']
 
-    aliases = ['rrPreprocessor', 'ReverserrPreprocessor']
-
     def __init__(self, config_data, sizeH, sizeW, variables, **kwargs):
         super().__init__(config_data, **kwargs)
         self.config_data = config_data
@@ -79,7 +77,7 @@ class rrPreprocessor(Preprocessor):
     def detransform(self, data):
         norm_type = self.normalization["type"]
         per_pixel = self.normalization["per_pixel"]
-        self.rr_transform = self.self.rr_transform
+        self.rr_transform = self.rr_transform
         if 'rr' in self.variables and self.self.rr_transform["symetrization"]:
             self.mins = -self.maxs
             self.means = np.zeros_like(self.means)
@@ -167,16 +165,16 @@ class rrPreprocessor(Preprocessor):
 
 
 class ForwardrrPreprocessor(rrPreprocessor):
-    def __init__(self, config_data):
-        super().__init__(config_data)
+    def __init__(self, config_data, sizeH, sizeW, variables, **kwargs):
+        super().__init__(config_data, sizeH, sizeW, variables, **kwargs)
 
     def process_batch(self, batch):
         self.transform(batch)
 
 
 class ReverserrPreprocessor(rrPreprocessor):
-    def __init__(self, config_data):
-        super().__init__(config_data)
+    def __init__(self, config_data, sizeH, sizeW, variables, **kwargs):
+        super().__init__(config_data, sizeH, sizeW, variables, **kwargs)
 
     def process_batch(self, batch):
         return self.detransform(batch)
