@@ -180,7 +180,7 @@ class lsDist(Metric):
 ######################### Quantiles Metric ########################
 ###################################################################
 
-qlist = [0.01,0.1,0.9,0.99]
+# qlist = [0.01,0.1,0.9,0.99]
 class Quantiles(Metric):
     def __init__(self, qlist = [0.01,0.1,0.9,0.99], **kwargs):
         super().__init__(isBatched=False, **kwargs)

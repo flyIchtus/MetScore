@@ -80,33 +80,26 @@ class DateDataloader(DataLoader):
         # Appel du __init__ de la classe mère
         super().__init__()
 
-        self.df0 = pd.read_csv(os.path.join(config_data['path_to_csv'], config_data['csv_file']))
+        # add df0, LT, dh to config_data, start_time to config_data dataset
+        # augment_dict = {'df0': self.df0, 'LT': config_data['Lead_Times'], 'dh': config_data['dh'], 'start_time': config_data['start_time']}
+        config_data['real_dataset_config'].update(config_data)
+        config_data['fake_dataset_config'].update(config_data)
+        config_data['obs_dataset_config'].update(config_data)
+
 
         # Instanciation des datasets dans DateDataloader
-        self.real_dataset = RealDataset.fromConfig(config_data['real_dataset_config'], dh=config_data['dh'], LT=config_data['Lead_Times'], df0=self.df0, use_cache=use_cache)
-        self.fake_dataset = FakeDataset.fromConfig(config_data['fake_dataset_config'], dh=config_data['dh'], LT=config_data['Lead_Times'], use_cache=use_cache)
-        self.obs_dataset = ObsDataset.fromConfig(config_data['obs_dataset_config'], dh=config_data['dh'], LT=config_data['Lead_Times'], start_time=config_data['start_time'], use_cache=use_cache)
-
-
-        df_extract = self.df0[
-            (self.df0['Date'] >= config_data['date_start']) & (self.df0['Date'] < config_data['date_end'])]
-        self.liste_dates = df_extract['Date'].unique().tolist()
-        self.liste_dates_repl = [date_string.replace('T21:00:00Z', '') for date_string in self.liste_dates]
-        self.liste_dates_rep = [item for item in self.liste_dates_repl for _ in range(config_data['Lead_Times'])]
-        self._data_length = len(self.liste_dates_rep)
+        self.real_dataset = RealDataset.fromConfig(config_data['real_dataset_config'], use_cache=use_cache)
+        self.fake_dataset = FakeDataset.fromConfig(config_data['fake_dataset_config'], use_cache=use_cache)
+        self.obs_dataset = ObsDataset.fromConfig(config_data['obs_dataset_config'], use_cache=use_cache)
+        self._data_length = min(len(self.real_dataset), len(self.fake_dataset), len(self.obs_dataset))
 
     def __next__(self):
         if self.current_index < self._data_length:
-            fake_samples = np.array([self.fake_dataset[self.liste_dates_rep[self.current_index + i], self.current_index + i] for
-                            i in range(self.batch_size)])
-            obs_samples = np.array([self.obs_dataset[self.liste_dates_rep[self.current_index + i], self.current_index + i] for i
-                           in range(self.batch_size)])
-            real_samples = np.array([self.real_dataset[self.liste_dates_rep[
-                                                  self.current_index + i], self.current_index + i]
-                            for i in range(self.batch_size)])
-
+            fake_samples = np.array([self.fake_dataset[ self.current_index + i] for i in range(self.batch_size)])
+            obs_samples = np.array([self.obs_dataset[self.current_index + i] for i in range(self.batch_size)])
+            real_samples = np.array([self.real_dataset[self.current_index + i] for i in range(self.batch_size)])
             self.current_index += min(self.batch_size, self._data_length - self.current_index)
-         
+
             return fake_samples[0], real_samples[0], obs_samples
         else:
             raise StopIteration

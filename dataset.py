@@ -3,6 +3,7 @@ import os
 import threading
 
 import numpy as np
+import pandas as pd
 
 from configurable import Configurable
 from useful_funcs import obs_clean
@@ -68,15 +69,18 @@ class Dataset(Configurable):
         super().__init__()
         self.preprocessor = Preprocessor.from_typed_config(config_data['preprocessor_config'], **config_data)
         self.cache = MemoryCache(use_cache)
-        self.file_list = os.listdir(config_data['data_folder'])
         self.load_data_semaphore = threading.Semaphore()
 
     @abstractmethod
-    def _get_filename(self, items):
+    def _get_filename(self, index):
         pass
 
     @abstractmethod
     def _load_file(self, file_path):
+        pass
+
+    @abstractmethod
+    def __len__(self):
         pass
 
     def _load_and_preprocess(self, file_path):
@@ -93,24 +97,25 @@ class Dataset(Configurable):
         return self.preprocessor.process_batch(batch)
 
     def is_dataset_cached(self):
-        for file_name in self.file_list:
-            file_path = os.path.join(self.data_folder, file_name)
+        for idx in range(len(self)):
+            file_path = self._get_filename(idx)
             if not self.cache.is_cached(file_path):
                 return False
         return True
 
     def get_all_data(self):
+        all_data = []
         if not self.is_dataset_cached():
-            for file_name in self.file_list:
-                file_path = os.path.join(self.data_folder, file_name)
-                if not self.cache.is_cached(file_path):
-                    data = self._load_and_preprocess(file_path)
-                    self.cache.add_to_cache(file_path, data)
-
-        return [self.cache.get_from_cache(file_path) for file_path in self.file_list]
-
-    def __len__(self):
-        return len(self.file_list)
+            for idx in range(len(self)):
+                file_path = self._get_filename(idx)
+                data = self._load_and_preprocess(file_path)
+                all_data.append(data)
+        else:
+            for idx in range(len(self)):
+                file_path = self._get_filename(idx)
+                data = self.cache.get_from_cache(file_path)
+                all_data.append(data)
+        return np.array(all_data)
 
     def __getitem__(self, items):
         file_path = self._get_filename(items)
@@ -120,107 +125,75 @@ class Dataset(Configurable):
     def _get_full_path(self, filename, extension=".npy"):
         return os.path.join(self.data_folder, f"{filename}{extension}")
 
-
-class ObsDataset(Dataset):
+class DateDataset(Dataset):
 
     required_keys = ['data_folder', 'preprocessor_config', 'crop_indices']
 
-    def __init__(self, config_data, dh, LT, start_time, use_cache=True):
+    def __init__(self, config_data, use_cache=True):
         super().__init__(config_data, use_cache)
+        self.df0 = pd.read_csv(os.path.join(config_data['path_to_csv'], config_data['csv_file']))
+        df_extract = self.df0[
+            (self.df0['Date'] >= config_data['date_start']) & (self.df0['Date'] < config_data['date_end'])]
+        self.liste_dates = df_extract['Date'].unique().tolist()
+        self.liste_dates_repl = [date_string.replace('T21:00:00Z', '') for date_string in self.liste_dates]
+        self.liste_dates_rep = [item for item in self.liste_dates_repl for _ in range(config_data['Lead_Times'])]
 
-        self.config_data=config_data
-        self.dh = dh
-        self.LT = LT
-        self.start_time = start_time
+    def _get_filename(self, index):
+        raise NotImplementedError("Subclasses must implement this method.")
+
+    def _load_file(self, file_path):
+        raise NotImplementedError("Subclasses must implement this method.")
+
+    def __len__(self):
+        return len(self.liste_dates_rep)
+
+
+class ObsDataset(DateDataset):
+    def __init__(self, config_data, use_cache=True):
+        super().__init__(config_data, use_cache)
         self.filename_format = config_data.get('filename_format', "obs{date}_{formatted_index}")
 
-
-    def _get_filename(self, items):
-        real_hour = self.start_time + (items[1] % self.LT + 1)* self.dh
-        date_index = int(np.floor(real_hour/24.))
-
-        date_0 = datetime.strptime(items[0], '%Y-%m-%d')
+    def _get_filename(self, index):
+        date = self.liste_dates_rep[index]
+        real_hour = self.start_time + (index % self.Lead_Times + 1) * self.dh
+        date_index = int(np.floor(real_hour / 24.))
+        date_0 = datetime.strptime(date, '%Y-%m-%d')
         next_date_1 = date_0 + timedelta(days=1)
         next_date_2 = date_0 + timedelta(days=2)
         date_1 = next_date_1.strftime('%Y-%m-%d')
         date_2 = next_date_2.strftime('%Y-%m-%d')
-        dates=[items[0], date_1, date_2] # considering 45 hours of lead time available, there are three possible observation dates
-        return self._get_full_path(self.filename_format.format(date=dates[date_index].replace('-', ''), formatted_index= real_hour%24))
+        dates = [date, date_1, date_2]
+        return self._get_full_path(self.filename_format.format(date=dates[date_index].replace('-', ''),
+                                                               formatted_index=real_hour % 24))
 
     def _load_file(self, file_path):
-        # logging.debug(file_path)
         return obs_clean(np.load(file_path), self.crop_indices)
 
-    def get_all_data(self, liste_dates_rep):
-        all_data = []
-        if not self.is_dataset_cached():
-            for idx, date in enumerate(liste_dates_rep[:2]):
-                # use __getitem__ to load and preprocess data
-                all_data.append(self.__getitem__((date, idx)))
-        return np.array(all_data)
 
-
-class FakeDataset(Dataset):
-
-    required_keys = ['data_folder', 'preprocessor_config', 'crop_indices']
-
-    def __init__(self, config_data, dh, LT, use_cache=True):
+class FakeDataset(DateDataset):
+    def __init__(self, config_data, use_cache=True):
         super().__init__(config_data, use_cache)
-        self.dh = dh
-        self.LT = LT
         self.filename_format = config_data.get('filename_format', "genFsemble_{date}_{formatted_index}_1000")
 
-    def _get_filename(self, items):
-        return self._get_full_path(self.filename_format.format(date=items[0], formatted_index=(items[1] % self.LT + 1) * self.dh))
+    def _get_filename(self, index):
+        return self._get_full_path(
+            self.filename_format.format(date=self.liste_dates_rep[index],
+                                        formatted_index=(index % self.Lead_Times + 1) * self.dh))
 
     def _load_file(self, file_path):
         return np.load(file_path)
 
-    def get_all_data(self, liste_dates_rep):
-        all_data = []
-        if not self.is_dataset_cached():
-            for idx, date in enumerate(liste_dates_rep[:2]):
-                # use __getitem__ to load and preprocess data
-                all_data.append(self.__getitem__((date, idx)))
-        
-        res = np.array(all_data)
-        Shape = res.shape
-        res = res.reshape(Shape[0] * Shape[1],Shape[2], Shape[3], Shape[4])
-        return res
 
-
-class RealDataset(Dataset):
-
-    required_keys = ['data_folder', 'preprocessor_config', 'crop_indices']
-
-    def __init__(self, config_data, dh, LT, df0, use_cache=True):
-        super().__init__(config_data, use_cache)
-        self.dh = dh
-        self.LT = LT
-        self.df0 = df0
-
-    def _get_filename(self, items):
-        date, index = items
-        names = self.df0[(self.df0['Date'] == f"{date}T21:00:00Z") & (self.df0['LeadTime'] == (index % self.LT + 1) * self.dh - 1)][
+class RealDataset(DateDataset):
+    def _get_filename(self, index):
+        date = self.liste_dates_rep[index]
+        names = self.df0[
+            (self.df0['Date'] == f"{date}T21:00:00Z") & (
+                        self.df0['LeadTime'] == (index % self.Lead_Times + 1) * self.dh - 1)][
             'Name'].to_list()
         file_names = [self._get_full_path(name) for name in names]
         return file_names
 
     def _load_file(self, file_path):
-        arrays = []
-        for file_name in file_path:
-            data_s = np.expand_dims(np.load(file_name), axis=0)
-            arrays.append(data_s)
-            data = np.concatenate(arrays, axis=0)
-        return data
-
-    def get_all_data(self, liste_dates_rep):
-        all_data = []
-        if not self.is_dataset_cached():
-            for idx, date in enumerate(liste_dates_rep[:2]):
-                # use __getitem__ to load and preprocess data
-                all_data.append(self.__getitem__((date, idx)))
-        res = np.array(all_data)
-        Shape = res.shape
-        res = res.reshape(Shape[0] * Shape[1],Shape[2], Shape[3], Shape[4])
-        return res
+        arrays = [np.expand_dims(np.load(file_name), axis=0) for file_name in file_path]
+        return np.concatenate(arrays, axis=0)
