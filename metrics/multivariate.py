@@ -7,7 +7,7 @@ Created on Thu May 12 11:08:13 2022
 
 Multivariate correlations
 """
-
+import logging
 
 import numpy as np
 from time import perf_counter
@@ -226,9 +226,8 @@ def multi_variate_correlations(data_real, data_fake):
     
     data_f=space2batch(data_fake)
     data_r=space2batch(data_real)
-    
-    logging.debug(data_f.shape)
-    logging.debug(data_r.shape)
+    logging.debug('data_f shape',data_f.shape)
+    logging.debug('data_r shape',data_r.shape)
     
    
     bivariates_f, bins_f=var2Var_hist(data_f,bins)

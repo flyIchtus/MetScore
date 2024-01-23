@@ -8,6 +8,7 @@ Created on Wed Jul 27 09:48:51 2022
 correlation lengths
 
 """
+import logging
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -45,11 +46,8 @@ def get_metric_tensor(eps, sca):
     
     dy = np.concatenate((dy_dx, dy_dy) , axis =0)
     
-    logging.debug(dx.shape, dy.shape)
+    logging.debug(f"dx shape : {dx.shape}, dy shape : {dy.shape}")
     g = np.concatenate((dx, dy), axis = 0)
-    
-    ## sanitary symmetry check, result should be zero
-    logging.debug(np.abs(g[1,:,:]-g[2,:,:]).mean())
     
     
     return g.reshape(2, 2, C, H-1, W-1)

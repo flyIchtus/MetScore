@@ -65,7 +65,7 @@ def ensemble_crps(obs_data, fake_data):
         sm = sm + fcrps
     crps_res[2] = sm / len(obs_data_t2m)    
 
-    logging.debug(crps_res)
+    logging.debug(f"CRPS results : {crps_res}")
    
     return crps_res
 
@@ -151,7 +151,7 @@ def crps_multi_dates(cond, X, real_ens, debiasing = False):
 
     crps_res = np.array([res_ff, np.nan, res_t2m])
 
-    logging.debug(crps_res, flush=True)
+    logging.debug(f"crps_res {crps_res}")
     
     return crps_res
 
@@ -169,9 +169,7 @@ def crps_vs_aro_multi_dates(cond, X, real_ens, debiasing = False):
         avg_crps :  C array containing the result
     
     """
-    logging.debug("aro", flush=True)
     crps_aro = crps_multi_dates(cond,real_ens,real_ens,debiasing = False)
-    logging.debug("gan", flush=True)
     crps_fake = crps_multi_dates(cond,X, real_ens, debiasing=debiasing)
 
     return  - crps_aro + crps_fake
