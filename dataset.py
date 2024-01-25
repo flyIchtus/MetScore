@@ -156,17 +156,33 @@ class ObsDataset(DateDataset):
         self.filename_format = config_data.get('filename_format', "obs{date}_{formatted_index}")
 
     def _get_filename(self, index):
-        date = self.liste_dates_rep[index]
+        format_variables = [var.strip('}{') for var in re.findall(r'{(.*?)}', self.filename_format)]
+        kwargs = {}
+
         real_hour = self.start_time + (index % self.Lead_Times + 1) * self.dh
-        date_index = int(np.floor(real_hour / 24.))
-        date_0 = datetime.strptime(date, '%Y-%m-%d')
-        next_date_1 = date_0 + timedelta(days=1)
-        next_date_2 = date_0 + timedelta(days=2)
-        date_1 = next_date_1.strftime('%Y-%m-%d')
-        date_2 = next_date_2.strftime('%Y-%m-%d')
-        dates = [date, date_1, date_2]
-        return self._get_full_path(self.filename_format.format(date=dates[date_index].replace('-', ''),
-                                                               formatted_index=real_hour % 24))
+
+        if 'formatted_index' in format_variables:
+            format_variables.remove('formatted_index')
+            formatted_index = real_hour % 24
+            kwargs = {'formatted_index': formatted_index}
+
+        if 'date' in format_variables:
+            format_variables.remove('date')
+            date = self.liste_dates_rep[index]
+            date_index = int(np.floor(real_hour / 24.))
+            date_0 = datetime.strptime(date, '%Y-%m-%d')
+            next_date_1 = date_0 + timedelta(days=1)
+            next_date_2 = date_0 + timedelta(days=2)
+            date_1 = next_date_1.strftime('%Y-%m-%d')
+            date_2 = next_date_2.strftime('%Y-%m-%d')
+            dates = [date, date_1, date_2]
+            kwargs = kwargs | {'date': dates[date_index].replace('-', '')}
+
+        kwargs = kwargs | {var: getattr(self, var, '') for var in format_variables}
+
+        return self._get_full_path(
+            self.filename_format.format(**kwargs)
+        )
 
     def _load_file(self, file_path):
         return obs_clean(np.load(file_path), self.crop_indices)

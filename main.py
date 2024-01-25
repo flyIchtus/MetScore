@@ -1,5 +1,6 @@
 import argparse
 import logging
+import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
@@ -48,11 +49,15 @@ def main():
     # Log the start of the program
     logger.info("Starting program.")
 
+
     try:
         logger.info(f"Loading configuration from {args.config}")
 
         # Load the configuration
         config = load_yaml(args.config)
+
+        assert 'output_folder' in config, f"output_path must be specified in {args.config}"
+        os.mkdir(config['output_folder'])
 
         # Initialize a list to store the results of each experiment
         all_experiment_results = []
@@ -60,9 +65,8 @@ def main():
         # Run each experiment in parallel
         with ThreadPoolExecutor() as executor:
             for experiment_config in config["experiments"]:
-                experiment_set = ExperimentSet.fromConfig(experiment_config)
-                experiment_result = list(executor.map(experiment_set.run, range(len(config["experiments"]))[-1:]))
-                all_experiment_results.append(experiment_result)
+                experiment_set = ExperimentSet.fromConfig(experiment_config, output_folder=config['output_folder'])
+                executor.map(experiment_set.run, range(len(config["experiments"]))[-1:])
 
         logger.info("Program completed.")
     except Exception as e:

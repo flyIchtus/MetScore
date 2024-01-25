@@ -21,6 +21,16 @@ from metrics import CRPS_calc
 from metrics.metrics import Metric, PreprocessCondObs, PreprocessDist, PreprocessStandalone
 
 
+
+"""
+all metrics :
+W1CenterNUMPY
+W1RandomNUMPY
+pwW1
+
+
+"""
+
 class W1CenterNUMPY(PreprocessDist):
     def __init__(self, *args, **kwargs):
         super().__init__(isBatched=False)
