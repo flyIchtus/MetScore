@@ -68,6 +68,7 @@ class Dataset(Configurable):
         """
         super().__init__()
         self.preprocessor = Preprocessor.from_typed_config(config_data['preprocessor_config'], **config_data)
+        logging.debug(f"Using preprocessor: {self.preprocessor.type}")
         self.cache = MemoryCache(use_cache)
         self.load_data_semaphore = threading.Semaphore()
 
@@ -86,16 +87,13 @@ class Dataset(Configurable):
     def _load_and_preprocess(self, file_path):
         if not self.cache.is_cached(file_path):
             data = self._load_file(file_path)
-            print(data.shape)
             preprocessed_data = self._preprocess_batch(data)
-            print(preprocessed_data.shape)
             self.cache.add_to_cache(file_path, preprocessed_data)
         else:
             preprocessed_data = self.cache.get_from_cache(file_path)
         return preprocessed_data
 
     def _preprocess_batch(self, batch):
-        logging.debug(self.preprocessor)
         return self.preprocessor.process_batch(batch)
 
     def is_dataset_cached(self):

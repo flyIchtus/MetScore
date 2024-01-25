@@ -24,26 +24,10 @@ def bias_ens(obs_data, fake_data):
         bias : avg(fake_data) - obs_data  
     
     """
-    
-    N, C, H, W  = fake_data.shape
-    
-    
     fake_data_p = copy.deepcopy(fake_data)
     obs_data_p = copy.deepcopy(obs_data)
-
-
-    
-    #logging.debug(fake_data_p.shape, obs_data_p.shape)
-    
-    #logging.debug(fake_data_p[:,0].max(), fake_data_p[:,1].max(), fake_data_p[:,2].max())
-
-    
-    
-    
     fake_data_p_mean = np.nanmean(fake_data_p, axis=0)
     X_bias = fake_data_p_mean - obs_data_p
-
-
     return X_bias
 
 

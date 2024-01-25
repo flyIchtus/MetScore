@@ -42,6 +42,7 @@ dataloaders:
         per_pixel: False
         for_rr:
           blur_iteration: 1
+
   fake_dataset_config:
     data_folder: /scratch/mrmn/moldovang/tests_CGAN/normal_['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']/samples
     variables: ['u','v','t2m']
@@ -87,4 +88,5 @@ metrics_list:
     type: brierScore    
 #posibilities ensembleCRPS, biasEnsemble, relDiagram, skillSpread, brierScore
 output_path: output/
+
 

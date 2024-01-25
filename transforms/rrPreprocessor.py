@@ -120,7 +120,7 @@ class rrPreprocessor(Preprocessor):
             if self.rr_transform["gaussian_std"] > 0:
                 mask_no_rr = data[:, rr_idx] > self.rr_transform["gaussian_std"] * (1 + 0.25)
                 data[:, rr_idx] *= mask_no_rr
-        logging.debug("Detransform OK.")
+        logging.debug(f"Data detransformed")
         return data
 
     def transform(self, data):

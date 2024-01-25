@@ -1,5 +1,6 @@
 import logging
 import numpy as np
+from tqdm import tqdm
 
 from dataloader import DateDataloader
 from configurable import Configurable
@@ -59,10 +60,12 @@ class ExperimentSet(Configurable):
         threshold = np.zeros((2,6))
         threshold[0] = self.config_data['threshold_ff']
         threshold[1] = self.config_data['threshold_t2m']
-        for (batch_fake, batch_real, batch_obs) in self.dataloader:
+        for (batch_fake, batch_real, batch_obs) in tqdm(self.dataloader, desc="Processing batches"):
             logging.debug(f"Shape : fake:{batch_fake.shape}, real:{batch_real.shape}, obs:{batch_obs.shape}")
             for metric in self.batched_metrics:
-                res = metric.calculate(batch_fake, batch_real, batch_obs, self.config_data['debiasing'], self.config_data['debiasing_mode'], self.config_data['conditioning_members'], threshold)
+                res = metric.calculate(batch_fake, batch_real, batch_obs, self.config_data['debiasing'],
+                                       self.config_data['debiasing_mode'], self.config_data['conditioning_members'],
+                                       threshold)
                 batched_metric_results[metric.names[0]].append(res)
                 
                 
@@ -74,13 +77,14 @@ class ExperimentSet(Configurable):
             np.save(self.config_data['output_path'] + metric_name, results_np)
             logging.info(f"{self.name} : Metric {metric_name} shape result: {results_np.shape}")
 
-        if self.not_batched_metrics is not []:
+
+        if self.not_batched_metrics:
             real_data, fake_data, obs_data = self.dataloader.get_all_data()
-            for metric in self.not_batched_metrics:
+            for metric in tqdm(self.not_batched_metrics, desc="Calculating non-batched metrics"):
                 res = metric.calculate(real_data, fake_data, obs_data)
                 if res.size < 25:
                     logging.info(f"Metric {metric.names} result: {res}")
                 else:
-                    logging.info(f"Metric {metric.names} : too long result to logging")
+                    logging.info(f"Metric {metric.names} : too long result to log")
 
         logging.info(f"ExperimentSet {index} completed")
