@@ -47,7 +47,7 @@ class ExperimentSet(Configurable):
         self.batched_metrics = [metric for metric in self.metrics if metric.isBatched]
         self.not_batched_metrics = [metric for metric in self.metrics if not metric.isBatched]
         self.config_data = config_data
-        use_cache = self.not_batched_metrics is not []
+        use_cache = False# self.not_batched_metrics is not []
         logging.info(f"Using cache: {use_cache}")
         self.dataloader = DateDataloader.fromConfig(config_data['dataloaders'], use_cache=use_cache)
 

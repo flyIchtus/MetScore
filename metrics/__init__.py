@@ -1,4 +1,4 @@
-import metrics.general_metrics
+import metrics.general_metrics as GM
 import metrics.length_scales as ls
 import metrics.spectrum_analysis as spec
 import metrics.sliced_wasserstein as SWD
@@ -22,7 +22,8 @@ class W1CenterNUMPY(Metric):
     def __init__(self, name, **kwargs):
         super().__init__(isBatched=False, names=['W1_Center'])
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, 
+                    debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_dist(real_data,fake_data)
 
     def _calculateCore(self, processed_data):
@@ -35,7 +36,8 @@ class W1RandomNUMPY(Metric):
     def __init__(self, name, **kwargs):
         super().__init__(isBatched=False, names=['W1_random'], var_channel=1)
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, 
+                    debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_dist(real_data,fake_data)
 
     def _calculateCore(self, processed_data):
@@ -47,7 +49,8 @@ class pwW1(Metric):
     def __init__(self, name, **kwargs):
         super().__init__(isBatched=False, names=['pw_W1'])
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, 
+                    debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_dist(real_data,fake_data)
 
     def _calculateCore(self, processed_data):
@@ -69,7 +72,8 @@ class SWDall(Metric):
         self.names = sliced_w1.get_metric_names()
 
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, 
+                    debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_dist(real_data,fake_data)
 
     def _calculateCore(self, processed_data):
@@ -84,7 +88,8 @@ class SWDallTorch(Metric):
         self.sliced_w1_torch = SWD.SWD_API(image_shape=image_shape, numpy=False)
         self.names = self.sliced_w1_torch.get_metric_names()
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, 
+                    debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_dist(real_data,fake_data)
 
     def _calculateCore(self, processed_data):
@@ -104,7 +109,8 @@ class spectralCompute(Metric):
     def __init__(self, name, **kwargs):
         super().__init__(isBatched=False, **kwargs)
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+    def _preprocess(self, fake_data, real_data=None, obs_data=None,
+                    debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_standalone(fake_data)
 
     def _calculateCore(self, processed_data):
@@ -117,7 +123,8 @@ class spectralDist(Metric):
     def __init__(self, name, **kwargs):
         super().__init__(isBatched=False, **kwargs)
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, 
+                    debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_dist(real_data,fake_data)
 
     def _calculateCore(self, processed_data):
@@ -130,7 +137,8 @@ class spectralDistMultidates(Metric):
     def __init__(self, name, **kwargs):
         super().__init__(isBatched=False, **kwargs)
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, 
+                    debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_dist(real_data,fake_data)
 
     def _calculateCore(self, processed_data):
@@ -151,7 +159,8 @@ class lsMetric(Metric):
         super().__init__(isBatched=False, **kwargs)
         self.scale = scale
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, 
+                    debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_standalone(fake_data)
 
     def _calculateCore(self, processed_data):
@@ -166,7 +175,8 @@ class lsDist(Metric):
         super().__init__(isBatched=False, names = ['Lcorr_u', 'Lcorr_v', 'Lcorr_t2m'])
         self.scale = scale
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+    def _preprocess(self, fake_data, real_data=None, obs_data=None,
+                    debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_dist(real_data,fake_data)
             
     def _calculateCore(self, processed_data):
@@ -186,9 +196,9 @@ class Quantiles(Metric):
         super().__init__(isBatched=False, **kwargs)
         self.qlist = qlist
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, 
+                    debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_standalone(fake_data)
-
     
     def _calculateCore(self, processed_data):
         return quant.quantiles(processed_data, self.qlist)
@@ -198,7 +208,8 @@ class QuantilesScore(Metric):
         super().__init__(isBatched=False, **kwargs)
         self.qlist = qlist
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+    def _preprocess(self, fake_data, real_data=None, obs_data=None,
+                    debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_dist(real_data,fake_data)
     
     def _calculateCore(self, processed_data):
@@ -214,7 +225,8 @@ class MultivarCorr(Metric):
     def __init__(self, names=['Corr_r','Corr_f'], **kwargs):
         super().__init__(isBatched=False, **kwargs)
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
+    def _preprocess(self, fake_data, real_data=None, obs_data=None,
+                    debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_dist(real_data,fake_data)
     
     def _calculateCore(self, processed_data):
@@ -244,10 +256,14 @@ class ensembleCRPS(Metric):
         super().__init__(isBatched=True, names=['CRPSff', 'CRPSdd','CRPSt2m'])
         self.debiasing = False
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None, debiasing=None, debiasing_mode=None, conditioning_members=None):
-        return self.preprocess_cond_obs(fake_data, real_data, obs_data, debiasing, debiasing_mode, conditioning_members)
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, 
+                    debiasing=None, debiasing_mode=None, 
+                    conditioning_members=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data,
+                                        debiasing, debiasing_mode,
+                                        conditioning_members)
 
-    def _calculateCore(self, processed_data, threshold):
+    def _calculateCore(self, processed_data):
         fake_data = processed_data['fake_data']
         obs_data = processed_data['obs_data']
         return CRPS_calc.ensemble_crps(obs_data, fake_data)
@@ -257,30 +273,38 @@ class crpsMultiDates(Metric):
         super().__init__(isBatched=True, names=['CRPSff', 'CRPSdd','CRPSt2m'])
         self.debiasing = False
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, 
+                    debiasing=None, debiasing_mode=None, 
+                    conditioning_members=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data,
+                                        debiasing, debiasing_mode, 
+                                        conditioning_members)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
         fake_data = processed_data['fake_data']
         obs_data = processed_data['obs_data']
 
-        return CRPS_calc.crps_multi_dates(obs_data,real_data,fake_data, debiasing=self.debiasing)
+        return CRPS_calc.crps_multi_dates(obs_data,real_data,fake_data)
 
 class crpsDiffMultiDates(Metric):
     def __init__(self, name, **kwargs):
         super().__init__(isBatched=False, names=['CRPSff', 'CRPSdd','CRPSt2m'], debiasing=False)
         self.debiasing = debiasing
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None):
-        return self.preprocess_cond_obs(fake_data, real_data, obs_data)
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, 
+                    debiasing=None, debiasing_mode=None,
+                    conditioning_members=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data,
+                                        debiasing, debiasing_mode, 
+                                        conditioning_members)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
         fake_data = processed_data['fake_data']
         obs_data = processed_data['obs_data']
 
-        return CRPS_calc.crps_vs_aro_multi_dates(obs_data,real_data,fake_data, debiasing=self.debiasing)
+        return CRPS_calc.crps_vs_aro_multi_dates(obs_data,real_data,fake_data)
 
 #####################################################################
 ############################ Brier ##################################
@@ -291,8 +315,10 @@ class brierScore(Metric):
         super().__init__(isBatched=True, names=['Brierff', 'Brierdd','Briert2m'])
         self.debiasing = False
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None, debiasing=None, debiasing_mode=None, conditioning_members=None):
-        return self.preprocess_cond_obs(fake_data, real_data, obs_data, debiasing, debiasing_mode, conditioning_members)
+    def _preprocess(self, fake_data, real_data=None, obs_data=None, 
+                    debiasing=None, debiasing_mode=None, conditioning_members=None):
+        return self.preprocess_cond_obs(fake_data, real_data, obs_data, 
+                                        debiasing, debiasing_mode, conditioning_members)
 
     def _calculateCore(self, processed_data, threshold):
         fake_data = processed_data['fake_data']
@@ -397,7 +423,7 @@ class biasEnsemble(Metric):
     def _preprocess(self, fake_data, real_data=None, obs_data=None, debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_cond_obs(fake_data, real_data, obs_data, debiasing, debiasing_mode, conditioning_members)
 
-    def _calculateCore(self, processed_data, threshold):
+    def _calculateCore(self, processed_data):
         fake_data = processed_data['fake_data']
         obs_data = processed_data['obs_data']
 

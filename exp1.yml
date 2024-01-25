@@ -7,10 +7,10 @@ threshold_t2m : [278.15, 283.15, 288.15, 293.15, 297.15, 303.15]
 dataloaders:
   batch_size: 1
   maxNsamples: 16
-  path_to_csv: /scratch/mrmn/brochetc/GAN_2D/datasets_full_indexing/IS_1_1.0_0_0_0_0_0_256_large_lt_done
-  csv_file: Large_lt_test_labels.csv
-  date_start: '2020-08-14'
-  date_end: '2022-08-15'
+  path_to_csv: /gpfsscratch/rech/woz/commun/data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+  csv_file: small_selected.csv
+  date_start: '2021-08-13'
+  date_end: '2021-08-15'
   number_of_dates : 20
   Lead_Times : 15
   start_time : 21 # 21:00. Arome simulations in the dataset start at 21:00 
@@ -19,9 +19,8 @@ dataloaders:
   inv_step : 1000
   cond_members : 16 
   
-  
   real_dataset_config:
-    data_folder: /scratch/mrmn/brochetc/GAN_2D/datasets_full_indexing/IS_1_1.0_0_0_0_0_0_256_large_lt_done
+    data_folder: /gpfsscratch/rech/woz/commun/data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
     variables: ['u','v','t2m']
     sizeH: 256
     sizeW: 256
@@ -30,7 +29,7 @@ dataloaders:
     preprocessor_config:
       type: Preprocessor
       real_var_indices: [ 1,2,3 ] #where to find the variables in stat files
-      real_data_dir: data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+      real_data_dir: /gpfsscratch/rech/woz/commun/data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
       stat_folder: "stat_files/"
       stat_version: "rr" # the name of the stat file is for ex: 'mean_[stat_version]_log_ppx.npy'
       rr_transform:
@@ -44,16 +43,17 @@ dataloaders:
           blur_iteration: 1
 
   fake_dataset_config:
-    data_folder: /scratch/mrmn/moldovang/tests_CGAN/normal_['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']/samples
+    data_folder: /gpfsscratch/rech/woz/commun/data/normal_['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']_reduced/samples
     variables: ['u','v','t2m']
     sizeH: 256
     sizeW: 256
+    filename_format: genFsemble_{date}_{formatted_index}_{inv_step}
     var_indices: [0,1,2] #where to find the variables in dataset samples
     crop_indices: [0,256,0,256]
     preprocessor_config:
         type: ReverserrPreprocessor
         real_var_indices: [1,2,3] #where to find the variables in stat files
-        real_data_dir: data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+        real_data_dir: /gpfsscratch/rech/woz/commun/data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
         stat_folder: "stat_files/"
         stat_version: "rr" # the name of the stat file is for ex: 'mean_[stat_version]_log_ppx.npy'
         rr_transform:
@@ -66,7 +66,7 @@ dataloaders:
           for_rr:
             blur_iteration: 1
   obs_dataset_config:
-    data_folder: /scratch/mrmn/moldovang/obs_databases/obs_full_npy
+    data_folder: /gpfsscratch/rech/woz/commun/data/obs_reduced_npy
     crop_indices: [180, 436, 500, 756]
     variables: ['ff','dd','t2m']
     var_indices: [0,1,2]
@@ -84,9 +84,9 @@ metrics_list:
 #    type: rankHistogram           
 #  - name: skillSpread
 #    type: skillSpread    
-  - name: brierScore
-    type: brierScore    
+  - name: W1random
+    type: W1RandomNUMPY    
 #posibilities ensembleCRPS, biasEnsemble, relDiagram, skillSpread, brierScore
-output_path: output/
+output_path: /gpfsscratch/rech/woz/commun/MetScoreOutput/
 
 

@@ -37,7 +37,7 @@ class Metric(ABC, Configurable):
         pass
 
     @abstractmethod
-    def _calculateCore(self, processed_data, threshold):
+    def _calculateCore(self, processed_data, **kwargs):
         # Specific calculation logic for each metric
         pass
 
@@ -97,7 +97,8 @@ class Metric(ABC, Configurable):
         # selecting only the right indices for variables
         # for that we use np.take, which copies data. 
         # While this is surely costly, at first hand we want to do so 
-        # because not all metrics might use the same variables        
+        # because not all metrics might use the same variables   
+        print(real_data.shape, fake_data.shape)     
         if len(self.var_indices)!=fake_data.shape[self.var_channel]:
             fake_data_p = fake_data.take(indices=self.var_indices, axis=self.var_channel)
         else:

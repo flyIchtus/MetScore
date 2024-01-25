@@ -108,6 +108,9 @@ class DateDataloader(DataLoader):
         real = self._real_dataset.get_all_data()
         fake = self._fake_dataset.get_all_data()
         obs = self._obs_dataset.get_all_data()
+        print("get all data real", real.shape)
+        print("get all data fake", fake.shape)
+        print("get all data obs", obs.shape)
         real, fake = self.randomize_and_cut(real, fake)
         return real, fake, obs
 
@@ -115,6 +118,8 @@ class DateDataloader(DataLoader):
         data1shuf = np.random.permutation(data1)
         data2shuf = np.random.permutation(data2)
         cut = min([self.maxNsamples,data1shuf.shape[0],data2shuf.shape[0]])
+        print(data1shuf.shape)
+        print(data2shuf.shape)
         if cut<self.maxNsamples:
             logging.warning(f"maxNsamples set to {self.maxNsamples} but not enough samples ({cut}). Continuing with {cut} samples.")
         return data1shuf[:cut], data2shuf[:cut]

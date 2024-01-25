@@ -106,16 +106,20 @@ class Dataset(Configurable):
     def get_all_data(self):
         all_data = []
         if not self.is_dataset_cached():
+            print("dataset not cached")
             for idx in range(len(self)):
                 file_path = self._get_filename(idx)
                 data = self._load_and_preprocess(file_path)
+                print("cache data shape", data.shape)
                 all_data.append(data)
         else:
+            print("dataset cached")
             for idx in range(len(self)):
                 file_path = self._get_filename(idx)
                 data = self.cache.get_from_cache(file_path)
+                print("cache data shape", data.shape)
                 all_data.append(data)
-        return np.array(all_data)
+        return np.concatenate(all_data,axis=0)
 
     def __getitem__(self, items):
         file_path = self._get_filename(items)
@@ -138,6 +142,7 @@ class DateDataset(Dataset):
         self.df0 = pd.read_csv(os.path.join(config_data['path_to_csv'], config_data['csv_file']))
         df_extract = self.df0[
             (self.df0['Date'] >= config_data['date_start']) & (self.df0['Date'] < config_data['date_end'])]
+        self.df0 = self.df0
         self.liste_dates = df_extract['Date'].unique().tolist()
         self.liste_dates = self.liste_dates[0:config_data['number_of_dates']]
         self.liste_dates_repl = [date_string.replace('T21:00:00Z', '') for date_string in self.liste_dates]
@@ -173,6 +178,24 @@ class ObsDataset(DateDataset):
 
     def _load_file(self, file_path):
         return obs_clean(np.load(file_path), self.crop_indices)
+    
+    def get_all_data(self):
+        all_data = []
+        if not self.is_dataset_cached():
+            print("dataset not cached")
+            for idx in range(len(self)):
+                file_path = self._get_filename(idx)
+                data = self._load_and_preprocess(file_path)
+                print("cache data shape", data.shape)
+                all_data.append(data[np.newaxis,:,:,:])
+        else:
+            print("dataset cached")
+            for idx in range(len(self)):
+                file_path = self._get_filename(idx)
+                data = self.cache.get_from_cache(file_path)
+                print("cache data shape", data.shape)
+                all_data.append(data[np.newaxis,:,:,:])
+        return np.concatenate(all_data,axis=0)
 
 
 class FakeDataset(DateDataset):
