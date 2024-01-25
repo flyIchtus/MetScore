@@ -74,16 +74,16 @@ dataloaders:
         type: Preprocessor
 
 metrics_list:
-#  - name: ensembleCRPS
-#    type: ensembleCRPS
-#  - name: biasEnsemble
-#    type: biasEnsemble
-#  - name: relDiagram
-#    type: relDiagram
-#  - name: rankHistogram
-#    type: rankHistogram           
-#  - name: skillSpread
-#    type: skillSpread    
+  - name: ensembleCRPS
+    type: ensembleCRPS
+  - name: biasEnsemble
+    type: biasEnsemble
+  - name: relDiagram
+    type: relDiagram
+  - name: rankHistogram
+    type: rankHistogram           
+  - name: skillSpread
+    type: skillSpread    
   - name: brierScore
     type: brierScore    
 #posibilities ensembleCRPS, biasEnsemble, relDiagram, skillSpread, brierScore
