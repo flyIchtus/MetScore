@@ -24,8 +24,7 @@ def brier_score(obs_data, fake_data, parameters):
     N_brier = parameters.shape[1]
     
     fake_data_p = copy.deepcopy(fake_data)
-    obs_data_p = np.around(copy.deepcopy(obs_data),2)
-    #obs_data_p = copy.deepcopy(obs_data)
+    obs_data_p = copy.deepcopy(obs_data)
     brier = np.zeros((N_brier,  C, H, W))
     
     
