@@ -356,7 +356,7 @@ class thresholdedSkillSpreadDeviationMultidates(Metric):
 
 class rankHistogram(Metric):
     def __init__(self, name, **kwargs):
-        super().__init__(isBatched=True, names=['Skspff', 'Skspdd','Skspt2m'])
+        super().__init__(isBatched=True, names=['rankff', 'rankdd','rankt2m'])
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None, debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_cond_obs(fake_data, real_data, obs_data, debiasing, debiasing_mode, conditioning_members)

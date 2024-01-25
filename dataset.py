@@ -133,10 +133,15 @@ class DateDataset(Dataset):
 
     def __init__(self, config_data, use_cache=True):
         super().__init__(config_data, use_cache)
+        
+        self.N_ens = config_data['N_ens']
+        self.inv_step = config_data['inv_step']
+        self.cond_members = config_data['cond_members']
         self.df0 = pd.read_csv(os.path.join(config_data['path_to_csv'], config_data['csv_file']))
         df_extract = self.df0[
             (self.df0['Date'] >= config_data['date_start']) & (self.df0['Date'] < config_data['date_end'])]
         self.liste_dates = df_extract['Date'].unique().tolist()
+        self.liste_dates = self.liste_dates[0:config_data['number_of_dates']]
         self.liste_dates_repl = [date_string.replace('T21:00:00Z', '') for date_string in self.liste_dates]
         self.liste_dates_rep = [item for item in self.liste_dates_repl for _ in range(config_data['Lead_Times'])]
 
@@ -175,12 +180,16 @@ class ObsDataset(DateDataset):
 class FakeDataset(DateDataset):
     def __init__(self, config_data, use_cache=True):
         super().__init__(config_data, use_cache)
-        self.filename_format = config_data.get('filename_format', "genFsemble_{date}_{formatted_index}_1000")
+
+        self.filename_format = config_data.get('filename_format', "genFsemble_{date}_{formatted_index}_{inv_step}_{cond_members}_{N_ens}")
 
     def _get_filename(self, index):
+        
+
         return self._get_full_path(
             self.filename_format.format(date=self.liste_dates_rep[index],
-                                        formatted_index=(index % self.Lead_Times + 1) * self.dh))
+                                        formatted_index=(index % self.Lead_Times + 1) * self.dh, inv_step=self.inv_step,
+                                        cond_members=self.cond_members, N_ens=self.N_ens))
 
     def _load_file(self, file_path):
         return np.load(file_path)

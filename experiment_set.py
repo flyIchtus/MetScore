@@ -64,12 +64,15 @@ class ExperimentSet(Configurable):
             for metric in self.batched_metrics:
                 res = metric.calculate(batch_fake, batch_real, batch_obs, self.config_data['debiasing'], self.config_data['debiasing_mode'], self.config_data['conditioning_members'], threshold)
                 batched_metric_results[metric.names[0]].append(res)
+                
+                
                 # logging.debug(batched_metric_results)
 
         for metric_name, results in batched_metric_results.items():
             # TODO moyenne par batch ?
-            average_result = sum(results) / len(results)
-            logging.info(f"{self.name} : Metric {metric_name} result: {average_result}")
+            results_np = np.array(results, dtype=np.float32)
+            np.save(self.config_data['output_path'] + metric_name, results_np)
+            logging.info(f"{self.name} : Metric {metric_name} shape result: {results_np.shape}")
 
         if self.not_batched_metrics is not []:
             real_data, fake_data, obs_data = self.dataloader.get_all_data()
