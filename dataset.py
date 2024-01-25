@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import threading
 
 import numpy as np
@@ -131,10 +132,6 @@ class DateDataset(Dataset):
 
     def __init__(self, config_data, use_cache=True):
         super().__init__(config_data, use_cache)
-        
-        self.N_ens = config_data['N_ens']
-        self.inv_step = config_data['inv_step']
-        self.cond_members = config_data['cond_members']
         self.df0 = pd.read_csv(os.path.join(config_data['path_to_csv'], config_data['csv_file']))
         df_extract = self.df0[
             (self.df0['Date'] >= config_data['date_start']) & (self.df0['Date'] < config_data['date_end'])]
@@ -159,17 +156,33 @@ class ObsDataset(DateDataset):
         self.filename_format = config_data.get('filename_format', "obs{date}_{formatted_index}")
 
     def _get_filename(self, index):
-        date = self.liste_dates_rep[index]
+        format_variables = [var.strip('}{') for var in re.findall(r'{(.*?)}', self.filename_format)]
+        kwargs = {}
+
         real_hour = self.start_time + (index % self.Lead_Times + 1) * self.dh
-        date_index = int(np.floor(real_hour / 24.))
-        date_0 = datetime.strptime(date, '%Y-%m-%d')
-        next_date_1 = date_0 + timedelta(days=1)
-        next_date_2 = date_0 + timedelta(days=2)
-        date_1 = next_date_1.strftime('%Y-%m-%d')
-        date_2 = next_date_2.strftime('%Y-%m-%d')
-        dates = [date, date_1, date_2]
-        return self._get_full_path(self.filename_format.format(date=dates[date_index].replace('-', ''),
-                                                               formatted_index=real_hour % 24))
+
+        if 'formatted_index' in format_variables:
+            format_variables.remove('formatted_index')
+            formatted_index = real_hour % 24
+            kwargs = {'formatted_index': formatted_index}
+
+        if 'date' in format_variables:
+            format_variables.remove('date')
+            date = self.liste_dates_rep[index]
+            date_index = int(np.floor(real_hour / 24.))
+            date_0 = datetime.strptime(date, '%Y-%m-%d')
+            next_date_1 = date_0 + timedelta(days=1)
+            next_date_2 = date_0 + timedelta(days=2)
+            date_1 = next_date_1.strftime('%Y-%m-%d')
+            date_2 = next_date_2.strftime('%Y-%m-%d')
+            dates = [date, date_1, date_2]
+            kwargs = kwargs | {'date': dates[date_index].replace('-', '')}
+
+        kwargs = kwargs | {var: getattr(self, var, '') for var in format_variables}
+
+        return self._get_full_path(
+            self.filename_format.format(**kwargs)
+        )
 
     def _load_file(self, file_path):
         return obs_clean(np.load(file_path), self.crop_indices)
@@ -182,12 +195,24 @@ class FakeDataset(DateDataset):
         self.filename_format = config_data.get('filename_format', "genFsemble_{date}_{formatted_index}_{inv_step}_{cond_members}_{N_ens}")
 
     def _get_filename(self, index):
-        
+        format_variables = [var.strip('}{') for var in re.findall(r'{(.*?)}', self.filename_format)]
+        kwargs = {}
+
+        if 'formatted_index' in format_variables:
+            format_variables.remove('formatted_index')
+            formatted_index = (index % self.Lead_Times + 1) * self.dh
+            kwargs = {'formatted_index': formatted_index}
+
+        if 'date' in format_variables:
+            format_variables.remove('date')
+            date = self.liste_dates_rep[index]
+            kwargs = kwargs | {'date': date}
+
+        kwargs = kwargs | {var: getattr(self, var, '') for var in format_variables}
 
         return self._get_full_path(
-            self.filename_format.format(date=self.liste_dates_rep[index],
-                                        formatted_index=(index % self.Lead_Times + 1) * self.dh, inv_step=self.inv_step,
-                                        cond_members=self.cond_members, N_ens=self.N_ens))
+            self.filename_format.format(**kwargs)
+        )
 
     def _load_file(self, file_path):
         return np.load(file_path)

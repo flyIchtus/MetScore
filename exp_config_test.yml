@@ -1,0 +1,150 @@
+output_folder: experiments
+experiments:
+  - name: Experiment1
+    dataloaders:
+      batch_size: 1
+      maxNsamples: 16
+      path_to_csv: data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+      csv_file: Large_lt_test_labels.csv
+      date_start: '2021-08-14'
+      date_end: '2021-08-15'
+      number_of_dates : 20
+      Lead_Times : 15
+      start_time : 21 # 21:00. Arome simulations in the dataset start at 21:00
+      dh : 3
+      real_dataset_config:
+        data_folder: data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+        variables: ['u','v','t2m']
+        sizeH: 256
+        sizeW: 256
+        var_indices: [1,2,3] #where to find the variables in dataset samples
+        crop_indices: [0,256,0,256]
+        preprocessor_config:
+          type: Preprocessor
+
+      fake_dataset_config:
+        data_folder: data/normal_['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']_reduced/samples
+        variables: ['u','v','t2m']
+        sizeH: 256
+        sizeW: 256
+        inv_step: 200
+        filename_format: "genFsemble_{date}_{formatted_index}_1000"
+        var_indices: [0,1,2] #where to find the variables in dataset samples
+        crop_indices: [0,256,0,256]
+        preprocessor_config:
+            type: ReverserrPreprocessor
+            real_var_indices: [1,2,3] #where to find the variables in stat files
+            real_data_dir: data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+            stat_folder: "stat_files/"
+            stat_version: "rr" # the name of the stat file is for ex: 'mean_[stat_version]_log_ppx.npy'
+            rr_transform:
+              log_transform_iteration: 1
+              symetrization: False
+              gaussian_std: 0
+            normalization:
+              type: "mean"
+              per_pixel: False
+              for_rr:
+                blur_iteration: 1
+      obs_dataset_config:
+        data_folder: data/obs_reduced_npy
+        crop_indices: [180, 436, 500, 756]
+        variables: ['ff','dd','t2m']
+        var_indices: [0,1,2]
+        preprocessor_config:
+            type: Preprocessor
+    metrics:
+      args:
+        debiasing: False
+        debiasing_mode: ENSAVG
+        conditioning_members: 16
+        threshold: [[ 1.39, 2.78, 4.17, 5.56, 8.33, 11.11 ], [ 278.15, 283.15, 288.15, 293.15, 297.15, 303.15 ]]
+        var_channel: 1
+        obs_var_channel: 1
+      metrics_list:
+        - name: relDiagram
+          type: relDiagram
+        - name: ensembleCRPS
+          type: ensembleCRPS
+        - name: brierScore
+          type: brierScore
+        - name: skillSpread
+          type: skillSpread
+        - name: rankHistogram
+          type: rankHistogram
+        - name: biasEnsemble
+          type: biasEnsemble
+  - name: Experiment2
+    dataloaders:
+      batch_size: 1
+      maxNsamples: 16
+      path_to_csv: data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+      csv_file: Large_lt_test_labels.csv
+      date_start: '2021-08-14'
+      date_end: '2021-08-15'
+      number_of_dates: 20
+      Lead_Times: 15
+      start_time: 21 # 21:00. Arome simulations in the dataset start at 21:00
+      dh: 3
+      real_dataset_config:
+        data_folder: data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+        variables: [ 'u','v','t2m' ]
+        sizeH: 256
+        sizeW: 256
+        var_indices: [ 1,2,3 ] #where to find the variables in dataset samples
+        crop_indices: [ 0,256,0,256 ]
+        preprocessor_config:
+          type: Preprocessor
+
+      fake_dataset_config:
+        data_folder: data/normal_['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']_reduced/samples
+        variables: [ 'u','v','t2m' ]
+        sizeH: 256
+        sizeW: 256
+        inv_step: 200
+        filename_format: "genFsemble_{date}_{formatted_index}_1000"
+        var_indices: [ 0,1,2 ] #where to find the variables in dataset samples
+        crop_indices: [ 0,256,0,256 ]
+        preprocessor_config:
+          type: ReverserrPreprocessor
+          real_var_indices: [ 1,2,3 ] #where to find the variables in stat files
+          real_data_dir: data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+          stat_folder: "stat_files/"
+          stat_version: "rr" # the name of the stat file is for ex: 'mean_[stat_version]_log_ppx.npy'
+          rr_transform:
+            log_transform_iteration: 1
+            symetrization: False
+            gaussian_std: 0
+          normalization:
+            type: "mean"
+            per_pixel: False
+            for_rr:
+              blur_iteration: 1
+      obs_dataset_config:
+        data_folder: data/obs_reduced_npy
+        crop_indices: [ 180, 436, 500, 756 ]
+        variables: [ 'ff','dd','t2m' ]
+        var_indices: [ 0,1,2 ]
+        preprocessor_config:
+          type: Preprocessor
+    metrics:
+      args:
+        debiasing: False
+        debiasing_mode: ENSAVG
+        conditioning_members: 16
+        threshold: [ [ 1.39, 2.78, 4.17, 5.56, 8.33, 11.11 ], [ 278.15, 283.15, 288.15, 293.15, 297.15, 303.15 ] ]
+        var_channel: 1
+        obs_var_channel: 1
+      metrics_list:
+        - name: relDiagram
+          type: relDiagram
+        - name: ensembleCRPS
+          type: ensembleCRPS
+        - name: brierScore
+          type: brierScore
+        - name: skillSpread
+          type: skillSpread
+        - name: rankHistogram
+          type: rankHistogram
+        - name: biasEnsemble
+          type: biasEnsemble
