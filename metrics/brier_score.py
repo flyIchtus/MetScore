@@ -53,6 +53,7 @@ def brier_score(obs_data, fake_data, parameters):
         O_brier[2, obs_data_p[2] < T_brier] = 0
         
         brier[i] = ps.brier_score(O_brier, X_brier_prob)
-
+        
+        #print(np.nanmax(obs_data_p[0]), np.nanmin(obs_data_p[0]))
         
     return brier

@@ -37,6 +37,17 @@ class rrPreprocessor(Preprocessor):
         normalization_type = self.normalization["type"]
         if normalization_type == "mean":
             means, stds = self.load_stat_files(normalization_type, "mean", "std")
+            
+            means[1]=7.13083249e-01
+            means[2]=-1.99056945e-01
+            means[3]=2.86256141e+02
+            
+            stds[1]=37.12370493
+            stds[2]=33.48502573
+            stds[3]=46.278571
+
+            print("ATTENTION means and stds values are changed manually. we need to fix this")
+            
             return None, None, means, stds
         elif normalization_type == "minmax":
             maxs, mins = self.load_stat_files(normalization_type, "max", "min")
