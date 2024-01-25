@@ -25,7 +25,6 @@ experiments:
         preprocessor_config:
           type: Preprocessor
 
-
       fake_dataset_config:
         data_folder: /scratch/mrmn/moldovang/tests_CGAN/normal_['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']/samples
         variables: ['u','v','t2m']
