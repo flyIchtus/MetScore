@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import threading
 
 import numpy as np
@@ -135,6 +136,7 @@ class DateDataset(Dataset):
         df_extract = self.df0[
             (self.df0['Date'] >= config_data['date_start']) & (self.df0['Date'] < config_data['date_end'])]
         self.liste_dates = df_extract['Date'].unique().tolist()
+        self.liste_dates = self.liste_dates[0:config_data['number_of_dates']]
         self.liste_dates_repl = [date_string.replace('T21:00:00Z', '') for date_string in self.liste_dates]
         self.liste_dates_rep = [item for item in self.liste_dates_repl for _ in range(config_data['Lead_Times'])]
 
@@ -173,12 +175,28 @@ class ObsDataset(DateDataset):
 class FakeDataset(DateDataset):
     def __init__(self, config_data, use_cache=True):
         super().__init__(config_data, use_cache)
-        self.filename_format = config_data.get('filename_format', "genFsemble_{date}_{formatted_index}_1000")
+
+        self.filename_format = config_data.get('filename_format', "genFsemble_{date}_{formatted_index}_{inv_step}_{cond_members}_{N_ens}")
 
     def _get_filename(self, index):
+        format_variables = [var.strip('}{') for var in re.findall(r'{(.*?)}', self.filename_format)]
+        kwargs = {}
+
+        if 'formatted_index' in format_variables:
+            format_variables.remove('formatted_index')
+            formatted_index = (index % self.Lead_Times + 1) * self.dh
+            kwargs = {'formatted_index': formatted_index}
+
+        if 'date' in format_variables:
+            format_variables.remove('date')
+            date = self.liste_dates_rep[index]
+            kwargs = kwargs | {'date': date}
+
+        kwargs = kwargs | {var: getattr(self, var, '') for var in format_variables}
+
         return self._get_full_path(
-            self.filename_format.format(date=self.liste_dates_rep[index],
-                                        formatted_index=(index % self.Lead_Times + 1) * self.dh))
+            self.filename_format.format(**kwargs)
+        )
 
     def _load_file(self, file_path):
         return np.load(file_path)

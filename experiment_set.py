@@ -70,9 +70,10 @@ class ExperimentSet(Configurable):
 
         for metric_name, results in batched_metric_results.items():
             # TODO moyenne par batch ?
-            results_np = np.array(results)
+            results_np = np.array(results, dtype=np.float32)
             np.save(self.config_data['output_path'] + metric_name, results_np)
-            # logging.info(f"{self.name} : Metric {metric_name} result: {average_result}")
+            logging.info(f"{self.name} : Metric {metric_name} shape result: {results_np.shape}")
+
 
         if self.not_batched_metrics:
             real_data, fake_data, obs_data = self.dataloader.get_all_data()

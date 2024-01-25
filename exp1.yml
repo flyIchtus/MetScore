@@ -2,15 +2,19 @@ name: Experiment1
 dataloaders:
   batch_size: 1
   maxNsamples: 16
-  path_to_csv: data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+  path_to_csv: /scratch/mrmn/brochetc/GAN_2D/datasets_full_indexing/IS_1_1.0_0_0_0_0_0_256_large_lt_done
   csv_file: Large_lt_test_labels.csv
-  date_start: '2021-08-14'
-  date_end: '2021-08-15'
+  date_start: '2020-08-14'
+  date_end: '2022-08-15'
+  number_of_dates : 20
   Lead_Times : 15
   start_time : 21 # 21:00. Arome simulations in the dataset start at 21:00 
-  dh : 3 
+  dh : 3
+  N_ens : 112
+  inv_step : 1000
+  cond_members : 16
   real_dataset_config:
-    data_folder: data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
+    data_folder: /scratch/mrmn/brochetc/GAN_2D/datasets_full_indexing/IS_1_1.0_0_0_0_0_0_256_large_lt_done
     variables: ['u','v','t2m']
     sizeH: 256
     sizeW: 256
@@ -19,8 +23,9 @@ dataloaders:
     preprocessor_config:
       type: Preprocessor
 
+
   fake_dataset_config:
-    data_folder: data/normal_['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']_reduced/samples
+    data_folder: /scratch/mrmn/moldovang/tests_CGAN/normal_['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']/samples
     variables: ['u','v','t2m']
     sizeH: 256
     sizeW: 256
@@ -42,7 +47,7 @@ dataloaders:
           for_rr:
             blur_iteration: 1
   obs_dataset_config:
-    data_folder: data/obs_reduced_npy
+    data_folder: /scratch/mrmn/moldovang/obs_databases/obs_full_npy
     crop_indices: [180, 436, 500, 756]
     variables: ['ff','dd','t2m']
     var_indices: [0,1,2]
