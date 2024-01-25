@@ -29,7 +29,7 @@ class Configurable:
             for subclass in parent_cls.__subclasses__() + [parent_cls]:
                 if type_name in subclass.aliases + [subclass.__name__]:
                     _check_config(subclass, config_data, typed=True)
-                    instance = subclass(config_data, **kwargs)
+                    instance = subclass(config_data, **config_data | kwargs)
                     for key, value in config_data.items():
                         setattr(instance, key, value)
                     return instance
