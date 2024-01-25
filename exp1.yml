@@ -1,9 +1,4 @@
 name: Experiment1
-debiasing : False
-debiasing_mode : ENSAVG
-conditioning_members : 16
-threshold_ff : [1.39, 2.78, 4.17, 5.56, 8.33, 11.11]
-threshold_t2m : [278.15, 283.15, 288.15, 293.15, 297.15, 303.15]
 dataloaders:
   batch_size: 1
   maxNsamples: 16
@@ -17,8 +12,7 @@ dataloaders:
   dh : 3
   N_ens : 112
   inv_step : 1000
-  cond_members : 16 
-  
+  cond_members : 16
   real_dataset_config:
     data_folder: /gpfsscratch/rech/woz/commun/data/IS_1_1.0_0_0_0_0_0_256_large_lt_done_reduced
     variables: ['u','v','t2m']
@@ -72,6 +66,27 @@ dataloaders:
     var_indices: [0,1,2]
     preprocessor_config:
         type: Preprocessor
+metrics:
+  args:
+    debiasing: False
+    debiasing_mode: ENSAVG
+    conditioning_members: 16
+    threshold: [[ 1.39, 2.78, 4.17, 5.56, 8.33, 11.11 ], [ 278.15, 283.15, 288.15, 293.15, 297.15, 303.15 ]]
+    var_channel: 1
+    obs_var_channel: 1
+  metrics_list:
+    - name: relDiagram
+      type: relDiagram
+    - name: ensembleCRPS
+      type: ensembleCRPS
+    - name: brierScore
+      type: brierScore
+    - name: skillSpread
+      type: skillSpread
+    - name: rankHistogram
+      type: rankHistogram
+    - name: biasEnsemble
+      type: biasEnsemble
 
 metrics_list:
 #  - name: ensembleCRPS
