@@ -23,6 +23,9 @@ class rrPreprocessor(Preprocessor):
 
     def __init__(self, config_data, sizeH, sizeW, variables, **kwargs):
         super().__init__(config_data, **kwargs)
+        print("#"*80)
+        print(config_data)
+        print("#"*80)
         self.config_data = config_data
         self.sizeH = sizeH
         self.sizeW = sizeW

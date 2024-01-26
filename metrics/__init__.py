@@ -16,15 +16,25 @@ import metrics.mean_bias as mb
 import metrics.skill_spread_deviation as skspd
 from metrics import CRPS_calc
 
-from metrics.metrics import Metric
+from metrics.metrics import Metric, PreprocessCondObs, PreprocessDist, PreprocessStandalone
 
 class W1CenterNUMPY(Metric):
     def __init__(self, name, **kwargs):
         super().__init__(isBatched=False, names=['W1_Center'])
 
-    def _preprocess(self, fake_data, real_data=None, obs_data=None, 
-                    debiasing=None, debiasing_mode=None, conditioning_members=None):
-        return self.preprocess_dist(real_data,fake_data)
+
+"""
+all metrics :
+W1CenterNUMPY
+W1RandomNUMPY
+pwW1
+
+
+"""
+
+class W1CenterNUMPY(PreprocessDist):
+    def __init__(self, *args, **kwargs):
+        super().__init__(isBatched=False)
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -400,7 +410,7 @@ class rankHistogram(Metric):
 
 class relDiagram(Metric):
     def __init__(self, name, **kwargs):
-        super().__init__(isBatched=True, names=['Relff', 'Reldd','Relt2m'])
+        super().__init__(isBatched=True) #, names=['Relff', 'Reldd','Relt2m'])
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None, debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_cond_obs(fake_data, real_data, obs_data, debiasing, debiasing_mode, conditioning_members)
@@ -418,7 +428,7 @@ class relDiagram(Metric):
 
 class biasEnsemble(Metric):
     def __init__(self, name, **kwargs):
-        super().__init__(isBatched=True, names=['Biasff', 'Biasdd','Biast2m'])
+        super().__init__(isBatched=True)#, names=['Biasff', 'Biasdd','Biast2m'])
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None, debiasing=None, debiasing_mode=None, conditioning_members=None):
         return self.preprocess_cond_obs(fake_data, real_data, obs_data, debiasing, debiasing_mode, conditioning_members)
@@ -431,7 +441,7 @@ class biasEnsemble(Metric):
 
 class meanBias(Metric):
     def __init__(self, name, **kwargs):
-        super().__init__(isBatched=True, names=['Biasff', 'Biasdd','Biast2m'])
+        super().__init__(isBatched=True)#, names=['Biasff', 'Biasdd','Biast2m'])
         self.debiasing = debiasing
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
@@ -451,7 +461,7 @@ class meanBias(Metric):
 
 class variance(Metric):
     def __init__(self, name, **kwargs):
-        super().__init__(isBatched=True, names=['varu', 'varv','vart2m'])
+        super().__init__(isBatched=True)#, names=['varu', 'varv','vart2m'])
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
         return self.preprocess_standalone(fake_data)
@@ -463,7 +473,7 @@ class variance(Metric):
 
 class varianceDiff(Metric):
     def __init__(self, name, **kwargs):
-        super().__init__(isBatched=True, names=['var_diff_u', 'var_diff_v','var_diff_t2m'])
+        super().__init__(isBatched=True)#, names=['var_diff_u', 'var_diff_v','var_diff_t2m'])
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
         return self.preprocess_dist(real_data,fake_data)
@@ -476,7 +486,7 @@ class varianceDiff(Metric):
 
 class stdDiff(Metric):
     def __init__(self, name, **kwargs):
-        super().__init__(isBatched=True, names=['std_diff_u', 'std_diff_v','std_diff_t2m'])
+        super().__init__(isBatched=True)#, names=['std_diff_u', 'std_diff_v','std_diff_t2m'])
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
         return self.preprocess_dist(real_data,fake_data)
@@ -490,7 +500,7 @@ class stdDiff(Metric):
 
 class relStdDiff(Metric):
     def __init__(self, name, **kwargs):
-        super().__init__(isBatched=True, names=['rel_std_diff_u', 'rel_std_diff_v','rel_std_diff_t2m'])
+        super().__init__(isBatched=True)#, names=['rel_std_diff_u', 'rel_std_diff_v','rel_std_diff_t2m'])
 
     def _preprocess(self, fake_data, real_data=None, obs_data=None):
         return self.preprocess_dist(real_data,fake_data)
