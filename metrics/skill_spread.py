@@ -33,12 +33,11 @@ def skill_spread(obs_data, fake_data):
 
     skill = fake_data_p.mean(axis=0) - obs_data_p
     
-    spread = fake_data_p.std(axis=0)
-    
+    var = fake_data_p.var(axis=0, ddof = 1)
     
     sp_out[0] = skill
     
-    sp_out[1] = spread
+    sp_out[1] = var # var is actually needed for correctly calculating the spread, which is done in the vizualization code
 
 
         

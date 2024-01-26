@@ -25,7 +25,6 @@ def brier_score(obs_data, fake_data, parameters):
     
     fake_data_p = copy.deepcopy(fake_data)
     obs_data_p = copy.deepcopy(obs_data)
-    
     brier = np.zeros((N_brier,  C, H, W))
     
     
@@ -54,6 +53,5 @@ def brier_score(obs_data, fake_data, parameters):
         
         brier[i] = ps.brier_score(O_brier, X_brier_prob)
         
-        #print(np.nanmax(obs_data_p[0]), np.nanmin(obs_data_p[0]))
         
     return brier

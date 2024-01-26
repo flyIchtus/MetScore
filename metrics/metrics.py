@@ -58,7 +58,7 @@ class PreprocessCondObs(Metric):
             obs_data_p = obs_data
 
         fake_data_pp = copy.deepcopy(fake_data_p)
-        obs_data_pp = copy.deepcopy(obs_data_p[0])
+        obs_data_pp = np.around(copy.deepcopy(obs_data_p[0]),2)
         real_data_pp = copy.deepcopy(real_data_p)
 
         fake_data_pp[:, 0], fake_data_pp[:, 1] = wc.computeWindDir(fake_data_pp[:, 0], fake_data_pp[:, 1])
