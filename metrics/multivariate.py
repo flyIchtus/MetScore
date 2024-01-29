@@ -8,12 +8,12 @@ Created on Thu May 12 11:08:13 2022
 Multivariate correlations
 """
 import logging
-
-import numpy as np
-from time import perf_counter
-import matplotlib.pyplot as plt
 from itertools import combinations_with_replacement
+
+import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.ticker import FormatStrFormatter
+
 
 def plot2D_histo(var2var_f, var2var_r, levels, output_dir, add_name):
     """

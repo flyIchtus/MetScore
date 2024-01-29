@@ -1,14 +1,11 @@
 import logging
-import os.path
-
-import numpy as np
-import pandas as pd
-from configurable import Configurable
-
 from abc import ABC, abstractmethod
 from typing import Type
 
-from dataset import Dataset, RealDataset, FakeDataset, ObsDataset
+import numpy as np
+
+from core.configurable import Configurable
+from core.dataset import Dataset, RealDataset, FakeDataset, ObsDataset
 
 
 class DataLoader(ABC, Configurable):
@@ -80,14 +77,10 @@ class DateDataloader(DataLoader):
         # Appel du __init__ de la classe mère
         super().__init__()
 
-        # add df0, LT, dh to config_data, start_time to config_data dataset
-        # augment_dict = {'df0': self.df0, 'LT': config_data['Lead_Times'], 'dh': config_data['dh'], 'start_time': config_data['start_time']}
         config_data['real_dataset_config'].update(config_data)
         config_data['fake_dataset_config'].update(config_data)
         config_data['obs_dataset_config'].update(config_data)
 
-
-        # Instanciation des datasets dans DateDataloader
         self.real_dataset = RealDataset.fromConfig(config_data['real_dataset_config'], use_cache=use_cache)
         self.fake_dataset = FakeDataset.fromConfig(config_data['fake_dataset_config'], use_cache=use_cache)
         self.obs_dataset = ObsDataset.fromConfig(config_data['obs_dataset_config'], use_cache=use_cache)

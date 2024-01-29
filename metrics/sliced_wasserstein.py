@@ -10,7 +10,7 @@ Sliced Wasserstein Distance API and functions
 """
 
 ####################### NVIDIA implementation for Sliced wasserstein Distance## 
-#----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # Copyright (c) 2018, NVIDIA CORPORATION. All rights reserved.
 #
 # This work is licensed under the Creative Commons Attribution-NonCommercial
@@ -18,14 +18,16 @@ Sliced Wasserstein Distance API and functions
 # http://creativecommons.org/licenses/by-nc/4.0/ or send a letter to
 # Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
+import copy
+from math import log2
+
 import numpy as np
 import scipy.ndimage
 from torch import tensor
-from math import log2
-import copy
+
 
 def get_descriptors_for_minibatch(minibatch, nhood_size, nhoods_per_image):
-    S = minibatch.shape # (minibatch, channel, height, width)
+    S = minibatch.shape  # (minibatch, channel, height, width)
     assert len(S) == 4
     N = nhoods_per_image * S[0]
     H = nhood_size // 2

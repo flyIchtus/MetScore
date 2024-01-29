@@ -5,8 +5,8 @@ import numpy as np
 import yaml
 from tqdm import tqdm
 
-from dataloader import DateDataloader
-from configurable import Configurable
+from core.configurable import Configurable
+from core.dataloader import DateDataloader
 from metrics.metrics import Metric
 
 
@@ -62,7 +62,7 @@ class ExperimentSet(Configurable):
     def prep_folder(self):
 
         logging.debug(f"Making dirs at {self.current_path}")
-        os.makedirs(self.current_path,exist_ok=True)
+        os.makedirs(self.current_path)
         with open(os.path.join(self.current_path, 'config.yml'), 'w') as f:
             f.write(yaml.dump(self.config_data))
 

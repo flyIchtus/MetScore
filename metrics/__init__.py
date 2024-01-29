@@ -1,26 +1,23 @@
 import numpy as np
 
+import metrics.CRPS_calc as CRPS_calc
+import metrics.bias_ensemble as BE
+import metrics.brier_score as BS
 import metrics.general_metrics as GM
 import metrics.length_scales as ls
-import metrics.spectrum_analysis as spec
-import metrics.sliced_wasserstein as SWD
-import metrics.wasserstein_distances as WD
-import metrics.quantiles_metric as quant
-import metrics.multivariate as multiv
-import metrics.brier_score as BS
-import metrics.CRPS_calc as CRPS_calc
-import metrics.skill_spread as SP
-import metrics.spectral_variance as spvar
-import metrics.rank_histogram as RH
-import metrics.bias_ensemble as BE
-import metrics.rel_diagram as RD
 import metrics.mean_bias as mb
+import metrics.multivariate as multiv
+import metrics.quantiles_metric as quant
+import metrics.rank_histogram as RH
+import metrics.rel_diagram as RD
+import metrics.skill_spread as SP
 import metrics.skill_spread_deviation as skspd
+import metrics.sliced_wasserstein as SWD
+import metrics.spectral_variance as spvar
+import metrics.spectrum_analysis as spec
+import metrics.wasserstein_distances as WD
 from metrics import CRPS_calc
-
 from metrics.metrics import Metric, PreprocessCondObs, PreprocessDist, PreprocessStandalone
-
-
 
 """
 all metrics :

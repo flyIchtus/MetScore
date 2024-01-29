@@ -2,17 +2,16 @@ import logging
 import os
 import re
 import threading
+from abc import abstractmethod
+from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
 
-from configurable import Configurable
-from useful_funcs import obs_clean
-from abc import ABC, abstractmethod
+from core.configurable import Configurable
+from core.useful_funcs import obs_clean
+from preprocess.preprocessor import Preprocessor
 
-from datetime import datetime, timedelta
-
-from transforms.preprocessor import Preprocessor
 
 def convert_key(func):
     def wrapper(self, key, *args, **kwargs):

@@ -10,8 +10,9 @@ multivariate_plot
 """
 
 import pickle
+
 import numpy as np
-import matplotlib.pyplot as plt
+
 import multivariate as mlt
 
 path='/home/brochetc/Bureau/Thèse/présentations_thèse/multivariables/Set_38_32/'

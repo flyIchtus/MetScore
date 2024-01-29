@@ -9,18 +9,21 @@ Created on Tue Mar  1 11:17:55 2022
 
 
 Include :
-    -> 2D dct and idct transforms
+    -> 2D dct and idct preprocess
     -> 'radial' energy spectrum calculation
     -> spectrum plotting configuration
 
 
 """
 
-from scipy.fftpack import dct, idct,fft, ifft
-import numpy as np
-import matplotlib.pyplot as plt
-import metrics.wind_comp as wc
 from copy import deepcopy
+
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.fftpack import dct, idct, fft
+
+import metrics.wind_comp as wc
+
 
 ################## DCT ########################################################
 

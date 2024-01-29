@@ -1,6 +1,7 @@
 import math
-import pyproj
+
 import numpy as np
+import pyproj
 
 #########################
 #    INITIALIZATION     #

@@ -12,7 +12,7 @@ Metric version of quantiles calculation
 import numpy as np
 
 
-def quantiles(data, qlist) :
+def quantiles(data, qlist):
     """
     compute quantiles of data shape on first axis using numpy 'primitive'
     
@@ -27,10 +27,11 @@ def quantiles(data, qlist) :
         
         np.array of shape N x C x H x W
     """
-  
-    return np.quantile(data, qlist, axis =0)
 
-def quantile_score(real_data, fake_data, qlist=[0.99]) :
+    return np.quantile(data, qlist, axis=0)
+
+
+def quantile_score(real_data, fake_data, qlist=[0.99]):
     """
     compute rmse of quantiles maps as outputted by quantiles function
     
@@ -47,10 +48,10 @@ def quantile_score(real_data, fake_data, qlist=[0.99]) :
         q_score : np.array of length N x C
     
     """
-    
+
     q_real = quantiles(real_data, qlist)
     q_fake = quantiles(fake_data, qlist)
-    
-    q_score = np.sqrt((q_fake-q_real)**2).mean(axis = (2,3))
-    
+
+    q_score = np.sqrt((q_fake - q_real) ** 2).mean(axis=(2, 3))
+
     return q_score

@@ -11,8 +11,6 @@ correlation lengths
 import logging
 
 import numpy as np
-import matplotlib.pyplot as plt
-
 
 
 def get_metric_tensor(eps, sca):

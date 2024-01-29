@@ -1,16 +1,15 @@
 # Importations
-from abc import ABC, abstractmethod
-import logging
 import copy
-import metrics.wind_comp as wc
+import logging
+from abc import ABC, abstractmethod
+
 import numpy as np
 
-from configurable import Configurable
+import metrics.wind_comp as wc
+from core.configurable import Configurable
 
 
-# Classe Metric
 class Metric(ABC, Configurable):
-
     required_keys = ['name']
 
     def __init__(self, isBatched=False, **kwargs):

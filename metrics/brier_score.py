@@ -1,7 +1,8 @@
-import properscoring as ps
-import numpy as np
-import metrics.wind_comp as wc
 import copy
+
+import numpy as np
+import properscoring as ps
+
 
 def brier_score(obs_data, fake_data, parameters):
     """

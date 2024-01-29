@@ -6,17 +6,19 @@ Created on Wed May 10 13:23:53 2023
 @author: brochetc
 """
 
-import metrics.spectrum_analysis as spec
 import numpy as np
 
-def spectrum_deviation(X):
+import metrics.spectrum_analysis as spec
 
+
+def spectrum_deviation(X):
     X_avg = X.mean(axis=0)
-    
+
     X_dev = X - X_avg
-    
+
     psd = spec.PowerSpectralDensity(X_dev)
     return psd
+
 
 def spectrum_variance(X):
 

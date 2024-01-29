@@ -1,7 +1,7 @@
+import numpy as np
 import torch as torch
 
 from metrics.metrics import Metric
-import numpy as np
 
 
 class OrographyRMSE(Metric):

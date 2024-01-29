@@ -5,9 +5,10 @@ AROME-specific version of skill_spread
 
 """
 
-import numpy as np
-import metrics.wind_comp as wc
 import copy
+
+import numpy as np
+
 
 def skill_spread(obs_data, fake_data):
     """

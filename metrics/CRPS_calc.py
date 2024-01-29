@@ -8,13 +8,15 @@ Created on Fri Mar 10 14:38:11 2023
 AROME-specific version of CRPS
 
 """
-import logging
-
-import numpy as np
-import metrics.wind_comp as wc
 import copy
-import CRPS.CRPS as psc
+import logging
 from multiprocessing import Pool
+
+import CRPS.CRPS as psc
+import numpy as np
+
+import metrics.wind_comp as wc
+
 
 def ensemble_crps(obs_data, fake_data):
     """

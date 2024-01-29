@@ -1,6 +1,4 @@
-import numpy as np
-
-from configurable import Configurable
+from core.configurable import Configurable
 
 
 class Preprocessor(Configurable):
@@ -15,5 +13,3 @@ class Preprocessor(Configurable):
 
     def process_batch(self, batch):
         return batch
-
-

@@ -8,18 +8,19 @@ Created on Mon Feb 21 16:41:23 2022
 Diverse Wasserstein distances computations
 """
 
+from multiprocessing import Pool
+
+import numpy as np
 import scipy.stats as sc
 import torch
-import numpy as np
-from multiprocessing import Pool
-from math import sqrt
+
 
 ###############################################################################
 ################### Wasserstein distances ############################
 ###############################################################################
 
 def wasserstein_wrap(data):
-    real_data, fake_data, real_weights, fake_weights=data
+    real_data, fake_data, real_weights, fake_weights = data
     return sc.wasserstein_distance(real_data, fake_data, \
                                    real_weights, fake_weights)
 

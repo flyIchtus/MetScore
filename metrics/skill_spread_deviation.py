@@ -5,11 +5,13 @@
 AROME-specific version of skill_spread
 
 """
+import copy
 import logging
 
 import numpy as np
+
 import metrics.wind_comp as wc
-import copy
+
 
 def skill_spread_deviation_multi_dates(cond, X, real_ens, debiasing = False, print_skill_aro=False):
     """
