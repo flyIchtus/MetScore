@@ -21,6 +21,7 @@ class Metric(ABC, Configurable):
 
     def calculate(self, real_data, fake_data, obs_data):
         processed_data = self._preprocess(real_data, fake_data, obs_data)
+
         result = self._calculateCore(processed_data)
         return result
 

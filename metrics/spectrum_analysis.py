@@ -215,8 +215,8 @@ def PSD_compare(real_data,fake_data):
     channels = real_data.shape[1]
     res = np.zeros((channels,))
     for c in range(channels):
-        psd_real = PowerSpectralDensity(real_data[:,c,:,:])
-        psd_fake = PowerSpectralDensity(fake_data[:,c,:,:])
+        psd_real = PowerSpectralDensity(real_data[:,c:c+1,:,:])
+        psd_fake = PowerSpectralDensity(fake_data[:,c:c+1,:,:])
         res[c] = np.sqrt(np.mean((np.log10(psd_real)-np.log10(psd_fake))**2))
     return res
 

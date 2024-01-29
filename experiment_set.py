@@ -54,13 +54,15 @@ class ExperimentSet(Configurable):
         self.batched_metrics = [metric for metric in self.metrics if metric.isBatched]
         self.not_batched_metrics = [metric for metric in self.metrics if not metric.isBatched]
         self.config_data = config_data
-        use_cache = False# self.not_batched_metrics is not []
+        use_cache = self.not_batched_metrics is not []
         logging.info(f"Using cache: {use_cache}")
         self.dataloader = DateDataloader.fromConfig(config_data['dataloaders'], use_cache=use_cache)
         self.current_path = os.path.join(output_folder, config_data['name'])
 
     def prep_folder(self):
-        os.mkdir(self.current_path)
+
+        logging.debug(f"Making dirs at {self.current_path}")
+        os.makedirs(self.current_path,exist_ok=True)
         with open(os.path.join(self.current_path, 'config.yml'), 'w') as f:
             f.write(yaml.dump(self.config_data))
 
@@ -69,14 +71,12 @@ class ExperimentSet(Configurable):
         self.prep_folder()
 
         batched_metric_results = {metric.name: [] for metric in self.batched_metrics}
-        # logging.debug(batched_metric_results)
 
         for (batch_fake, batch_real, batch_obs) in tqdm(self.dataloader, desc=f"{self.name}: Processing batches"):
-            logging.debug(f"Shape : fake:{batch_fake.shape}, real:{batch_real.shape}, obs:{batch_obs.shape}")
             for metric in self.batched_metrics:
-                res = metric.calculate(batch_fake, batch_real, batch_obs)
+                logging.debug(f"Running Metric {type(metric)}")
+                res = metric.calculate(batch_real, batch_fake, batch_obs)
                 batched_metric_results[metric.name].append(res)
-                # logging.debug(batched_metric_results)
 
         for metric_name, results in tqdm(batched_metric_results.items(), desc=f"{self.name}: Saving results"):
             results_np = np.array(results, dtype=np.float32)
@@ -87,11 +87,13 @@ class ExperimentSet(Configurable):
         if self.not_batched_metrics:
             real_data, fake_data, obs_data = self.dataloader.get_all_data()
             for metric in tqdm(self.not_batched_metrics, desc=f"{self.name}: Calculating non-batched metrics"):
+                logging.debug(f"Running Metric {type(metric)}")
                 results = metric.calculate(real_data, fake_data, obs_data)
                 results_np = np.array(results, dtype=np.float32)
                 np.save(os.path.join(self.current_path, metric.name) + '.npy', results_np)
-                if res.size < 25:
-                    logging.info(f"Metric {metric.name} result: {res}")
+                logging.debug(results_np.size)
+                if results_np.size < 25:
+                    logging.info(f"Metric {metric.name} result: {results_np}")
                 else:
                     logging.info(f"Metric {metric.name} : too long result to log")
 

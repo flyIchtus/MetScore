@@ -107,18 +107,14 @@ class Dataset(Configurable):
     def get_all_data(self):
         all_data = []
         if not self.is_dataset_cached():
-            print("dataset not cached")
             for idx in range(len(self)):
                 file_path = self._get_filename(idx)
                 data = self._load_and_preprocess(file_path)
-                print("cache data shape", data.shape)
                 all_data.append(data)
         else:
-            print("dataset cached")
             for idx in range(len(self)):
                 file_path = self._get_filename(idx)
                 data = self.cache.get_from_cache(file_path)
-                print("cache data shape", data.shape)
                 all_data.append(data)
         return np.concatenate(all_data,axis=0)
 
@@ -195,18 +191,14 @@ class ObsDataset(DateDataset):
     def get_all_data(self):
         all_data = []
         if not self.is_dataset_cached():
-            print("dataset not cached")
             for idx in range(len(self)):
                 file_path = self._get_filename(idx)
                 data = self._load_and_preprocess(file_path)
-                print("cache data shape", data.shape)
                 all_data.append(data[np.newaxis,:,:,:])
         else:
-            print("dataset cached")
             for idx in range(len(self)):
                 file_path = self._get_filename(idx)
                 data = self.cache.get_from_cache(file_path)
-                print("cache data shape", data.shape)
                 all_data.append(data[np.newaxis,:,:,:])
         return np.concatenate(all_data,axis=0)
 

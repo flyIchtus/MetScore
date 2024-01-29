@@ -147,25 +147,19 @@ class SWD_API:
             self.descriptors[lod].append(desc)
 
     def end(self):
-        
-
         self.desc_real = [finalize_descriptors(self.descriptors[lod][0]) for lod,_ in enumerate(self.descriptors)]
         self.desc_fake = [finalize_descriptors(self.descriptors[lod][1]) for lod,_ in enumerate(self.descriptors)]
-        
+
         del self.descriptors
-        
         dist = [sliced_wasserstein(dreal, dfake, self.dir_repeats, self.dirs_per_repeat) for dreal, dfake in zip(self.desc_real, self.desc_fake)]
         
         del self.desc_real, self.desc_fake
         
         dist = [d * 1e3 for d in dist] # multiply by 10^3
         
-        logging.debug(dist,np.mean(dist))
-        
         return dist + [np.mean(dist)]
     
     def End2End(self, real, fakes):
-        
         real = copy.deepcopy(real)
         fakes = copy.deepcopy(fakes)
         

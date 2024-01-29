@@ -75,8 +75,9 @@ experiments:
         threshold: [[ 1.39, 2.78, 4.17, 5.56, 8.33, 11.11 ], [ 278.15, 283.15, 288.15, 293.15, 297.15, 303.15 ]]
         var_channel: 1
         obs_var_channel: 1
+        
       metrics_list:
-        - name: relDiagram0
+        - name: relDiagram
           type: relDiagram
         - name: ensembleCRPS
           type: ensembleCRPS
@@ -88,3 +89,21 @@ experiments:
           type: rankHistogram
         - name: biasEnsemble
           type: biasEnsemble
+        - name: lsMetric
+          type: lsMetric
+          scale: 2.5
+        - name: lsDist
+          type: lsDist
+          scale: 2.5
+        - name: spectralCompute
+          type: spectralCompute
+        - name: spectralDist
+          type: spectralDist
+        - name: MultivarCorr
+          type: MultivarCorr
+        - name: Quantiles
+          type: Quantiles
+          qlist: [0.05,0.5,0.8,0.9]
+        - name: QuantilesScore
+          type: QuantilesScore
+          qlist: [0.01,0.1,0.9,0.99]
