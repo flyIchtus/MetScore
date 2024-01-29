@@ -1,3 +1,6 @@
+sizeH: 256
+sizeW: 256
+
 stat_folder: "stat_files/"
 stat_version: "rr" # the name of the stat file is for ex: 'mean_[stat_version]_log_ppx.npy'
 

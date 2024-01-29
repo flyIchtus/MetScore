@@ -1,11 +1,9 @@
-import numpy as np
-
-from configurable import Configurable
+from core.configurable import Configurable
 
 
 class Preprocessor(Configurable):
 
-    def __init__(self, config_data):
+    def __init__(self, config_data, **kwargs):
         """
         Sample for config yml file:
         name: Preprocessor
