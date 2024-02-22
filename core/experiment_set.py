@@ -62,7 +62,11 @@ class ExperimentSet(Configurable):
     def prep_folder(self):
 
         logging.debug(f"Making dirs at {self.current_path}")
-        os.makedirs(self.current_path)
+        try:
+            os.makedirs(self.current_path)
+        except FileExistsError:
+            raise FileExistsError(f"ExperimentSet {self.name} already exists at {self.current_path}")
+
         with open(os.path.join(self.current_path, 'config.yml'), 'w') as f:
             f.write(yaml.dump(self.config_data))
 
@@ -81,7 +85,7 @@ class ExperimentSet(Configurable):
         for metric_name, results in tqdm(batched_metric_results.items(), desc=f"{self.name}: Saving results"):
             results_np = np.array(results, dtype=np.float32)
             np.save(os.path.join(self.current_path,  metric_name) + '.npy', results_np)
-            logging.info(f"{self.name} : Metric {metric_name} shape result: {results_np.shape}")
+            logging.debug(f"{self.name} : Metric {metric_name} shape result: {results_np.shape}")
 
 
         if self.not_batched_metrics:

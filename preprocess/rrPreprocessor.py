@@ -45,9 +45,7 @@ class rrPreprocessor(Preprocessor):
             stds[1] = 37.12370493
             stds[2] = 33.48502573
             stds[3] = 46.278571
-
-            print("ATTENTION means and stds values are changed manually. we need to fix this")
-
+            logging.warning("Means and stds values are changed manually. we need to fix this")
             return None, None, means, stds
         elif normalization_type == "minmax":
             maxs, mins = self.load_stat_files(normalization_type, "max", "min")
