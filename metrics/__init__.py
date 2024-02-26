@@ -202,7 +202,7 @@ class ensembleCRPS(PreprocessCondObs):
         else:
             exp_data = processed_data['real_data']
         obs_data = processed_data['obs_data']
-        return CRPS_calc.ensemble_crps(obs_data, exp_data)
+        return CRPS_calc.ensemble_crps(obs_data, exp_data, self.fair)
 
 class crpsMultiDates(PreprocessCondObs):
 
