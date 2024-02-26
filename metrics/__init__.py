@@ -258,6 +258,19 @@ class brierScore(PreprocessCondObs):
 
         return BS.brier_score(obs_data,exp_data,np.array(self.threshold))
 
+
+class brierSkillScore(PreprocessCondObs):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(isBatched=True)
+
+
+    def _calculateCore(self, processed_data):
+        real_data = processed_data['real_data']
+        fake_data = processed_data['fake_data']
+        obs_data = processed_data['obs_data']
+
+        return BS.brier_score(obs_data,real_data,fake_data,np.array(self.threshold))
 #####################################################################
 ############################ Skill-Spread ###########################
 #####################################################################
