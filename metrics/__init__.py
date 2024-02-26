@@ -19,15 +19,6 @@ import metrics.wasserstein_distances as WD
 from metrics import CRPS_calc
 from metrics.metrics import Metric, PreprocessCondObs, PreprocessDist, PreprocessStandalone
 
-"""
-all metrics :
-W1CenterNUMPY
-W1RandomNUMPY
-pwW1
-
-
-"""
-
 class W1CenterNUMPY(PreprocessDist):
     def __init__(self, *args, **kwargs):
         super().__init__(isBatched=False)
@@ -206,9 +197,12 @@ class ensembleCRPS(PreprocessCondObs):
         super().__init__(isBatched=True)
 
     def _calculateCore(self, processed_data):
-        fake_data = processed_data['fake_data']
+        if not self.isOnReal:
+            exp_data = processed_data['fake_data']
+        else:
+            exp_data = processed_data['real_data']
         obs_data = processed_data['obs_data']
-        return CRPS_calc.ensemble_crps(obs_data, fake_data)
+        return CRPS_calc.ensemble_crps(obs_data, exp_data)
 
 class crpsMultiDates(PreprocessCondObs):
 
@@ -222,8 +216,10 @@ class crpsMultiDates(PreprocessCondObs):
         real_data = processed_data['real_data']
         fake_data = processed_data['fake_data']
         obs_data = processed_data['obs_data']
-
-        return CRPS_calc.crps_multi_dates(obs_data,real_data,fake_data, debiasing=self.debiasing)
+        if self.isOnReal:
+            return CRPS_calc.crps_multi_dates(obs_data,real_data,real_data, debiasing=self.debiasing)
+        else:
+            return CRPS_calc.crps_multi_dates(obs_data,real_data,fake_data, debiasing=self.debiasing)
 
 class crpsDiffMultiDates(PreprocessCondObs):
 
@@ -236,8 +232,12 @@ class crpsDiffMultiDates(PreprocessCondObs):
         real_data = processed_data['real_data']
         fake_data = processed_data['fake_data']
         obs_data = processed_data['obs_data']
+        if self.isOnReal:
+            return CRPS_calc.crps_vs_aro_multi_dates(obs_data,real_data,real_data, debiasing=self.debiasing)
+        else:
+            return CRPS_calc.crps_vs_aro_multi_dates(obs_data,real_data,fake_data, debiasing=self.debiasing)
 
-        return CRPS_calc.crps_vs_aro_multi_dates(obs_data,real_data,fake_data, debiasing=self.debiasing)
+        
 
 #####################################################################
 ############################ Brier ##################################
@@ -250,10 +250,13 @@ class brierScore(PreprocessCondObs):
 
 
     def _calculateCore(self, processed_data):
-        fake_data = processed_data['fake_data']
+        if not self.isOnReal:
+            exp_data = processed_data['fake_data']
+        else:
+            exp_data = processed_data['real_data']
         obs_data = processed_data['obs_data']
 
-        return BS.brier_score(obs_data,fake_data, np.array(self.threshold))
+        return BS.brier_score(obs_data,exp_data,np.array(self.threshold))
 
 #####################################################################
 ############################ Skill-Spread ###########################
@@ -264,10 +267,12 @@ class skillSpread(PreprocessCondObs):
         super().__init__(isBatched=True)
 
     def _calculateCore(self, processed_data):
-        fake_data = processed_data['fake_data']
+        if not self.isOnReal:
+            exp_data = processed_data['fake_data']
+        else:
+            exp_data = processed_data['real_data']
         obs_data = processed_data['obs_data']
-
-        return SP.skill_spread(obs_data,fake_data)
+        return SP.skill_spread(obs_data,exp_data)
 
 class skillSpreadDeviationMultidates(PreprocessCondObs):
 
@@ -280,8 +285,11 @@ class skillSpreadDeviationMultidates(PreprocessCondObs):
         real_data = processed_data['real_data']
         fake_data = processed_data['fake_data']
         obs_data = processed_data['obs_data']
+        if self.isOnReal:
+            return skspd.skill_spread_deviation_multidates(obs_data,real_data,real_data, debiasing=self.debiasing)
+        else:
+            return skspd.skill_spread_deviation_multidates(obs_data,real_data,fake_data, debiasing=self.debiasing)
 
-        return skspd.skill_spread_deviation_multidates(obs_data,real_data,fake_data, debiasing=self.debiasing)
 
 class thresholdedSkillSpreadDeviationMultidates(PreprocessCondObs):
 
@@ -295,9 +303,10 @@ class thresholdedSkillSpreadDeviationMultidates(PreprocessCondObs):
         real_data = processed_data['real_data']
         fake_data = processed_data['fake_data']
         obs_data = processed_data['obs_data']
-
-        return skspd.thresholded_skill_spread_deviation_multidates(obs_data,real_data,fake_data, debiasing=self.debiasing)
-
+        if self.isOnReal:
+            return skspd.thresholded_skill_spread_deviation_multidates(obs_data,real_data,real_data, debiasing=self.debiasing)
+        else:
+            return skspd.thresholded_skill_spread_deviation_multidates(obs_data,real_data,fake_data, debiasing=self.debiasing)
 
 
 #####################################################################
@@ -309,10 +318,13 @@ class rankHistogram(PreprocessCondObs):
         super().__init__(isBatched=True)
 
     def _calculateCore(self, processed_data):
-        fake_data = processed_data['fake_data']
+        if not self.isOnReal:
+            exp_data = processed_data['fake_data']
+        else:
+            exp_data = processed_data['real_data']
         obs_data = processed_data['obs_data']
 
-        return RH.rank_histo(obs_data,fake_data)
+        return RH.rank_histo(obs_data,exp_data)
 
 
 #####################################################################
@@ -327,10 +339,13 @@ class relDiagram(PreprocessCondObs):
         super().__init__(isBatched=True)
 
     def _calculateCore(self, processed_data):
-        fake_data = processed_data['fake_data']
+        if not self.isOnReal:
+            exp_data = processed_data['fake_data']
+        else:
+            exp_data = processed_data['real_data']
         obs_data = processed_data['obs_data']
 
-        return RD.rel_diag(obs_data,fake_data, np.array(self.threshold))
+        return RD.rel_diag(obs_data, exp_data, np.array(self.threshold))
 
 #####################################################################
 ############################ Bias ###################################
@@ -344,10 +359,13 @@ class biasEnsemble(PreprocessCondObs):
 
 
     def _calculateCore(self, processed_data):
-        fake_data = processed_data['fake_data']
+        if not self.isOnReal:
+            exp_data = processed_data['fake_data']
+        else:
+            exp_data = processed_data['real_data']
         obs_data = processed_data['obs_data']
 
-        return BE.bias_ens(obs_data,fake_data)
+        return BE.bias_ens(obs_data,exp_data)
 
 class meanBias(PreprocessCondObs):
     def __init__(self, *args, **kwargs):
@@ -357,8 +375,10 @@ class meanBias(PreprocessCondObs):
         real_data = processed_data['real_data']
         fake_data = processed_data['fake_data']
         obs_data = processed_data['obs_data']
-
-        return mb.mean_bias(obs_data,real_data,fake_data)
+        if self.isOnReal:
+            return mb.mean_bias(obs_data,real_data,fake_data)
+        else:
+            return mb.mean_bias(obs_data,real_data,fake_data)
 
 
 #####################################################################
@@ -370,9 +390,7 @@ class variance(PreprocessStandalone):
         super().__init__(isBatched=True)
 
     def _calculateCore(self, processed_data):
-        fake_data = processed_data['fake_data']
-        obs_data = processed_data['obs_data']
-        return BE.bias_ens(obs_data, fake_data)
+        return GM.variance(processed_data)
 
 class varianceDiff(PreprocessDist):
     def __init__(self, *args, **kwargs):
@@ -407,5 +425,5 @@ class relStdDiff(PreprocessDist):
         return GM.relative_std_diff(real_data,fake_data)
 
 #####################################################################
-############################ Spectral analysis ######################
+        ######################################################
 #####################################################################
