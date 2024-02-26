@@ -270,7 +270,7 @@ class brierSkillScore(PreprocessCondObs):
         fake_data = processed_data['fake_data']
         obs_data = processed_data['obs_data']
 
-        return BS.brier_score(obs_data,real_data,fake_data,np.array(self.threshold))
+        return BS.brier_skill_score(obs_data,real_data,fake_data,np.array(self.threshold))
 #####################################################################
 ############################ Skill-Spread ###########################
 #####################################################################
