@@ -122,6 +122,30 @@ class spectralDistMultidates(PreprocessDist):
 
         return spec.PSD_compare_multidates(real_data,fake_data)
 
+#######################################################################
+######################### Precipitation physics metrics  ##############
+#######################################################################
+class AreaProportion(PreprocessStandalone):
+    """
+    DCT computation for Power Spectral Density
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(isBatched=False, **kwargs)
+
+    def _calculateCore(self, processed_data):
+        return ap.area_proportion(processed_data)
+
+class QuantilesThresholded(PreprocessStandalone):
+    """
+    DCT computation for Power Spectral Density
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(isBatched=False, **kwargs)
+
+    def _calculateCore(self, processed_data):
+        return quant.quantiles_non_zero(processed_data)
+
+
 ###################################################################
 ######################### Length Scales Metrics ###################
 ###################################################################
