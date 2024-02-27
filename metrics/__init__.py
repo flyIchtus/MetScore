@@ -17,6 +17,7 @@ import metrics.spectral_variance as spvar
 import metrics.spectrum_analysis as spec
 import metrics.wasserstein_distances as WD
 from metrics import CRPS_calc
+from metrics import object_detection as obj
 from metrics.metrics import Metric, PreprocessCondObs, PreprocessDist, PreprocessStandalone
 
 class W1CenterNUMPY(PreprocessDist):
@@ -112,6 +113,38 @@ class spectralDistMultidates(PreprocessDist):
         fake_data = processed_data['fake_data']
 
         return spec.PSD_compare_multidates(real_data,fake_data)
+
+#######################################################################
+######################### Precipitation physics metrics  ##############
+#######################################################################
+
+class AreaProportion(PreprocessStandalone):
+    """
+    DCT computation for Power Spectral Density
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(isBatched=False, **kwargs)
+
+    def _calculateCore(self, processed_data):
+        return ap.area_proportion(processed_data)
+
+class QuantilesThresholded(PreprocessStandalone):
+    """
+    DCT computation for Power Spectral Density
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(isBatched=False, **kwargs)
+
+    def _calculateCore(self, processed_data):
+        return quant.quantiles_non_zero(processed_data)
+
+class ObjectsAttribution(PreprocessStandalone):
+    def __init__(self,*args,**kwargs):
+        super().__init__(isBatched=False,**kwargs)
+        self.zone = obj.Zone(args.zone_name,args.lon_min, args.lat_min,args.sizeW, args.sizeH)
+    def _calculateCore(self, processed_data):
+        return obj.batchAttributes(processed_data,self.zone)
+
 
 ###################################################################
 ######################### Length Scales Metrics ###################
