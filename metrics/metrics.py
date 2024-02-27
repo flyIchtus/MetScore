@@ -101,14 +101,12 @@ class PreprocessDist(Metric):
 class PreprocessStandalone(Metric):
     def _preprocess(self, real_data=None, fake_data=None, obs_data=None):
         if self.isOnReal:
-            print("########## IS ON REAL #####")
             if len(self.real_var_indices) != real_data.shape[self.var_channel]:
                 real_data_p = real_data.take(indices=self.var_indices, axis=self.var_channel)
             else:
                 real_data_p = real_data
             return real_data_p
         else:
-            print("########## IS NOT ON REAL #####")
             if len(self.var_indices) != fake_data.shape[self.var_channel]:
                 fake_data_p = fake_data.take(indices=self.var_indices, axis=self.var_channel)
             else:

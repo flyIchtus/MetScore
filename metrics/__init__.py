@@ -141,9 +141,10 @@ class QuantilesThresholded(PreprocessStandalone):
 class ObjectsAttribution(PreprocessStandalone):
     def __init__(self,*args,**kwargs):
         super().__init__(isBatched=False,**kwargs)
-        self.zone = obj.Zone(args.zone_name,args.lon_min, args.lat_min,args.sizeW, args.sizeH)
+        self.zone = obj.Zone(X_min=args[0]['lon_min'],Y_min=args[0]['lat_min'],nb_lon=args[0]['sizeW'],nb_lat=args[0]['sizeH'])
+
     def _calculateCore(self, processed_data):
-        return obj.batchAttributes(processed_data,self.zone)
+        return obj.batchAttributes(processed_data,self.zone,self.rr_idx)
 
 
 ###################################################################

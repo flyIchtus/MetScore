@@ -1,7 +1,7 @@
 from astropy.convolution import convolve_fft,Gaussian2DKernel
 import numpy as np
 import os,pickle,datetime
-import help_functions_objects as hlp
+import metrics.help_functions_objects as hlp
 from mpl_toolkits.axes_grid1 import AxesGrid
 from cartopy.mpl.geoaxes import GeoAxes
 import skimage.measure as skimage
@@ -16,13 +16,12 @@ Kernel_tt = Gaussian2DKernel(R_tot)
 Kernel_moderate = Gaussian2DKernel(R_moderate)
 Kernel_heavy = Gaussian2DKernel(R_heavy)
 
-
-Zone = namedtuple("Zone", ["name", "X_min", "Y_min", "nb_lon", "nb_lat"])
+Zone = namedtuple("Zone", ['X_min', 'Y_min', 'nb_lon', 'nb_lat'])
 
 def grid_to_lat_lon_C_mass(C_mass,zone):
     X_min, Y_min = zone.X_min, zone.Y_min
-    Lat_min, Lon_min = hlp.grid_to_lat_lon(X_min,Y_min)
-    Lat_max, Lon_max = hlp.grid_to_lat_lon(X_min + zone.nb_lon,Y_min + zone.nb_lat)
+    Lat_min, Lon_min = hlp.grid_to_lat_lon((X_min,Y_min))
+    Lat_max, Lon_max = hlp.grid_to_lat_lon((X_min + zone.nb_lon,Y_min + zone.nb_lat))
     Y,X = C_mass[0], C_mass[1]
     Lat = Lat_min + Y * (Lat_max - Lat_min) / zone.nb_lat
     Lon = Lon_min + X * (Lon_max - Lon_min) / zone.nb_lon
@@ -31,7 +30,7 @@ def grid_to_lat_lon_C_mass(C_mass,zone):
 def Quantiles(field,reflc,num_objet) :
     indices_instance = np.where(field==num_objet)
     Reflc_instance = reflc[indices_instance]
-    quants = np.quantiles(Reflc_instance,[0.25,0.9])
+    quants = np.quantile(Reflc_instance,[0.25,0.9])
     return quants
 
 def Contours(field,zone) :
@@ -105,23 +104,22 @@ def attributesCore(field,reflc,zone):
             quants = Quantiles(field_m,reflc,instance)
             attributes["Q25"].append(quants[0])
             attributes["Q90"].append(quants[1])
-
             Lat,Lon = grid_to_lat_lon_C_mass(C_mass[instance-1],zone)
             attributes["X_Lon"].append(Lon)
             attributes["Y_Lat"].append(Lat)
         return attributes
 
-def batchAttributes(batch, zone):
+def batchAttributes(batch, zone, rr_idx):
     objects_attributes = {"total": [], "moderate" : [], "heavy" : []}
     for sample_idx in range(batch.shape[0]):
-         data = batch[i][0]
+         data = batch[sample_idx][rr_idx]
          objects = Contours(data,zone)
          for object_type in objects.keys():
             attributes = attributesCore(objects[object_type], data, zone)
             objects_attributes[object_type].append(attributes)   
-    object_attributes['total'] = hlp.merge_dicts(object_attributes['total'])
-    object_attributes['moderate'] = hlp.merge_dicts(object_attributes['moderate'])
-    object_attributes['heavy'] = hlp.merge_dicts(object_attributes['heavy'])
+    objects_attributes['total'] = hlp.merge_dicts(objects_attributes['total'])
+    objects_attributes['moderate'] = hlp.merge_dicts(objects_attributes['moderate'])
+    objects_attributes['heavy'] = hlp.merge_dicts(objects_attributes['heavy'])
 
     return objects_attributes
 
