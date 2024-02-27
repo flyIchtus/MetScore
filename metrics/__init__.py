@@ -17,6 +17,7 @@ import metrics.spectral_variance as spvar
 import metrics.spectrum_analysis as spec
 import metrics.wasserstein_distances as WD
 from metrics import CRPS_calc
+from metrics import object_detection as obj
 from metrics.metrics import Metric, PreprocessCondObs, PreprocessDist, PreprocessStandalone
 
 """
@@ -125,6 +126,7 @@ class spectralDistMultidates(PreprocessDist):
 #######################################################################
 ######################### Precipitation physics metrics  ##############
 #######################################################################
+
 class AreaProportion(PreprocessStandalone):
     """
     DCT computation for Power Spectral Density
@@ -144,6 +146,13 @@ class QuantilesThresholded(PreprocessStandalone):
 
     def _calculateCore(self, processed_data):
         return quant.quantiles_non_zero(processed_data)
+
+class ObjectsAttribution(PreprocessStandalone):
+    def __init__(self,*args,**kwargs):
+        super().__init__(isBatched=False,**kwargs)
+        self.zone = obj.Zone(args.zone_name,args.lon_min, args.lat_min,args.sizeW, args.sizeH)
+    def _calculateCore(self, processed_data):
+        return obj.batchAttributes(processed_data,self.zone)
 
 
 ###################################################################
