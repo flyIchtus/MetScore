@@ -257,12 +257,13 @@ class RandomDataset(Dataset):
         self.filename_format = config_data.get('filename_format', "_Fsemble_{step}_{index}")
         format_variables = [var.strip('}{') for var in re.findall(r'{(.*?)}', self.filename_format)]
         kwargs = {}
-        kwargs = kwargs | {var: getattr(self, var, '') for var in format_variables if var!="index" else var : "*"}
+        kwargs = kwargs | {var: getattr(self, var, '') for var in format_variables if var!="index"}
+        kwargs['index'] = '*'
         self.filelist = glob.glob(os.path.join(self.data_folder, self.filename_format.format(**kwargs)))
         self.filelist.shuffle()
         print(len(self.filelist))
 
-     def _get_full_path(self, filename, extension=".npy"):
+    def _get_full_path(self, filename, extension=".npy"):
         return os.path.join(self.data_folder, f"{filename}{extension}")
 
     def _get_filename(self, index):

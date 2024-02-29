@@ -1,6 +1,6 @@
-output_folder: /scratch/mrmn/brochetc/GAN_2D/experiments1
+output_folder: /scratch/work/brochetc/Exp_StyleGAN_fixart/experiments_rain
 experiments:
-  - name: Experiment_random_dataset_10000
+  - name: Experiment_random_dataset_100k
     dataloaders:
       batch_size: 1
       real_dataset_config:
@@ -50,6 +50,13 @@ experiments:
             per_pixel: False
             for_rr:
               blur_iteration: 1
+      obs_dataset_config:
+        data_folder: /scratch/mrmn/brochetc/obs_databases/obs_full_npy
+        crop_indices: [180, 436, 500, 756]
+        variables: ['ff','dd','t2m']
+        var_indices: [0,1,2]
+        preprocessor_config:
+            type: Preprocessor
     metrics:
       args:
         debiasing: False
