@@ -1,20 +1,23 @@
-output_folder: /scratch/work/brochetc/Exp_StyleGAN_fixart/experiments_rain
+output_folder: /scratch/mrmn/brochetc/GAN_2D/experiments_rain
 experiments:
   - name: Experiment_random_dataset_100k
+    random: True
     dataloaders:
       batch_size: 1
+      maxNsamples: 16384
       real_dataset_config:
-        data_folder: /scratch/work/brochetc/datasets/cropped_120_376_540_796/
+        batch_size: 128
+        data_folder: /scratch/mrmn/brochetc/GAN_2D/datasets_full_indexing/cropped_120_376_540_796/
         variables: ['u','v','t2m']
-        filename_format: _sample_{index}
+        filename_format: _sample{index}
         sizeH: 256
         sizeW: 256
-        var_indices: [1,2,3] #where to find the variables in dataset samples
+        var_indices: [0,1,2,3] #where to find the variables in dataset samples
         crop_indices: [0,256,0,256]
         preprocessor_config:
           type: Preprocessor
-          real_var_indices: [ 1,2,3 ] #where to find the variables in stat files
-          real_data_dir: /scratch/work/brochetc/datasets/cropped_120_376_540_796/
+          real_var_indices: [0,1,2,3] #where to find the variables in stat files
+          real_data_dir: /scratch/mrmn/brochetc/GAN_2D/datasets_full_indexing/cropped_120_376_540_796/
           stat_folder: "stat_files/"
           stat_version: "rr" # the name of the stat file is for ex: 'mean_[stat_version]_log_ppx.npy'
           rr_transform:
@@ -27,18 +30,19 @@ experiments:
             for_rr:
               blur_iteration: 1
       fake_dataset_config:
-        data_folder: /home/brochetc/scratchbelenos/Exp_StyleGAN_fixart/Set_UseNoiseFalse/stylegan2_stylegan_dom_256_lat-dim_512_bs_8_0.002_0.002_ch-mul_2_vars_rr_u_v_t2m_noise_False/Instance_7/samples_gen/
+        batch_size: 1
+        data_folder: /scratch/mrmn/brochetc/GAN_2D/Instance_7/samples_gen/
         variables: ['rr','u','v','t2m']
         sizeH: 256
         sizeW: 256
         step: 100000 
-        filename_format: _Fsemble_{step}_{index}
-        var_indices: [0,1,2] #where to find the variables in dataset samples
+        filename_format: _Fsample_100000_{index}
+        var_indices: [0,1,2,3] #where to find the variables in dataset samples
         crop_indices: [0,256,0,256]
         preprocessor_config:
           type: ReverserrPreprocessor
-          real_var_indices: [1,2,3] #where to find the variables in stat files
-          real_data_dir: /scratch/work/brochetc/datasets/cropped_120_376_540_796/
+          real_var_indices: [0,1,2,3] #where to find the variables in stat files
+          real_data_dir:  /scratch/mrmn/brochetc/GAN_2D/datasets_full_indexing/cropped_120_376_540_796/
           stat_folder: "stat_files/"
           stat_version: "rr" # the name of the stat file is for ex: 'mean_[stat_version]_log_ppx.npy'
           rr_transform:

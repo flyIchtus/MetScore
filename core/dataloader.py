@@ -5,7 +5,7 @@ from typing import Type
 import numpy as np
 
 from core.configurable import Configurable
-from core.dataset import Dataset, RealDataset, FakeDataset, ObsDataset
+from core.dataset import Dataset, RealDataset, FakeDataset, ObsDataset, RandomDataset
 
 
 class DataLoader(ABC, Configurable):
@@ -130,8 +130,8 @@ class RandomDataloader(DataLoader):
 
     def __next__(self):
         if self.current_index < self._data_length:
-            fake_samples = np.array([self.fake_dataset[ self.current_index + i] for i in range(self.batch_size)])
-            real_samples = np.array([self.real_dataset[self.current_index + i] for i in range(self.batch_size)])
+            fake_samples = np.array([self.fake_dataset[ self.current_index + i] for i in range(self.fake_dataset.batch_size)])
+            real_samples = np.array([self.real_dataset[self.current_index + i] for i in range(self.real_dataset.batch_size)])
             self.current_index += min(self.batch_size, self._data_length - self.current_index)
             return fake_samples[0], real_samples[0], None
         else:

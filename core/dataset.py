@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
-
+from random import shuffle
 from core.configurable import Configurable
 from core.useful_funcs import obs_clean
 from preprocess.preprocessor import Preprocessor
@@ -255,14 +255,15 @@ class RandomDataset(Dataset):
     def __init__(self, config_data, use_cache=True):
         super().__init__(config_data, use_cache)
         self.filename_format = config_data.get('filename_format', "_Fsemble_{step}_{index}")
+        self.data_folder = config_data['data_folder']
         format_variables = [var.strip('}{') for var in re.findall(r'{(.*?)}', self.filename_format)]
         kwargs = {}
         kwargs = kwargs | {var: getattr(self, var, '') for var in format_variables if var!="index"}
         kwargs['index'] = '*'
         self.filelist = glob.glob(os.path.join(self.data_folder, self.filename_format.format(**kwargs)))
-        self.filelist.shuffle()
-        print(len(self.filelist))
-
+        shuffle(self.filelist)
+        print(int(config_data['maxNsamples']), len(self.filelist))
+        self.filelist = self.filelist[:int(config_data['maxNsamples'])]
     def _get_full_path(self, filename, extension=".npy"):
         return os.path.join(self.data_folder, f"{filename}{extension}")
 
@@ -273,4 +274,4 @@ class RandomDataset(Dataset):
         return np.load(file_path)
 
     def __len__(self):
-        return len(self.file_list)
+        return len(self.filelist)
