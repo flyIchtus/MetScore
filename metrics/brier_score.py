@@ -28,7 +28,6 @@ def brier_score(obs_data, fake_data, parameters):
     obs_data_p = copy.deepcopy(obs_data)
     brier = np.zeros((N_brier,  C, H, W))
     
-    
     for i in range(parameters.shape[1]):    
 
     
@@ -56,3 +55,27 @@ def brier_score(obs_data, fake_data, parameters):
         
         
     return brier
+
+def brier_skill_score(obs_data, real_data, fake_data, parameters):
+    """
+    
+    Inputs :
+        
+        fake_data : N x C x H x W array with N samples
+        
+        obs_data : C x H x W array observation
+
+        parameters : 2 x 6 array with thresholds for calculating the brier score
+        
+    Returns :
+        
+        brier score  : N_brier x C x H x W array containing the result N_brier number of thresholds
+    
+    """
+
+    real_brier = brier_score(obs_data,real_data,parameters)
+    fake_brier = brier_score(obs_data,fake_data,parameters)
+    
+    bss = 1.0 - (fake_brier / real_brier)
+        
+    return bss
