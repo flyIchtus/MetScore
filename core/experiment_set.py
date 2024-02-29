@@ -1,6 +1,7 @@
 import logging
 import os
 
+import pickle
 import numpy as np
 import yaml
 from tqdm import tqdm
@@ -8,7 +9,6 @@ from tqdm import tqdm
 from core.configurable import Configurable
 from core.dataloader import DateDataloader, RandomDataloader
 from metrics.metrics import Metric
-
 
 class ExperimentSet(Configurable):
     required_keys = ['name', 'dataloaders', 'metrics']
@@ -96,12 +96,17 @@ class ExperimentSet(Configurable):
             for metric in tqdm(self.not_batched_metrics, desc=f"{self.name}: Calculating non-batched metrics"):
                 logging.debug(f"Running Metric {type(metric)}")
                 results = metric.calculate(real_data, fake_data, obs_data)
-                results_np = np.array(results, dtype=np.float32)
-                np.save(os.path.join(self.current_path, metric.name) + '.npy', results_np)
-                logging.debug(results_np.size)
-                if results_np.size < 25:
-                    logging.info(f"Metric {metric.name} result: {results_np}")
+
+                if type(results)==dict:
+                    with open(os.path.join(self.current_path, metric.name) + '.p','wb') as f:
+                        pickle.dump(results, f)
                 else:
-                    logging.info(f"Metric {metric.name} : too long result to log")
+                    results_np = np.array(results, dtype=np.float32)
+                    np.save(os.path.join(self.current_path, metric.name) + '.npy', results_np)
+                    logging.debug(results_np.size)
+                    if results_np.size < 25:
+                        logging.info(f"Metric {metric.name} result: {results_np}")
+                    else:
+                        logging.info(f"Metric {metric.name} : too long result to log")
 
         logging.info(f"ExperimentSet {index} completed")
