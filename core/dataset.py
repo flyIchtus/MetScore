@@ -1,12 +1,15 @@
 import logging
 import os
 import re
+import glob
+
 import threading
 from abc import abstractmethod
 from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
+
 #making randomness replicable
 import random
 random.seed(42)
@@ -249,6 +252,35 @@ class RealDataset(DateDataset):
         arrays = [np.expand_dims(np.load(file_name), axis=0) for file_name in file_path]
         return np.concatenate(arrays, axis=0)
 
+
+class RandomDataset(Dataset):
+    
+    required_keys = ['data_folder', 'preprocessor_config', 'crop_indices','filename_format']
+
+    def __init__(self, config_data, use_cache=True):
+        super().__init__(config_data, use_cache)
+        self.filename_format = config_data.get('filename_format', "_Fsemble_{step}_{index}")
+        self.data_folder = config_data['data_folder']
+        format_variables = [var.strip('}{') for var in re.findall(r'{(.*?)}', self.filename_format)]
+        kwargs = {}
+        kwargs = kwargs | {var: getattr(self, var, '') for var in format_variables if var!="index"}
+        kwargs['index'] = '*'
+        self.filelist = glob.glob(os.path.join(self.data_folder, self.filename_format.format(**kwargs)))
+        random.shuffle(self.filelist)
+        print(int(config_data['maxNsamples']), len(self.filelist))
+        self.filelist = self.filelist[:int(config_data['maxNsamples'])]
+    def _get_full_path(self, filename, extension=".npy"):
+        return os.path.join(self.data_folder, f"{filename}{extension}")
+
+    def _get_filename(self, index):
+        return self.filelist[index]
+
+    def _load_file(self, file_path):
+        return np.load(file_path)
+
+    def __len__(self):
+        return len(self.filelist)
+
 class MixDataset(DateDataset):
     def __init__(self,config_data,use_cache=True):
         super().__init__(config_data,use_cache)
@@ -337,4 +369,3 @@ class MixDataset(DateDataset):
         else:
             preprocessed_data = self.cache.get_from_cache(file_path['real'])
         return preprocessed_data
-

@@ -437,7 +437,7 @@ class variance(PreprocessStandalone):
         super().__init__(isBatched=True)
 
     def _calculateCore(self, processed_data):
-        return GM.variance(processed_data)
+        return GM.simple_variance(processed_data)
 
 class varianceDiff(PreprocessDist):
     def __init__(self, *args, **kwargs):

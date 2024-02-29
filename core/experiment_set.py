@@ -7,7 +7,7 @@ import yaml
 from tqdm import tqdm
 
 from core.configurable import Configurable
-from core.dataloader import DateDataloader
+from core.dataloader import DateDataloader, RandomDataloader
 from metrics.metrics import Metric
 
 class ExperimentSet(Configurable):
@@ -56,7 +56,10 @@ class ExperimentSet(Configurable):
         self.config_data = config_data
         use_cache = self.not_batched_metrics is not []
         logging.info(f"Using cache: {use_cache}")
-        self.dataloader = DateDataloader.fromConfig(config_data['dataloaders'], use_cache=use_cache)
+        if config_data['random']:
+            self.dataloader = RandomDataloader.fromConfig(config_data['dataloaders'], use_cache=use_cache)
+        else:
+            self.dataloader = DateDataloader.fromConfig(config_data['dataloaders'], use_cache=use_cache)           
         self.current_path = os.path.join(output_folder, config_data['name'])
 
     def prep_folder(self):
