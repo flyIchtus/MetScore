@@ -7,6 +7,7 @@ import threading
 from abc import abstractmethod
 from datetime import datetime, timedelta
 
+from tqdm import tqdm
 import numpy as np
 import pandas as pd
 
@@ -112,12 +113,12 @@ class Dataset(Configurable):
     def get_all_data(self):
         all_data = []
         if not self.is_dataset_cached():
-            for idx in range(len(self)):
+            for idx in tqdm(range(len(self)), desc=f"Collecting uncached data"):
                 file_path = self._get_filename(idx)
                 data = self._load_and_preprocess(file_path)
                 all_data.append(data)
         else:
-            for idx in range(len(self)):
+            for idx in tqdm(range(len(self)), desc=f"Getting data from cache"):
                 file_path = self._get_filename(idx)
                 data = self.cache.get_from_cache(file_path)
                 all_data.append(data)
@@ -196,12 +197,12 @@ class ObsDataset(DateDataset):
     def get_all_data(self):
         all_data = []
         if not self.is_dataset_cached():
-            for idx in range(len(self)):
+            for idx in tqdm(range(len(self)), desc=f"Collecting uncached data"):
                 file_path = self._get_filename(idx)
                 data = self._load_and_preprocess(file_path)
                 all_data.append(data[np.newaxis,:,:,:])
         else:
-            for idx in range(len(self)):
+            for idx in tqdm(range(len(self)), desc=f"Getting data from cache"):
                 file_path = self._get_filename(idx)
                 data = self.cache.get_from_cache(file_path)
                 all_data.append(data[np.newaxis,:,:,:])
@@ -255,7 +256,7 @@ class RealDataset(DateDataset):
 
 class RandomDataset(Dataset):
     
-    required_keys = ['data_folder', 'preprocessor_config', 'crop_indices','filename_format']
+    required_keys = ['data_folder', 'preprocessor_config', 'crop_indices','filename_format', 'maxNsamples', 'file_size']
 
     def __init__(self, config_data, use_cache=True):
         super().__init__(config_data, use_cache)
@@ -267,8 +268,8 @@ class RandomDataset(Dataset):
         kwargs['index'] = '*'
         self.filelist = glob.glob(os.path.join(self.data_folder, self.filename_format.format(**kwargs)))
         random.shuffle(self.filelist)
-        print(int(config_data['maxNsamples']), len(self.filelist))
-        self.filelist = self.filelist[:int(config_data['maxNsamples'])]
+        self.filelist = self.filelist[:int(config_data['maxNsamples'])//config_data['file_size']]
+
     def _get_full_path(self, filename, extension=".npy"):
         return os.path.join(self.data_folder, f"{filename}{extension}")
 
@@ -280,6 +281,22 @@ class RandomDataset(Dataset):
 
     def __len__(self):
         return len(self.filelist)
+    
+    def get_all_data(self):
+        all_data = []
+        if not self.is_dataset_cached():
+            for idx in tqdm(range(len(self)), desc=f"Collecting uncached data"):
+                file_path = self._get_filename(idx)
+                data = self._load_and_preprocess(file_path)[np.newaxis,:,:,:] \
+                        if self.file_size==1 else self._load_and_preprocess(file_path)
+                all_data.append(data)
+        else:
+            for idx in tqdm(range(len(self)), desc=f"Getting data from cache"):
+                file_path = self._get_filename(idx)
+                data = self.cache.get_from_cache(file_path)[np.newaxis,:,:,:] \
+                        if self.file_size==1 else self.cache.get_from_cache(file_path)
+                all_data.append(data)
+        return np.concatenate(all_data,axis=0)
 
 class MixDataset(DateDataset):
     def __init__(self,config_data,use_cache=True):

@@ -10,7 +10,7 @@ Metric version of quantiles calculation
 """
 
 import numpy as np
-
+import warnings
 
 def quantiles(data, qlist=[0.99]):
     """
@@ -30,7 +30,7 @@ def quantiles(data, qlist=[0.99]):
 
     return np.quantile(data, qlist, axis=0)
 
-def quantiles_non_zeros(data, qlist,threshold=1.0) :
+def quantiles_non_zero(data, qlist,threshold=1.0) :
     """
     compute quantiles of data shape on first axis using numpy 'primitive'
     drop the data below a threshold to evaluate the quantiles

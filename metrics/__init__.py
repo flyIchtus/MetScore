@@ -18,6 +18,7 @@ import metrics.spectrum_analysis as spec
 import metrics.wasserstein_distances as WD
 from metrics import CRPS_calc
 from metrics import object_detection as obj
+from metrics import area_proportion as ap
 from metrics.metrics import Metric, PreprocessCondObs, PreprocessDist, PreprocessStandalone
 
 class W1CenterNUMPY(PreprocessDist):
@@ -126,7 +127,7 @@ class AreaProportion(PreprocessStandalone):
         super().__init__(isBatched=False, **kwargs)
 
     def _calculateCore(self, processed_data):
-        return ap.area_proportion(processed_data)
+        return ap.area_greater_than(processed_data, self.rr_idx)
 
 class QuantilesThresholded(PreprocessStandalone):
     """
@@ -136,7 +137,7 @@ class QuantilesThresholded(PreprocessStandalone):
         super().__init__(isBatched=False, **kwargs)
 
     def _calculateCore(self, processed_data):
-        return quant.quantiles_non_zero(processed_data)
+        return quant.quantiles_non_zero(processed_data, self.qlist)
 
 class ObjectsAttribution(PreprocessStandalone):
     def __init__(self,*args,**kwargs):

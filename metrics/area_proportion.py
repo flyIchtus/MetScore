@@ -1,6 +1,6 @@
 import numpy as np
 
-def area_greater_than(data, variable, thresholds=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 17, 20, 25, 30]):
+def area_greater_than(data, variable, thresholds=[0, 1, 3, 5, 10, 15, 20, 25, 30, 40, 50]):
     """
     Extract from each grid all the values greater than threshold and compute their area proportion
 

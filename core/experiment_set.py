@@ -85,14 +85,14 @@ class ExperimentSet(Configurable):
                 res = metric.calculate(batch_real, batch_fake, batch_obs)
                 batched_metric_results[metric.name].append(res)
 
-        for metric_name, results in tqdm(batched_metric_results.items(), desc=f"{self.name}: Saving results"):
+        for metric_name, results in tqdm(batched_metric_results.items(), desc=f"{self.name}: Saving batched results"):
             results_np = np.array(results, dtype=np.float32)
             np.save(os.path.join(self.current_path,  metric_name) + '.npy', results_np)
             logging.debug(f"{self.name} : Metric {metric_name} shape result: {results_np.shape}")
 
-
         if self.not_batched_metrics:
             real_data, fake_data, obs_data = self.dataloader.get_all_data()
+            print(real_data.shape, fake_data.shape)
             for metric in tqdm(self.not_batched_metrics, desc=f"{self.name}: Calculating non-batched metrics"):
                 logging.debug(f"Running Metric {type(metric)}")
                 results = metric.calculate(real_data, fake_data, obs_data)
