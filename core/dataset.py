@@ -113,12 +113,12 @@ class Dataset(Configurable):
     def get_all_data(self):
         all_data = []
         if not self.is_dataset_cached():
-            for idx in tqdm(range(len(self)), desc=f"Collecting uncached data"):
+            for idx in tqdm(range(len(self)), desc=f"Collecting uncached data {idx}/{len(self)}"):
                 file_path = self._get_filename(idx)
                 data = self._load_and_preprocess(file_path)
                 all_data.append(data)
         else:
-            for idx in tqdm(range(len(self)), desc=f"Getting data from cache"):
+            for idx in tqdm(range(len(self)), desc=f"Getting data from cache {idx}/{len(self)}"):
                 file_path = self._get_filename(idx)
                 data = self.cache.get_from_cache(file_path)
                 all_data.append(data)

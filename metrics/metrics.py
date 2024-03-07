@@ -13,7 +13,6 @@ class Metric(ABC, Configurable):
     required_keys = ['name']
 
     def __init__(self, isBatched=False, isOnReal=False, **kwargs):
-        self.isOnReal = isOnReal
         self.isBatched = isBatched
         super().__init__()
 
@@ -75,9 +74,11 @@ class PreprocessCondObs(Metric):
                 'obs_data': obs_data_pp}
 
 class PreprocessDist(Metric):
+    required_keys = ['isOnReal']
+
     def __init__(self,isBatched=False, isOnReal=False, **kwargs):
-        super().__init__(isBatched,isOnReal,**kwargs)
-        if isOnReal:
+        super().__init__(isBatched,**kwargs)
+        if self.isOnReal:
             raise Warning(f"Metric {self} is defined with 'isOnReal' argument, but this is a distance metric.\
                          Argument `isOnReal` reset to default.")
             self.isOnReal = False
@@ -99,6 +100,8 @@ class PreprocessDist(Metric):
                 'fake_data': fake_data_p}
 
 class PreprocessStandalone(Metric):
+    required_keys = ['isOnReal']
+
     def _preprocess(self, real_data=None, fake_data=None, obs_data=None):
         if self.isOnReal:
             if len(self.real_var_indices) != real_data.shape[self.var_channel]:

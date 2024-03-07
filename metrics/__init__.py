@@ -241,11 +241,10 @@ class ensembleCRPS(PreprocessCondObs):
 
 class crpsMultiDates(PreprocessCondObs):
 
-    required_keys = ['debiasing']
+    required_keys = ['debiasing','isOnReal']
 
     def __init__(self, *args, **kwargs):
         super().__init__(isBatched=True)
-
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -258,7 +257,7 @@ class crpsMultiDates(PreprocessCondObs):
 
 class crpsDiffMultiDates(PreprocessCondObs):
 
-    required_keys = ['debiasing']
+    required_keys = ['debiasing','isOnReal']
 
     def __init__(self, *args, **kwargs):
         super().__init__(isBatched=False)
@@ -324,7 +323,7 @@ class skillSpread(PreprocessCondObs):
 
 class skillSpreadDeviationMultidates(PreprocessCondObs):
 
-    required_keys = ['debiasing']
+    required_keys = ['debiasing','isOnReal']
 
     def __init__(self, *args, **kwargs):
         super().__init__(isBatched=True)
@@ -341,11 +340,10 @@ class skillSpreadDeviationMultidates(PreprocessCondObs):
 
 class thresholdedSkillSpreadDeviationMultidates(PreprocessCondObs):
 
-    required_keys = ['debiasing']
+    required_keys = ['debiasing','isOnReal']
 
     def __init__(self, *args, **kwargs):
         super().__init__(isBatched=True)
-
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -400,7 +398,7 @@ class relDiagram(PreprocessCondObs):
 #####################################################################
 
 class biasEnsemble(PreprocessCondObs):
-    required_keys = ['threshold']
+    required_keys = ['threshold', 'isOnReal']
 
     def __init__(self, *args, **kwargs):
         super().__init__(isBatched=True)
@@ -416,6 +414,7 @@ class biasEnsemble(PreprocessCondObs):
         return BE.bias_ens(obs_data,exp_data)
 
 class meanBias(PreprocessCondObs):
+    required_keys = ['isOnReal']
     def __init__(self, *args, **kwargs):
         super().__init__(isBatched=True)
 
