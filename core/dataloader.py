@@ -9,8 +9,8 @@ from core.dataset import Dataset, RealDataset, FakeDataset, ObsDataset, MixDatas
 
 
 class DataLoader(ABC, Configurable):
-
-    def __init__(self):
+    def __init__(self, **kwargs):
+        logging.debug('initing dataloader')
         self._real_dataset: Type[Dataset] = None
         self._fake_dataset: Type[Dataset] = None
         self._obs_dataset: Type[Dataset] = None
@@ -73,16 +73,16 @@ class DataLoader(ABC, Configurable):
 
 class DateDataloader(DataLoader):
 
-    def __init__(self, config_data, use_cache=False):
+    def __init__(self, config_data, use_cache=False,**kwargs):
         # Appel du __init__ de la classe mère
         super().__init__()
 
         config_data['real_dataset_config'].update(config_data)
         config_data['fake_dataset_config'].update(config_data)
         config_data['obs_dataset_config'].update(config_data)
-        self.mix = config_data['fake_dataset_config'].get('mix',False)
+        
         self.real_dataset = RealDataset.fromConfig(config_data['real_dataset_config'], use_cache=use_cache)
-            self.fake_dataset = Dataset.from_typed_config(config_data['fake_dataset_config'], use_cache=use_cache)
+        self.fake_dataset = Dataset.from_typed_config(config_data['fake_dataset_config'], use_cache=use_cache)
         self.obs_dataset = ObsDataset.fromConfig(config_data['obs_dataset_config'], use_cache=use_cache)
         self._data_length = min(len(self.real_dataset), len(self.fake_dataset), len(self.obs_dataset))
         logging.debug(f"Dataset length is {self._data_length}")
@@ -119,7 +119,7 @@ class RandomDataloader(DataLoader):
 
     required_keys = ['real_dataset_config', 'fake_dataset_config']
 
-    def __init__(self, config_data, use_cache=False):
+    def __init__(self, config_data, use_cache=False,**kwargs):
         # Appel du __init__ de la classe mère
         super().__init__()
 

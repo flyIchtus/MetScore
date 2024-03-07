@@ -7,7 +7,7 @@ import yaml
 from tqdm import tqdm
 
 from core.configurable import Configurable
-from core.dataloader import DateDataloader, RandomDataloader
+from core.dataloader import DataLoader, DateDataloader, RandomDataloader
 from metrics.metrics import Metric
 
 class ExperimentSet(Configurable):
@@ -56,7 +56,7 @@ class ExperimentSet(Configurable):
         self.config_data = config_data
         use_cache = self.not_batched_metrics is not []
         logging.info(f"Using cache: {use_cache}")
-        self.dataloader = Dataloader.from_typed_config(config_data['dataloaders'], use_cache=use_cache)         
+        self.dataloader = DataLoader.from_typed_config(config_data['dataloaders'], use_cache=use_cache)         
         self.current_path = os.path.join(output_folder, config_data['name'])
 
     def prep_folder(self):
@@ -89,15 +89,15 @@ class ExperimentSet(Configurable):
 
         if self.not_batched_metrics:
             real_data, fake_data, obs_data = self.dataloader.get_all_data()
-            print(real_data.shape, fake_data.shape)
             for metric in tqdm(self.not_batched_metrics, desc=f"{self.name}: Calculating non-batched metrics"):
                 logging.debug(f"Running Metric {type(metric)}")
                 results = metric.calculate(real_data, fake_data, obs_data)
-
+                
                 if type(results)==dict:
                     with open(os.path.join(self.current_path, metric.name) + '.p','wb') as f:
                         pickle.dump(results, f)
                 else:
+                    logging.debug(f"\nCalculated Metric. Result shape {results[0].shape}")
                     results_np = np.array(results, dtype=np.float32)
                     np.save(os.path.join(self.current_path, metric.name) + '.npy', results_np)
                     logging.debug(results_np.size)

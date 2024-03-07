@@ -22,7 +22,6 @@ class Configurable:
     def from_typed_config(cls, config_data, **kwargs):
         config_data = cls._safe_open(cls, config_data)
         type_name = config_data['type']
-
         def find_subclass_recursive(parent_cls):
             for subclass in parent_cls.__subclasses__() + [parent_cls]:
                 if type_name in subclass.aliases + [subclass.__name__]:

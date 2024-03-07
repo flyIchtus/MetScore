@@ -1,8 +1,8 @@
 output_folder: /scratch/mrmn/brochetc/GAN_2D/experiments_rain
 experiments:
   - name: Experiment_random_dataset_100k_test
-    type: RandomDataloader #choosing between Dataloader (base class), RandomDataloader and DateDataloader
     dataloaders:
+      type: RandomDataloader #choosing between Dataloader (base class), RandomDataloader and DateDataloader
       batch_size: 1
       maxNsamples: 16384
       real_dataset_config:
@@ -12,6 +12,7 @@ experiments:
         filename_format: _sample{index}
         sizeH: 256
         sizeW: 256
+        file_size: 1
         var_indices: [0,1,2,3] #where to find the variables in dataset samples
         crop_indices: [0,256,0,256]
         preprocessor_config:
@@ -30,8 +31,9 @@ experiments:
             for_rr:
               blur_iteration: 1
       fake_dataset_config:
-        type: FakeDataset #choosing between FakeDataset and MixDataset
+        type: FakeDataset #choosing between FakeDataset and MixDataset. For RandomDataloader, is only RandomDataset
         batch_size: 1
+        file_size: 128
         data_folder: /scratch/mrmn/brochetc/GAN_2D/Instance_7/samples_gen/
         variables: ['rr','u','v','t2m']
         sizeH: 256
@@ -72,5 +74,9 @@ experiments:
         obs_var_channel: 1
         
       metrics_list:
+        - name: varianceReal
+          type: variance
+          isOnReal: True
         - name: variance
           type: variance
+          isOnReal: False
