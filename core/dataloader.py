@@ -82,11 +82,7 @@ class DateDataloader(DataLoader):
         config_data['obs_dataset_config'].update(config_data)
         self.mix = config_data['fake_dataset_config'].get('mix',False)
         self.real_dataset = RealDataset.fromConfig(config_data['real_dataset_config'], use_cache=use_cache)
-        if self.mix:
-            logging.debug("##### Using 'Mix' Dataset #######")
-            self.fake_dataset = MixDataset.fromConfig(config_data['fake_dataset_config'], use_cache=use_cache)
-        else:
-            self.fake_dataset = FakeDataset.fromConfig(config_data['fake_dataset_config'], use_cache=use_cache)
+            self.fake_dataset = Dataset.from_typed_config(config_data['fake_dataset_config'], use_cache=use_cache)
         self.obs_dataset = ObsDataset.fromConfig(config_data['obs_dataset_config'], use_cache=use_cache)
         self._data_length = min(len(self.real_dataset), len(self.fake_dataset), len(self.obs_dataset))
         logging.debug(f"Dataset length is {self._data_length}")
