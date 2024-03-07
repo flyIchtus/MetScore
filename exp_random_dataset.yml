@@ -1,7 +1,7 @@
 output_folder: /scratch/mrmn/brochetc/GAN_2D/experiments_rain
 experiments:
-  - name: Experiment_random_dataset_100k
-    random: True
+  - name: Experiment_random_dataset_100k_test
+    type: RandomDataloader #choosing between Dataloader (base class), RandomDataloader and DateDataloader
     dataloaders:
       batch_size: 1
       maxNsamples: 16384
@@ -30,6 +30,7 @@ experiments:
             for_rr:
               blur_iteration: 1
       fake_dataset_config:
+        type: FakeDataset #choosing between FakeDataset and MixDataset
         batch_size: 1
         data_folder: /scratch/mrmn/brochetc/GAN_2D/Instance_7/samples_gen/
         variables: ['rr','u','v','t2m']
