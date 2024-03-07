@@ -62,7 +62,7 @@ class Dataset(Configurable):
 
     required_keys = ['data_folder', 'preprocessor_config']
 
-    def __init__(self, config_data, use_cache=True):
+    def __init__(self, config_data, use_cache=True,**kwargs):
         """
         Sample for config yml file:
         data_folder: path to data folder
@@ -136,7 +136,7 @@ class DateDataset(Dataset):
 
     required_keys = ['data_folder', 'preprocessor_config', 'crop_indices']
 
-    def __init__(self, config_data, use_cache=True):
+    def __init__(self, config_data, use_cache=True,**kwargs):
         super().__init__(config_data, use_cache)
         self.df0 = pd.read_csv(os.path.join(config_data['path_to_csv'], config_data['csv_file']))
         df_extract = self.df0[
@@ -158,7 +158,7 @@ class DateDataset(Dataset):
 
 
 class ObsDataset(DateDataset):
-    def __init__(self, config_data, use_cache=True):
+    def __init__(self, config_data, use_cache=True,**kwargs):
         super().__init__(config_data, use_cache)
         self.filename_format = config_data.get('filename_format', "obs{date}_{formatted_index}")
 
@@ -210,7 +210,7 @@ class ObsDataset(DateDataset):
 
 
 class FakeDataset(DateDataset):
-    def __init__(self, config_data, use_cache=True):
+    def __init__(self, config_data, use_cache=True,**kwargs):
         super().__init__(config_data, use_cache)
 
         self.filename_format = config_data.get('filename_format', "genFsemble_{date}_{formatted_index}_{inv_step}_{cond_members}_{N_ens}")
@@ -258,7 +258,7 @@ class RandomDataset(Dataset):
     
     required_keys = ['data_folder', 'preprocessor_config', 'crop_indices','filename_format', 'maxNsamples', 'file_size']
 
-    def __init__(self, config_data, use_cache=True):
+    def __init__(self, config_data, use_cache=True,**kwargs):
         super().__init__(config_data, use_cache)
         self.filename_format = config_data.get('filename_format', "_Fsemble_{step}_{index}")
         self.data_folder = config_data['data_folder']
@@ -299,7 +299,7 @@ class RandomDataset(Dataset):
         return np.concatenate(all_data,axis=0)
 
 class MixDataset(DateDataset):
-    def __init__(self,config_data,use_cache=True):
+    def __init__(self,config_data,use_cache=True,**kwargs):
         super().__init__(config_data,use_cache)
 
         self.filename_format = config_data.get('filename_format', "genFsemble_{date}_{formatted_index}_{inv_step}_{cond_members}_{N_ens}")

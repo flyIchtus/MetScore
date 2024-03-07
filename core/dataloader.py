@@ -75,7 +75,7 @@ class DateDataloader(DataLoader):
     def __init__(self, config_data, use_cache=False,**kwargs):
         # Appel du __init__ de la classe mère
         super().__init__()
-
+        del config_data['type'] #ensuring 'type' of dataloader does not leak on 'type' of datasets
         config_data['real_dataset_config'].update(config_data)
         config_data['fake_dataset_config'].update(config_data)
         config_data['obs_dataset_config'].update(config_data)
