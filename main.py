@@ -70,7 +70,7 @@ def main():
                 successful_experiments.append(experiment_config)
             else:
                 failed_experiments.append((experiment_config, exception))
-                logging.error(f"Experiment {experiment_config['name']}\n failed with exception: {exception}")
+                logging.exception(f"Experiment {experiment_config['name']}\n failed with exception: {exception}")
 
     # Log results
     success_str = '\n'.join(exp_config['name'] for exp_config in successful_experiments)
@@ -82,7 +82,7 @@ def main():
     if success_str:
         logger.info("Successful experiments:" + success_str)
     if failure_str:
-        logger.error("Failed experiments:" + failure_str)
+        logger.exception("Failed experiments:" + failure_str)
 
 
 def run_experiment(experiment_config, output_folder,index):
