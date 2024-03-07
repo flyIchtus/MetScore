@@ -56,6 +56,7 @@ class ExperimentSet(Configurable):
         self.config_data = config_data
         use_cache = self.not_batched_metrics is not []
         logging.info(f"Using cache: {use_cache}")
+        config_data['dataloaders'].update(config_data)
         self.dataloader = DataLoader.from_typed_config(config_data['dataloaders'], use_cache=use_cache)         
         self.current_path = os.path.join(output_folder, config_data['name'])
 

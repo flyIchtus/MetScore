@@ -10,7 +10,6 @@ from core.dataset import Dataset, RealDataset, FakeDataset, ObsDataset, MixDatas
 
 class DataLoader(ABC, Configurable):
     def __init__(self, **kwargs):
-        logging.debug('initing dataloader')
         self._real_dataset: Type[Dataset] = None
         self._fake_dataset: Type[Dataset] = None
         self._obs_dataset: Type[Dataset] = None
@@ -145,7 +144,7 @@ class RandomDataloader(DataLoader):
         real, fake = self.randomize_and_cut(real, fake)
         return real, fake, None
 
-    def _randomize_and_cut(self, data1, data2):
+    def randomize_and_cut(self, data1, data2):
         data1shuf = np.random.permutation(data1)
         data2shuf = np.random.permutation(data2)
         cut = min([self.maxNsamples,data1shuf.shape[0],data2shuf.shape[0]])

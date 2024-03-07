@@ -4,7 +4,7 @@ experiments:
     dataloaders:
       type: RandomDataloader #choosing between Dataloader (base class), RandomDataloader and DateDataloader
       batch_size: 1
-      maxNsamples: 16384
+      maxNsamples: 512
       real_dataset_config:
         batch_size: 128
         data_folder: /scratch/mrmn/brochetc/GAN_2D/datasets_full_indexing/cropped_120_376_540_796/
@@ -72,11 +72,14 @@ experiments:
         threshold: [[ 1.39, 2.78, 4.17, 5.56, 8.33, 11.11 ], [ 278.15, 283.15, 288.15, 293.15, 297.15, 303.15 ]] ## [ff], [t2m] 
         var_channel: 1
         obs_var_channel: 1
-        
+        rr_idx: 0
       metrics_list:
         - name: varianceReal
           type: variance
           isOnReal: True
         - name: variance
           type: variance
+          isOnReal: False
+        - name: AreaProportion
+          type: AreaProportion
           isOnReal: False

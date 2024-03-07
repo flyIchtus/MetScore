@@ -113,12 +113,12 @@ class Dataset(Configurable):
     def get_all_data(self):
         all_data = []
         if not self.is_dataset_cached():
-            for idx in tqdm(range(len(self)), desc=f"Collecting uncached data {idx}/{len(self)}"):
+            for idx in tqdm(range(len(self)), desc=f"{self.name} : Collecting uncached data"):
                 file_path = self._get_filename(idx)
                 data = self._load_and_preprocess(file_path)
                 all_data.append(data)
         else:
-            for idx in tqdm(range(len(self)), desc=f"Getting data from cache {idx}/{len(self)}"):
+            for idx in tqdm(range(len(self)), desc=f"{self.name} : Getting data from cache"):
                 file_path = self._get_filename(idx)
                 data = self.cache.get_from_cache(file_path)
                 all_data.append(data)
@@ -197,12 +197,12 @@ class ObsDataset(DateDataset):
     def get_all_data(self):
         all_data = []
         if not self.is_dataset_cached():
-            for idx in tqdm(range(len(self)), desc=f"Collecting uncached data"):
+            for idx in tqdm(range(len(self)), desc=f"{self.__name__} : Collecting uncached data"):
                 file_path = self._get_filename(idx)
                 data = self._load_and_preprocess(file_path)
                 all_data.append(data[np.newaxis,:,:,:])
         else:
-            for idx in tqdm(range(len(self)), desc=f"Getting data from cache"):
+            for idx in tqdm(range(len(self)), desc=f"{self.__name__} : Getting data from cache"):
                 file_path = self._get_filename(idx)
                 data = self.cache.get_from_cache(file_path)
                 all_data.append(data[np.newaxis,:,:,:])
@@ -285,13 +285,13 @@ class RandomDataset(Dataset):
     def get_all_data(self):
         all_data = []
         if not self.is_dataset_cached():
-            for idx in tqdm(range(len(self)), desc=f"Collecting uncached data"):
+            for idx in tqdm(range(len(self)), desc=f"{self.name} : Collecting uncached data"):
                 file_path = self._get_filename(idx)
                 data = self._load_and_preprocess(file_path)[np.newaxis,:,:,:] \
                         if self.file_size==1 else self._load_and_preprocess(file_path)
                 all_data.append(data)
         else:
-            for idx in tqdm(range(len(self)), desc=f"Getting data from cache"):
+            for idx in tqdm(range(len(self)), desc=f"{self.name} : Getting data from cache"):
                 file_path = self._get_filename(idx)
                 data = self.cache.get_from_cache(file_path)[np.newaxis,:,:,:] \
                         if self.file_size==1 else self.cache.get_from_cache(file_path)
