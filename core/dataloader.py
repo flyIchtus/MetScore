@@ -121,6 +121,8 @@ class DateDataloader(DataLoader):
 
 class RandomDataloader(DataLoader):
 
+    required_keys = ['real_dataset_config', 'fake_dataset_config']
+
     def __init__(self, config_data, use_cache=False):
         # Appel du __init__ de la classe mère
         super().__init__()
