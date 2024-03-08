@@ -167,11 +167,10 @@ def plot_brierScore(experiments, metric, config):
             plt.close()
 
     for threshold in range(6):
-        
         for var_idx in range(config['var_number']):
             fig,axs = plt.subplots(figsize = (9,7))
             for exp_idx,exp in enumerate(experiments):
-                plt.plot(np.nanmean(Brier_scores_LT[0,:,:,threshold, var_idx]) - np.nanmean(Brier_scores_LT[exp_idx,:,:,threshold, var_idx], axis= (0,2,3)),
+                plt.plot(np.nanmean(Brier_scores_LT[0,:,:,threshold, var_idx], axis= (0,2,3)) - np.nanmean(Brier_scores_LT[exp_idx,:,:,threshold, var_idx], axis= (0,2,3)),
                         label=exp['short_name'], color=color_p[exp_idx], linestyle=line[exp_idx])
 
             plt.xticks( fontsize ='18')
@@ -186,12 +185,13 @@ def plot_brierScore(experiments, metric, config):
         for exp_idx,exp in enumerate(experiments):
             brier_diff = np.zeros((6,))
             for threshold in range(6):
-                brier_diff[threshold] = np.nanmean(Brier_scores_LT[0,:,:,threshold, var_idx]) - np.nanmean(Brier_scores_LT[exp_idx,:,:,threshold, var_idx])
+                brier_diff[threshold] = (np.nanmean(Brier_scores_LT[0,:,:,threshold, var_idx]) - np.nanmean(Brier_scores_LT[exp_idx,:,:,threshold, var_idx])) / np.nanmean(Brier_scores_LT[0,:,:,threshold, var_idx])
             plt.plot(brier_diff,label=exp['short_name'], color=color_p[exp_idx], linestyle=line[exp_idx])
-        plt.xticks( fontsize ='18')
-        #axs.set_xticks(range(len(case_name[var_idx])))
+        axs.set_xticks(range(len(case_name[var_idx])))
+        print(case_name[var_idx])
         axs.set_xticklabels(case_name[var_idx])
         axs.tick_params(direction='in', length=12, width=2)
+        plt.xticks( fontsize ='18')
         plt.yticks(fontsize ='18')
         plt.title(case_name_thresholds[var_idx],fontdict=font)
         plt.legend(fontsize = 10, ncol=1, frameon = False, loc='lower right')
