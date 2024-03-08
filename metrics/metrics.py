@@ -12,15 +12,13 @@ from core.configurable import Configurable
 class Metric(ABC, Configurable):
     required_keys = ['name']
 
-    def __init__(self, isBatched=False, **kwargs):
-        # self.isBatched = kwargs.get('isBatched', False)
+    def __init__(self, isBatched=False, isOnReal=False, **kwargs):
         self.isBatched = isBatched
         super().__init__()
 
 
     def calculate(self, real_data, fake_data, obs_data):
         processed_data = self._preprocess(real_data, fake_data, obs_data)
-
         result = self._calculateCore(processed_data)
         return result
 
@@ -76,6 +74,14 @@ class PreprocessCondObs(Metric):
                 'obs_data': obs_data_pp}
 
 class PreprocessDist(Metric):
+    required_keys = ['isOnReal']
+
+    def __init__(self,isBatched=False, isOnReal=False, **kwargs):
+        super().__init__(isBatched,**kwargs)
+        if self.isOnReal:
+            raise Warning(f"Metric {self} is defined with 'isOnReal' argument, but this is a distance metric.\
+                         Argument `isOnReal` reset to default.")
+            self.isOnReal = False
     def _preprocess(self, real_data=None, fake_data=None, obs_data= None):
         assert real_data is not None
         # selecting only the right indices for variables
@@ -93,11 +99,19 @@ class PreprocessDist(Metric):
         return {'real_data': real_data_p,
                 'fake_data': fake_data_p}
 
-
 class PreprocessStandalone(Metric):
-    def _preprocess(self, real_data=None, fake_data=None, obs_data= None):
-        if len(self.var_indices) != fake_data.shape[self.var_channel]:
-            fake_data_p = fake_data.take(indices=self.var_indices, axis=self.var_channel)
+    required_keys = ['isOnReal']
+
+    def _preprocess(self, real_data=None, fake_data=None, obs_data=None):
+        if self.isOnReal:
+            if len(self.real_var_indices) != real_data.shape[self.var_channel]:
+                real_data_p = real_data.take(indices=self.var_indices, axis=self.var_channel)
+            else:
+                real_data_p = real_data
+            return real_data_p
         else:
-            fake_data_p = fake_data
-        return fake_data_p
+            if len(self.var_indices) != fake_data.shape[self.var_channel]:
+                fake_data_p = fake_data.take(indices=self.var_indices, axis=self.var_channel)
+            else:
+                fake_data_p = fake_data
+            return fake_data_p

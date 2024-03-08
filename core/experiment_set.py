@@ -1,14 +1,14 @@
 import logging
 import os
 
+import pickle
 import numpy as np
 import yaml
 from tqdm import tqdm
 
 from core.configurable import Configurable
-from core.dataloader import DateDataloader
+from core.dataloader import DataLoader
 from metrics.metrics import Metric
-
 
 class ExperimentSet(Configurable):
     required_keys = ['name', 'dataloaders', 'metrics']
@@ -56,7 +56,8 @@ class ExperimentSet(Configurable):
         self.config_data = config_data
         use_cache = self.not_batched_metrics is not []
         logging.info(f"Using cache: {use_cache}")
-        self.dataloader = DateDataloader.fromConfig(config_data['dataloaders'], use_cache=use_cache)
+        config_data['dataloaders'].update(config_data)
+        self.dataloader = DataLoader.from_typed_config(config_data['dataloaders'], use_cache=use_cache)         
         self.current_path = os.path.join(output_folder, config_data['name'])
 
     def prep_folder(self):
@@ -82,23 +83,28 @@ class ExperimentSet(Configurable):
                 res = metric.calculate(batch_real, batch_fake, batch_obs)
                 batched_metric_results[metric.name].append(res)
 
-        for metric_name, results in tqdm(batched_metric_results.items(), desc=f"{self.name}: Saving results"):
+        for metric_name, results in tqdm(batched_metric_results.items(), desc=f"{self.name}: Saving batched results"):
             results_np = np.array(results, dtype=np.float32)
             np.save(os.path.join(self.current_path,  metric_name) + '.npy', results_np)
             logging.debug(f"{self.name} : Metric {metric_name} shape result: {results_np.shape}")
-
 
         if self.not_batched_metrics:
             real_data, fake_data, obs_data = self.dataloader.get_all_data()
             for metric in tqdm(self.not_batched_metrics, desc=f"{self.name}: Calculating non-batched metrics"):
                 logging.debug(f"Running Metric {type(metric)}")
                 results = metric.calculate(real_data, fake_data, obs_data)
-                results_np = np.array(results, dtype=np.float32)
-                np.save(os.path.join(self.current_path, metric.name) + '.npy', results_np)
-                logging.debug(results_np.size)
-                if results_np.size < 25:
-                    logging.info(f"Metric {metric.name} result: {results_np}")
+                
+                if type(results)==dict:
+                    with open(os.path.join(self.current_path, metric.name) + '.p','wb') as f:
+                        pickle.dump(results, f)
                 else:
-                    logging.info(f"Metric {metric.name} : too long result to log")
+                    logging.debug(f"\nCalculated Metric. Result shape {results[0].shape}")
+                    results_np = np.array(results, dtype=np.float32)
+                    np.save(os.path.join(self.current_path, metric.name) + '.npy', results_np)
+                    logging.debug(results_np.size)
+                    if results_np.size < 25:
+                        logging.info(f"Metric {metric.name} result: {results_np}")
+                    else:
+                        logging.info(f"Metric {metric.name} : too long result to log")
 
         logging.info(f"ExperimentSet {index} completed")

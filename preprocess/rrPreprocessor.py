@@ -86,8 +86,7 @@ class rrPreprocessor(Preprocessor):
     def detransform(self, data):
         norm_type = self.normalization["type"]
         per_pixel = self.normalization["per_pixel"]
-        self.rr_transform = self.rr_transform
-        if 'rr' in self.variables and self.self.rr_transform["symetrization"]:
+        if 'rr' in self.variables and self.rr_transform["symetrization"]:
             self.mins = -self.maxs
             self.means = np.zeros_like(self.means)
         if norm_type == "mean":
@@ -125,7 +124,6 @@ class rrPreprocessor(Preprocessor):
         means, stds, maxs, mins = copy.deepcopy(self.means), copy.deepcopy(self.stds), copy.deepcopy(
             self.maxs), copy.deepcopy(self.mins)
         norm_type = self.normalization["type"]
-        self.rr_transform = self.self.rr_transform
         if 'rr' in self.variables:
             rr_idx = self.real_var_indices[0]
             for _ in range(self.rr_transform["log_transform_iteration"]):

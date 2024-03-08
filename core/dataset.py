@@ -1,12 +1,20 @@
 import logging
 import os
 import re
+import glob
+
 import threading
 from abc import abstractmethod
 from datetime import datetime, timedelta
 
+from tqdm import tqdm
 import numpy as np
 import pandas as pd
+
+# making randomness replicable
+import random
+
+random.seed(42)
 
 from core.configurable import Configurable
 from core.useful_funcs import obs_clean
@@ -24,6 +32,7 @@ def convert_key(func):
         return func(self, key, *args, **kwargs)
 
     return wrapper
+
 
 class MemoryCache:
     def __init__(self, use_cache):
@@ -52,10 +61,9 @@ class MemoryCache:
 
 
 class Dataset(Configurable):
-
     required_keys = ['data_folder', 'preprocessor_config']
 
-    def __init__(self, config_data, use_cache=True):
+    def __init__(self, config_data, use_cache=True, **kwargs):
         """
         Sample for config yml file:
         data_folder: path to data folder
@@ -106,16 +114,16 @@ class Dataset(Configurable):
     def get_all_data(self):
         all_data = []
         if not self.is_dataset_cached():
-            for idx in range(len(self)):
+            for idx in tqdm(range(len(self)), desc=f"{self.name} : Collecting uncached data"):
                 file_path = self._get_filename(idx)
                 data = self._load_and_preprocess(file_path)
                 all_data.append(data)
         else:
-            for idx in range(len(self)):
+            for idx in tqdm(range(len(self)), desc=f"{self.name} : Getting data from cache"):
                 file_path = self._get_filename(idx)
                 data = self.cache.get_from_cache(file_path)
                 all_data.append(data)
-        return np.concatenate(all_data,axis=0)
+        return np.concatenate(all_data, axis=0)
 
     def __getitem__(self, items):
         file_path = self._get_filename(items)
@@ -125,11 +133,11 @@ class Dataset(Configurable):
     def _get_full_path(self, filename, extension=".npy"):
         return os.path.join(self.data_folder, f"{filename}{extension}")
 
-class DateDataset(Dataset):
 
+class DateDataset(Dataset):
     required_keys = ['data_folder', 'preprocessor_config', 'crop_indices']
 
-    def __init__(self, config_data, use_cache=True):
+    def __init__(self, config_data, use_cache=True, **kwargs):
         super().__init__(config_data, use_cache)
         self.df0 = pd.read_csv(os.path.join(config_data['path_to_csv'], config_data['csv_file']))
         df_extract = self.df0[
@@ -151,7 +159,7 @@ class DateDataset(Dataset):
 
 
 class ObsDataset(DateDataset):
-    def __init__(self, config_data, use_cache=True):
+    def __init__(self, config_data, use_cache=True, **kwargs):
         super().__init__(config_data, use_cache)
         self.filename_format = config_data.get('filename_format', "obs{date}_{formatted_index}")
 
@@ -186,27 +194,28 @@ class ObsDataset(DateDataset):
 
     def _load_file(self, file_path):
         return obs_clean(np.load(file_path), self.crop_indices)
-    
+
     def get_all_data(self):
         all_data = []
         if not self.is_dataset_cached():
-            for idx in range(len(self)):
+            for idx in tqdm(range(len(self)), desc=f"{self.name} : Collecting uncached data"):
                 file_path = self._get_filename(idx)
                 data = self._load_and_preprocess(file_path)
-                all_data.append(data[np.newaxis,:,:,:])
+                all_data.append(data[np.newaxis, :, :, :])
         else:
-            for idx in range(len(self)):
+            for idx in tqdm(range(len(self)), desc=f"{self.name} : Getting data from cache"):
                 file_path = self._get_filename(idx)
                 data = self.cache.get_from_cache(file_path)
-                all_data.append(data[np.newaxis,:,:,:])
-        return np.concatenate(all_data,axis=0)
+                all_data.append(data[np.newaxis, :, :, :])
+        return np.concatenate(all_data, axis=0)
 
 
 class FakeDataset(DateDataset):
-    def __init__(self, config_data, use_cache=True):
+    def __init__(self, config_data, use_cache=True, **kwargs):
         super().__init__(config_data, use_cache)
 
-        self.filename_format = config_data.get('filename_format', "genFsemble_{date}_{formatted_index}_{inv_step}_{cond_members}_{N_ens}")
+        self.filename_format = config_data.get('filename_format',
+                                               "genFsemble_{date}_{formatted_index}_{inv_step}_{cond_members}_{N_ens}")
 
     def _get_filename(self, index):
         format_variables = [var.strip('}{') for var in re.findall(r'{(.*?)}', self.filename_format)]
@@ -237,7 +246,7 @@ class RealDataset(DateDataset):
         date = self.liste_dates_rep[index]
         names = self.df0[
             (self.df0['Date'] == f"{date}T21:00:00Z") & (
-                        self.df0['LeadTime'] == (index % self.Lead_Times + 1) * self.dh - 1)][
+                    self.df0['LeadTime'] == (index % self.Lead_Times + 1) * self.dh - 1)][
             'Name'].to_list()
         file_names = [self._get_full_path(name) for name in names]
         return file_names
@@ -245,3 +254,141 @@ class RealDataset(DateDataset):
     def _load_file(self, file_path):
         arrays = [np.expand_dims(np.load(file_name), axis=0) for file_name in file_path]
         return np.concatenate(arrays, axis=0)
+
+
+class RandomDataset(Dataset):
+    required_keys = ['data_folder', 'preprocessor_config', 'crop_indices', 'filename_format', 'maxNsamples',
+                     'file_size']
+
+    def __init__(self, config_data, use_cache=True, **kwargs):
+        super().__init__(config_data, use_cache)
+        self.filename_format = config_data.get('filename_format', "_Fsemble_{step}_{index}")
+        self.data_folder = config_data['data_folder']
+        format_variables = [var.strip('}{') for var in re.findall(r'{(.*?)}', self.filename_format)]
+        kwargs = {}
+        kwargs = kwargs | {var: getattr(self, var, '') for var in format_variables if var != "index"}
+        kwargs['index'] = '*'
+        self.filelist = glob.glob(os.path.join(self.data_folder, self.filename_format.format(**kwargs)))
+        random.shuffle(self.filelist)
+        self.filelist = self.filelist[:int(config_data['maxNsamples']) // config_data['file_size']]
+
+    def _get_full_path(self, filename, extension=".npy"):
+        return os.path.join(self.data_folder, f"{filename}{extension}")
+
+    def _get_filename(self, index):
+        return self.filelist[index]
+
+    def _load_file(self, file_path):
+        return np.load(file_path)
+
+    def __len__(self):
+        return len(self.filelist)
+
+    def get_all_data(self):
+        all_data = []
+        if not self.is_dataset_cached():
+            for idx in tqdm(range(len(self)), desc=f"{self.name} : Collecting uncached data"):
+                file_path = self._get_filename(idx)
+                data = self._load_and_preprocess(file_path)[np.newaxis, :, :, :] \
+                    if self.file_size == 1 else self._load_and_preprocess(file_path)
+                all_data.append(data)
+        else:
+            for idx in tqdm(range(len(self)), desc=f"{self.name} : Getting data from cache"):
+                file_path = self._get_filename(idx)
+                data = self.cache.get_from_cache(file_path)[np.newaxis, :, :, :] \
+                    if self.file_size == 1 else self.cache.get_from_cache(file_path)
+                all_data.append(data)
+        return np.concatenate(all_data, axis=0)
+
+
+class MixDataset(DateDataset):
+    def __init__(self, config_data, use_cache=True, **kwargs):
+        super().__init__(config_data, use_cache)
+
+        self.filename_format = config_data.get('filename_format',
+                                               "genFsemble_{date}_{formatted_index}_{inv_step}_{cond_members}_{N_ens}")
+        self.N_real_mb = int(config_data.get('real_proportion', 0.0) * config_data['N_ens'])
+        if self.N_real_mb > 16:  # hard constraint here since AROME data only have 16 members at most
+            raise Warning(
+                f"You stated a proportion of real members of {config_data['real_proportion']} and total {config_data['N_ens']} members,\
+            but AROME ensemble only have 16 members. Capping real members number to 16.")
+            self.N_real_mb = 16
+        self.N_fake_mb = config_data['N_ens'] - self.N_real_mb
+        self.real_data_folder = config_data['real_dataset_config']['data_folder']
+
+        self.real_preprocessor = Preprocessor.from_typed_config(
+            config_data['real_dataset_config']['preprocessor_config'], **config_data['real_dataset_config'])
+        self.real_var_indices = config_data['real_dataset_config']['preprocessor_config']['real_var_indices']
+        logging.debug(f"Using real preprocessor: {self.real_preprocessor.type}")
+
+    def _get_real_full_path(self, filename, extension=".npy"):
+        return os.path.join(self.real_data_folder, f"{filename}{extension}")
+
+    def _get_fake_full_path(self, filename, extension=".npy"):
+        return os.path.join(self.data_folder, f"{filename}{extension}")
+
+    def _get_real_filename(self, index):
+        date = self.liste_dates_rep[index]
+        names = self.df0[
+            (self.df0['Date'] == f"{date}T21:00:00Z") & (
+                    self.df0['LeadTime'] == (index % self.Lead_Times + 1) * self.dh - 1)][
+            'Name'].to_list()
+        file_names = [self._get_real_full_path(name) for name in names]
+        return file_names
+
+    def _get_fake_filename(self, index):
+        format_variables = [var.strip('}{') for var in re.findall(r'{(.*?)}', self.filename_format)]
+        kwargs = {}
+
+        if 'formatted_index' in format_variables:
+            format_variables.remove('formatted_index')
+            formatted_index = (index % self.Lead_Times + 1) * self.dh
+            kwargs = {'formatted_index': formatted_index}
+
+        if 'date' in format_variables:
+            format_variables.remove('date')
+            date = self.liste_dates_rep[index]
+            kwargs = kwargs | {'date': date}
+
+        kwargs = kwargs | {var: getattr(self, var, '') for var in format_variables}
+
+        return self._get_fake_full_path(
+            self.filename_format.format(**kwargs)
+        )
+
+    def _get_filename(self, index):
+        return {
+            'real': self._get_real_filename(index),
+            'fake': self._get_fake_filename(index)
+        }
+
+    def _load_real_file(self, file_path):
+        arrays = [np.expand_dims(np.load(file_name), axis=0) for file_name in file_path]
+        return np.concatenate(arrays, axis=0)
+
+    def _load_fake_file(self, file_path):
+        return np.load(file_path)
+
+    def _preprocess_real_batch(self, batch):
+        return self.real_preprocessor.process_batch(batch)
+
+    def _load_file(self, file_path):
+        real_file = self._load_real_file(file_path['real'])
+        fake_file = self._load_fake_file(file_path['fake'])
+
+        real_file_indices = random.sample(range(real_file.shape[0]), self.N_real_mb)
+        fake_file_indices = random.sample(range(fake_file.shape[0]), self.N_fake_mb)
+
+        real_file = self._preprocess_real_batch(real_file[real_file_indices][:, self.real_var_indices])
+        fake_file = self._preprocess_batch(fake_file[fake_file_indices])
+
+        sample = np.concatenate((real_file, fake_file), axis=0)
+        return sample
+
+    def _load_and_preprocess(self, file_path):
+        if not self.cache.is_cached(file_path['real']):
+            preprocessed_data = self._load_file(file_path)
+            self.cache.add_to_cache(file_path['real'], preprocessed_data)
+        else:
+            preprocessed_data = self.cache.get_from_cache(file_path['real'])
+        return preprocessed_data
