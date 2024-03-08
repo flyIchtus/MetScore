@@ -5,7 +5,7 @@ from typing import Type
 import numpy as np
 
 from core.configurable import Configurable
-from core.dataset import Dataset, RealDataset, FakeDataset, ObsDataset, MixDataset, RandomDataset
+from core.dataset import Dataset, RealDataset, ObsDataset, RandomDataset
 
 
 class DataLoader(ABC, Configurable):
@@ -72,7 +72,7 @@ class DataLoader(ABC, Configurable):
 
 class DateDataloader(DataLoader):
 
-    def __init__(self, config_data, use_cache=False,**kwargs):
+    def __init__(self, config_data, use_cache=False, **kwargs):
         # Appel du __init__ de la classe mère
         super().__init__()
         del config_data['type'] #ensuring 'type' of dataloader does not leak on 'type' of datasets

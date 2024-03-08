@@ -7,7 +7,7 @@ import yaml
 from tqdm import tqdm
 
 from core.configurable import Configurable
-from core.dataloader import DataLoader, DateDataloader, RandomDataloader
+from core.dataloader import DataLoader
 from metrics.metrics import Metric
 
 class ExperimentSet(Configurable):

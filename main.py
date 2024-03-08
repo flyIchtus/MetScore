@@ -57,8 +57,6 @@ def main():
     os.makedirs(config['output_folder'], exist_ok=True)
     successful_experiments = []
     failed_experiments = []
-    successful_experiments = []
-    failed_experiments = []
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = [executor.submit(run_experiment, experiment_config, config['output_folder'], index) for

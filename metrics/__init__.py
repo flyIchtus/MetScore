@@ -17,9 +17,10 @@ import metrics.spectral_variance as spvar
 import metrics.spectrum_analysis as spec
 import metrics.wasserstein_distances as WD
 from metrics import CRPS_calc
-from metrics import object_detection as obj
 from metrics import area_proportion as ap
+from metrics import object_detection as obj
 from metrics.metrics import Metric, PreprocessCondObs, PreprocessDist, PreprocessStandalone
+
 
 class W1CenterNUMPY(PreprocessDist):
     def __init__(self, *args, **kwargs):
@@ -414,7 +415,9 @@ class biasEnsemble(PreprocessCondObs):
         return BE.bias_ens(obs_data,exp_data)
 
 class meanBias(PreprocessCondObs):
+
     required_keys = ['isOnReal']
+
     def __init__(self, *args, **kwargs):
         super().__init__(isBatched=True)
 
