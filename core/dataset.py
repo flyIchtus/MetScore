@@ -450,15 +450,31 @@ class ModDataset(DateDataset):
         return {"fake_path" : fake_filename, "mod_path" : mod_filename}
 
     def _load_and_preprocess(self, file_path):
-        if not self.cache.is_cached(file_path['fake']):
+        if not self.cache.is_cached(file_path['fake_path']):
             data = self._load_file(file_path)
             preprocessed_data = {'fake' : self._preprocess_batch(data['fake']),
                                  'mod' : self._preprocess_batch(data['mod'])}
             self.cache.add_to_cache(file_path['fake'], preprocessed_data)
         else:
-            preprocessed_data = self.cache.get_from_cache(file_path['fake'])
+            preprocessed_data = self.cache.get_from_cache(file_path['fake_path'])
         return preprocessed_data
         
-
     def _load_file(self, file_path):
         return {"fake" : np.load(file_path["fake_path"]), "mod" : np.load(file_path["mod_path"]) }
+
+    def get_all_data(self):
+        all_data_fake = []
+        all_data_mod = []
+        if not self.is_dataset_cached():
+            for idx in tqdm(range(len(self)), desc=f"{self.name} : Collecting uncached data"):
+                file_path = self._get_filename(idx)
+                data = self._load_and_preprocess(file_path["fake_path"])
+                all_data_fake.append(data['fake'])
+                all_data_mod.append(data['mod'])
+        else:
+            for idx in tqdm(range(len(self)), desc=f"{self.name} : Getting data from cache"):
+                file_path = self._get_filename(idx)
+                data = self.cache.get_from_cache(file_path["fake_path"])
+                all_data_fake.append(data['fake'])
+                all_data_mod.append(data['mod'])
+        return np.concatenate(all_data_fake,axis=0), np.concatenate(all_data_mod,axis=0)

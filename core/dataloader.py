@@ -184,10 +184,14 @@ class ModDataloader(DateDataLoader):
             raise StopIteration
 
     def get_all_data(self):
+        #TODO (?) --> find a way to modify on the fly to compute scores on mod'ed data
+        # otherwise this feature is quite useless (either FakeDataset makes the trick or you just cannot compute non-batched on mod'ed data)
         real = self._real_dataset.get_all_data()
-        fake = self._fake_dataset.get_all_data()        
+        logging.debug("Not mod'ing on data gathering") 
+        fake, _ = self._fake_dataset.get_all_data()
+        obs = self._obs_dataset.get_all_data()      
         real, fake = self.randomize_and_cut(real, fake)
-        return real, fake, None
+        return real, fake, obs
 
     def randomize_and_cut(self, data1, data2):
         data1shuf = np.random.permutation(data1)
