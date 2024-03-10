@@ -448,6 +448,16 @@ class ModDataset(DateDataset):
         fake_filename = self._get_fake_filename(index)
         mod_filename = self._get_mod_filename(index)
         return {"fake_path" : fake_filename, "mod_path" : mod_filename}
+
+    def _load_and_preprocess(self, file_path):
+        if not self.cache.is_cached(file_path['fake']):
+            data = self._load_file(file_path)
+            preprocessed_data = {'fake' : self._preprocess_batch(data['fake']),
+                                 'mod' : self._preprocess_batch(data['mod'])}
+            self.cache.add_to_cache(file_path['fake'], preprocessed_data)
+        else:
+            preprocessed_data = self.cache.get_from_cache(file_path['fake'])
+        return preprocessed_data
         
 
     def _load_file(self, file_path):

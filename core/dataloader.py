@@ -152,25 +152,34 @@ class RandomDataloader(DataLoader):
             logging.warning(f"maxNsamples set to {self.maxNsamples} but not enough samples ({cut}). Continuing with {cut} samples.")
         return data1shuf[:cut], data2shuf[:cut]
 
-class RandomDataloader(DateDataLoader):
-
+class ModDataloader(DateDataLoader):
+    required_keys = ['constant_debias']
     def __init__(self, config_data, use_cache=False):
         # Appel du __init__ de la classe mère
         super().__init__()
-
         config_data['real_dataset_config'].update(config_data)
         config_data['fake_dataset_config'].update(config_data)
-        self.real_dataset = RandomDataset.fromConfig(config_data['real_dataset_config'], use_cache=use_cache)
-        self.fake_dataset = RandomDataset.fromConfig(config_data['fake_dataset_config'], use_cache=use_cache)
+        self.real_dataset = RealDataset.fromConfig(config_data['real_dataset_config'], use_cache=use_cache)
+        self.fake_dataset = ModDataset.fromConfig(config_data['fake_dataset_config'], use_cache=use_cache)
+        self.obs_dataset = ObsDataset.fromConfig(config_data['obs_dataset_config'],use_cache=use_cache)
         self._data_length = min(len(self.real_dataset), len(self.fake_dataset))
         logging.debug(f"Dataset length is {self._data_length}")
 
     def __next__(self):
         if self.current_index < self._data_length:
-            fake_samples = np.array([self.fake_dataset[ self.current_index + i] for i in range(self.fake_dataset.batch_size)])
+            fake_samples = np.array([self.fake_dataset[ self.current_index + i]['fake'] for i in range(self.fake_dataset.batch_size)])
+            mod_samples = np.array([self.fake_dataset[ self.current_index + i]['mod'] for i in range(self.fake_dataset.batch_size)])
             real_samples = np.array([self.real_dataset[self.current_index + i] for i in range(self.real_dataset.batch_size)])
+            obs_samples = np.array([self.obs_dataset[self.current_index + i] for i in range(self.batch_size)])
+
             self.current_index += min(self.batch_size, self._data_length - self.current_index)
-            return fake_samples[0], real_samples[0], None
+            logging.debug(f"mod'ing with option constant_debias set to {self.constant_debias}")
+            mod_bias = mod_samples.mean(axis=(0,-2,-1)) - real_samples.mean(axis=(0,-2,-1)) if self.constant_debias
+                        else mod_samples.mean(axis=0) - real_samples.mean(axis=0)
+            fake_samples = fake_samples - mod_bias + real_samples.mean(axis=(0,-2,-1)) if self.constant_debias 
+                            else fake_samples - mod_bias + real_samples.mean(axis=0)
+            logging.debug(f"mod'ing done")
+            return fake_samples[0], real_samples[0], obs_samples          
         else:
             raise StopIteration
 
