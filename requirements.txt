@@ -7,3 +7,5 @@ scipy
 matplotlib
 pyproj
 properscoring
+geopy
+astropy

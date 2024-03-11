@@ -21,7 +21,11 @@ class Configurable:
     @classmethod
     def from_typed_config(cls, config_data, **kwargs):
         config_data = cls._safe_open(cls, config_data)
-        type_name = config_data['type']
+        try:
+            type_name = config_data['type']
+        except KeyError:
+            raise ValueError(f"Missing required key: type for class {cls.__name__} in config file for {cls.__name__}")
+
         def find_subclass_recursive(parent_cls):
             for subclass in parent_cls.__subclasses__() + [parent_cls]:
                 if type_name in subclass.aliases + [subclass.__name__]:

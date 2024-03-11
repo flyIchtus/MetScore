@@ -3,6 +3,7 @@ import concurrent
 import logging
 import os
 import sys
+import traceback
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
@@ -65,17 +66,19 @@ def main():
 
         # Get results
         for future in concurrent.futures.as_completed(futures):
-            experiment_config, success, exception = future.result()
+            experiment_config, success, exception_info = future.result()
             if success:
                 successful_experiments.append(experiment_config)
             else:
-                failed_experiments.append((experiment_config, exception))
-                logging.error(f"Experiment {experiment_config['name']}\n failed with exception: {exception}")
+                exception, tb = exception_info
+                failed_experiments.append((experiment_config, exception, tb))
+                logging.error(
+                    f"Experiment {experiment_config['name']}\n failed with exception: {exception!r}.\nTraceback: {tb}")
 
     # Log results
     success_str = '\n'.join(exp_config['name'] for exp_config in successful_experiments)
     failure_str = '\n'.join(
-        f"{exp_config['name']}\n Reason for failure: {exception}" for exp_config, exception in
+        f"{exp_config['name']}\n Reason for failure: {exception!r}" for exp_config, exception, tb in
         failed_experiments)
 
     logger.info("Experiment results:")
@@ -91,9 +94,8 @@ def run_experiment(experiment_config, output_folder,index):
         experiment_set.run(index)
         return (experiment_config, True, None)  # Indique que l'expérience a réussi, sans exception
     except Exception as e:
-        return (experiment_config, False, e)  # Indique que l'expérience a écho
-
-
+        tb = traceback.format_exc()
+        return experiment_config, False, (e, tb)  # Indique que l'expérience a écho
 
 if __name__ == "__main__":
     main()

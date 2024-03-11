@@ -3,7 +3,7 @@ import numpy as np
 import os,pickle,datetime
 import metrics.help_functions_objects as hlp
 from mpl_toolkits.axes_grid1 import AxesGrid
-from cartopy.mpl.geoaxes import GeoAxes
+# from cartopy.mpl.geoaxes import GeoAxes
 import skimage.measure as skimage
 from scipy import ndimage
 from collections import namedtuple
