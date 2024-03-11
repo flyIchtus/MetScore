@@ -82,7 +82,7 @@ def main():
         size_H = config['size_H']
         size_W = config['size_W']
 
-        assert 'output_plots' in config, f"output_plots path must be specified in {args.config}"
+        assert 'output_plots' in config, f"output_path must be specified in {args.config}"
         if not os.path.exists(config['output_plots']):
             os.mkdir(config['output_plots'])
 
