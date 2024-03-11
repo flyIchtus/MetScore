@@ -178,7 +178,8 @@ class ModDataloader(DateDataloader):
             logging.debug(f"real dataset indices {self.real_dataset.var_indices} resulting shape {real_samples[0][:,self.real_dataset.var_indices,:,:].shape}")
             mod_bias = mod_samples[0].mean(axis=(0,-2,-1)) - real_samples[0][:,self.real_dataset.var_indices,:,:].mean(axis=(0,-2,-1)) if self.constant_debias \
                         else mod_samples[0].mean(axis=0) - real_samples[0][:,self.real_dataset.var_indices,:,:].mean(axis=0)
-            logging.debug("applying bias")
+            if self.constant_debias:
+                logging.debug(f"applying bias {mod_bias}")
             fake_samples[0] = fake_samples[0] - mod_bias[np.newaxis,:,np.newaxis,np.newaxis] if self.constant_debias else fake_samples[0] - mod_bias[np.newaxis]
             logging.debug(f"mod'ing done")
             return fake_samples[0], real_samples[0], obs_samples          
