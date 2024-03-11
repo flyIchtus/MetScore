@@ -5,7 +5,7 @@ from typing import Type
 import numpy as np
 
 from core.configurable import Configurable
-from core.dataset import Dataset, RealDataset, ObsDataset, RandomDataset
+from core.dataset import Dataset, RealDataset, ObsDataset, RandomDataset, ModDataset
 
 
 class DataLoader(ABC, Configurable):
@@ -152,11 +152,11 @@ class RandomDataloader(DataLoader):
             logging.warning(f"maxNsamples set to {self.maxNsamples} but not enough samples ({cut}). Continuing with {cut} samples.")
         return data1shuf[:cut], data2shuf[:cut]
 
-class ModDataloader(DateDataLoader):
-    required_keys = ['constant_debias']
-    def __init__(self, config_data, use_cache=False):
+class ModDataloader(DateDataloader):
+    required_keys = ['constant_debias', 'real_dataset_config', 'fake_dataset_config', 'obs_dataset_config']
+    def __init__(self, config_data, use_cache=False,**kwargs):
         # Appel du __init__ de la classe mère
-        super().__init__()
+        super().__init__(config_data,use_cache,**kwargs)
         config_data['real_dataset_config'].update(config_data)
         config_data['fake_dataset_config'].update(config_data)
         self.real_dataset = RealDataset.fromConfig(config_data['real_dataset_config'], use_cache=use_cache)
@@ -174,10 +174,12 @@ class ModDataloader(DateDataLoader):
 
             self.current_index += min(self.batch_size, self._data_length - self.current_index)
             logging.debug(f"mod'ing with option constant_debias set to {self.constant_debias}")
-            mod_bias = mod_samples.mean(axis=(0,-2,-1)) - real_samples.mean(axis=(0,-2,-1)) if self.constant_debias
-                        else mod_samples.mean(axis=0) - real_samples.mean(axis=0)
-            fake_samples = fake_samples - mod_bias + real_samples.mean(axis=(0,-2,-1)) if self.constant_debias 
-                            else fake_samples - mod_bias + real_samples.mean(axis=0)
+            logging.debug(f"real shape {real_samples.shape} fake shape {fake_samples.shape} mod shape {mod_samples.shape}")
+            logging.debug(f"real dataset indices {self.real_dataset.var_indices} resulting shape {real_samples[0][:,self.real_dataset.var_indices,:,:].shape}")
+            mod_bias = mod_samples[0].mean(axis=(0,-2,-1)) - real_samples[0][:,self.real_dataset.var_indices,:,:].mean(axis=(0,-2,-1)) if self.constant_debias \
+                        else mod_samples[0].mean(axis=0) - real_samples[0][:,self.real_dataset.var_indices,:,:].mean(axis=0)
+            logging.debug("applying bias")
+            fake_samples[0] = fake_samples[0] - mod_bias[np.newaxis,:,np.newaxis,np.newaxis] if self.constant_debias else fake_samples[0] - mod_bias[np.newaxis]
             logging.debug(f"mod'ing done")
             return fake_samples[0], real_samples[0], obs_samples          
         else:
