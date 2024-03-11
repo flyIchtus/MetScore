@@ -44,36 +44,63 @@ class ExperimentSet(Configurable):
                 usetorch: False
 
         """
-        data_metrics_config = {'var_indices': config_data['dataloaders']['fake_dataset_config']['var_indices'],
-                                 'real_var_indices': config_data['dataloaders']['real_dataset_config']['var_indices'],
-                                 'obs_var_indices': config_data['dataloaders']['obs_dataset_config']['var_indices'],
-                                 }
-        metrics_config = config_data['metrics']
+        self.config_data = config_data
+        self.current_path = os.path.join(output_folder, config_data['name'])
+
+    def _init_experiment(self):
+        data_metrics_config = {'var_indices': self.config_data['dataloaders']['fake_dataset_config']['var_indices'],
+                               'real_var_indices': self.config_data['dataloaders']['real_dataset_config']['var_indices'],
+                               'obs_var_indices': self.config_data['dataloaders']['obs_dataset_config']['var_indices'],
+                               }
+        metrics_config = self.config_data['metrics']
         self.metrics = [Metric.from_typed_config(metric | metrics_config['args'] | data_metrics_config) for metric in
                         metrics_config['metrics_list']]
         self.batched_metrics = [metric for metric in self.metrics if metric.isBatched]
         self.not_batched_metrics = [metric for metric in self.metrics if not metric.isBatched]
-        self.config_data = config_data
         use_cache = self.not_batched_metrics is not []
         logging.info(f"Using cache: {use_cache}")
-        config_data['dataloaders'].update(config_data)
-        self.dataloader = DataLoader.from_typed_config(config_data['dataloaders'], use_cache=use_cache)         
-        self.current_path = os.path.join(output_folder, config_data['name'])
+        self.config_data['dataloaders'].update(self.config_data)
+        self.dataloader = DataLoader.from_typed_config(self.config_data['dataloaders'], use_cache=use_cache)
 
-    def prep_folder(self):
-
-        logging.debug(f"Making dirs at {self.current_path}")
-        try:
+    def _prep_folder(self):
+        if not os.path.exists(self.current_path):
             os.makedirs(self.current_path)
-        except FileExistsError:
-            raise FileExistsError(f"ExperimentSet {self.name} already exists at {self.current_path}")
+        else:
+            logging.warning(f"Folder {self.current_path} already exists. Checking for existing config file.")
+            try:
+                with open(os.path.join(self.current_path, 'config.yml'), 'r') as f:
+                    existing_config_data = yaml.safe_load(f)
+            except FileNotFoundError:
+                raise FileNotFoundError(f"Folder {self.current_path} already exists, but no config file found."
+                                        f"Please remove the folder or rename it or change {self.config_data['name']} in"
+                                        f"config.")
+            existing_metrics = existing_config_data['metrics']['metrics_list']
+            new_metrics = self.config_data['metrics']['metrics_list']
 
-        with open(os.path.join(self.current_path, 'config.yml'), 'w') as f:
-            f.write(yaml.dump(self.config_data))
+            existing_config_data['metrics']['metrics_list'], self.config_data['metrics']['metrics_list'] = None, None
+
+            if existing_config_data != self.config_data:
+                raise ValueError(f"Folder {self.current_path} already exists, but config files do not match."
+                                 f"Existing config: {existing_config_data}. New config: {self.config_data}")
+            else:
+                if existing_metrics == new_metrics:
+                    raise ValueError(f"Folder {self.current_path} already exists, and metrics and config are the same.")
+                else:
+                    current_metrics = []
+                    for metric in new_metrics:
+                        if metric not in existing_metrics:
+                            current_metrics.append(metric)
+                            logging.debug(f"Added new metric: {metric}")
+                self.config_data['metrics']['metrics_list'] = current_metrics
+                logging.info(f"Folder {self.current_path} already exists. Running only new metrics: {current_metrics}")
+
 
     def run(self, index):
         logging.info(f"Running ExperimentSet {self.name}")
-        self.prep_folder()
+
+        self._prep_folder()
+
+        self._init_experiment()
 
         batched_metric_results = {metric.name: [] for metric in self.batched_metrics}
 
