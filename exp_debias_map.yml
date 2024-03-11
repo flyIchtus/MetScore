@@ -1,0 +1,91 @@
+output_folder: /scratch/mrmn/brochetc/GAN_2D/experiments1
+experiments:
+  - name: bias_1.0_spread_1.0_ff_False_debias_inv_crps
+    dataloaders:
+      type: ModDataloader
+      constant_debias: False
+      batch_size: 1
+      maxNsamples: 16
+      path_to_csv: /scratch/mrmn/brochetc/GAN_2D/datasets_full_indexing/IS_1_1.0_0_0_0_0_0_256_large_lt_done2/IS_1_1.0_0_0_0_0_0_256_large_lt_done
+      csv_file: Large_lt_test_labels.csv
+      date_start: '2020-08-13'
+      date_end: '2022-08-15'
+      number_of_dates : 20
+      Lead_Times : 15
+      start_time : 21 # 21:00. Arome simulations in the dataset start at 21:00 
+      dh : 3
+      N_ens : 112
+      inv_step : 1000
+      cond_members : 16 
+      real_dataset_config:
+        data_folder: /scratch/mrmn/brochetc/GAN_2D/datasets_full_indexing/IS_1_1.0_0_0_0_0_0_256_large_lt_done2/IS_1_1.0_0_0_0_0_0_256_large_lt_done
+        variables: ['u','v','t2m']
+        sizeH: 256
+        sizeW: 256
+        var_indices: [1,2,3] #where to find the variables in dataset samples
+        crop_indices: [0,256,0,256]
+        preprocessor_config:
+          type: Preprocessor
+          real_var_indices: [ 1,2,3 ] #where to find the variables in stat files
+          real_data_dir: /scratch/mrmn/brochetc/GAN_2D/datasets_full_indexing/IS_1_1.0_0_0_0_0_0_256_large_lt_done2/IS_1_1.0_0_0_0_0_0_256_large_lt_done
+          stat_folder: "stat_files_Massif_Central/"
+          stat_version: "rr" # the name of the stat file is for ex: 'mean_[stat_version]_log_ppx.npy'
+          rr_transform:
+            log_transform_iteration: 1
+            symetrization: False
+            gaussian_std: 0 # Threshold between rain and no rain to add a gaussian noise where rr < gaussian_std.
+          normalization:
+            type: "mean"
+            per_pixel: False
+            for_rr:
+              blur_iteration: 1
+      fake_dataset_config:
+        type: ModDataset
+        data_folder: /scratch/mrmn/brochetc/GAN_2D/Exp_StyleGAN_final/mix3_['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '0', '0', '0', '0']_False_-1_bias_1.0_spread_1.0_ff_False/samples/
+        mod_data_folder: /scratch/mrmn/brochetc/GAN_2D/Exp_StyleGAN_GABRIEL/Inversion_Test/
+        variables: ['u','v','t2m']
+        sizeH: 256
+        sizeW: 256
+        filename_format: genFsemble_{date}_{formatted_index}_1000
+        filename_mod_format: invertFsemble_{date}_{formatted_index}_1000
+        var_indices: [0,1,2] #where to find the variables in dataset samples
+        crop_indices: [0,256,0,256]
+        preprocessor_config:
+          type: ReverserrPreprocessor
+          real_var_indices: [1,2,3] #where to find the variables in stat files
+          real_data_dir: /scratch/mrmn/brochetc/GAN_2D/datasets_full_indexing/IS_1_1.0_0_0_0_0_0_256_large_lt_done2/IS_1_1.0_0_0_0_0_0_256_large_lt_done
+          stat_folder: "stat_files_Massif_Central/"
+          stat_version: "rr" # the name of the stat file is for ex: 'mean_[stat_version]_log_ppx.npy'
+          rr_transform:
+            log_transform_iteration: 1
+            symetrization: False
+            gaussian_std: 0
+          normalization:
+            type: "mean"
+            per_pixel: False
+            for_rr:
+              blur_iteration: 1
+      obs_dataset_config:
+        data_folder: /scratch/mrmn/brochetc/obs_databases/obs_full_npy
+        crop_indices: [180, 436, 500, 756]
+        variables: ['ff','dd','t2m']
+        var_indices: [0,1,2]
+        preprocessor_config:
+            type: Preprocessor
+    metrics:
+      args:
+        debiasing: False
+        debiasing_mode: ENSAVG
+        conditioning_members: 16
+        threshold: [[ 1.39, 2.78, 4.17, 5.56, 8.33, 11.11 ], [ 278.15, 283.15, 288.15, 293.15, 297.15, 303.15 ]] ## [ff], [t2m] 
+        var_channel: 1
+        obs_var_channel: 1
+        isOnReal: False
+
+      metrics_list:
+        - name: ensembleCRPS
+          type: ensembleCRPS
+          fair: True
+        - name: ensembleCRPSunfair
+          type: ensembleCRPS
+          fair: False
