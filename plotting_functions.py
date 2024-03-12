@@ -19,6 +19,7 @@ font = {'family': 'serif',
     }
 
 ##### ESTHETICS AND TITLE NAMES
+base_vars = ['u','v','t2m']
 color_p = ['black', 'royalblue', 'darkgreen', 'darkorange', 'red', 'cyan', 'gold', 'pink', 'tan', 'slategray', 'purple', 'palegreen', 'orchid', 'crimson', 'firebrick']
 line = ['solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'solid','solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'solid',]
 case_name = [['ff=5 (km/h)', 'ff=10 (km/h)', 'ff=15 (km/h)', 'ff=20 (km/h)', 'ff=30 (km/h)', 'ff=40 (km/h)'],
@@ -73,6 +74,46 @@ def plot_biasEnsemble(experiments, metric, config):
 
 ######################## ENSEMBLE CRPS
 def plot_ensembleCRPS(experiments, metric, config):
+    crps_scores = np.zeros((len(experiments), config['number_dates'] * config['lead_times'], config['var_number']), dtype = ('float32'))
+    crps_scores_LT = np.zeros((len(experiments), config['number_dates'],config['lead_times'], config['var_number']), dtype = ('float32'))
+
+    for exp_idx, exp in enumerate(experiments):
+        crps = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')
+        crps_scores[exp_idx] = crps[:,:,0]
+    crps_scores_LT = group_by_leadtime(crps_scores,crps_scores_LT,config)
+
+    for var_idx in range(config['var_number']):
+        dist_0 = crps_scores_LT[0,:,0:5,var_idx]
+        dist_0 = dist_0.reshape(config['number_dates']*5)
+        fig,axs = plt.subplots(figsize = (9,7))        
+        for exp_idx, exp in enumerate(experiments[1:]):
+            dist = crps_scores_LT[exp_idx,:,0:5,var_idx]
+            dist = dist.reshape(config['number_dates']*5)
+            axs.hist(dist-dist_0, bins=50)
+        plt.savefig(config['output_plots'] + '/' + metric['folder'] + '/' + metric['name']+ '_diff_'+ case_name_thresholds[var_idx]+'_'+ exp['name']+'.pdf')
+        plt.close()
+
+        # We can set the number of bins with the *bins* keyword argument.
+    for var_idx in range(config['var_number']):
+        fig,axs = plt.subplots(figsize = (9,7))
+        for exp_idx, exp in enumerate(experiments):                      
+            plt.plot(np.nanmean(crps_scores_LT[exp_idx,:,:,var_idx], axis=(0)),  label=exp['short_name'], color=color_p[exp_idx], linestyle = line[exp_idx])
+
+        plt.xticks( fontsize ='18')
+        axs.set_xticks(range(len(echeance)))
+        axs.set_xticklabels(echeance)
+        axs.tick_params(direction='in', length=12, width=1)
+        plt.yticks(fontsize ='18')
+        plt.ylabel(var_names_m[var_idx], fontsize= '18', fontdict=font)
+        plt.legend(fontsize=10, ncol=1, frameon=False, loc='lower right')
+        plt.savefig(config['output_plots'] + '/' + metric['folder'] + '/' + metric['name'] + case_name_thresholds[var_idx] +'.pdf')
+        plt.close()
+    del crps_scores
+    del crps_scores_LT
+    gc.collect()
+
+######################## ENSEMBLE CRPS
+def plot_ensembleCRPSunfair(experiments, metric, config):
     crps_scores = np.zeros((len(experiments), config['number_dates'] * config['lead_times'], config['var_number']), dtype = ('float32'))
     crps_scores_LT = np.zeros((len(experiments), config['number_dates'],config['lead_times'], config['var_number']), dtype = ('float32'))
 
@@ -341,3 +382,21 @@ def plot_ROC(experiments, metric, config):
             plt.title(case_name[var_idx][threshold],fontdict = font)
             
             plt.savefig(config['output_plots'] + '/' + metric['folder'] + '/' + 'AROC_' + str(threshold) + '_' + case_name_thresholds[var_idx] +'.pdf')
+
+def plot_spectralCompute(experiments, metric, config):
+        spectral = np.zeros((len(experiments),3, 90))
+        for exp_idx, exp in enumerate(experiments):
+            spectral[exp_idx] = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')
+
+        scale = np.linspace(2 * np.pi / 2.6, 45 * 256 // 128 * 2 * np.pi / 2.6, 45 * 256 // 128)
+        for var_idx in range(config['var_number']):
+            fig,axs = plt.subplots(figsize = (9,7))
+            for exp_idx, exp in enumerate(experiments):
+                plt.plot(scale, spectral[exp_idx][var_idx], label=exp['short_name'], color=color_p[exp_idx], linestyle=line[exp_idx])
+            plt.title(f"Power Spectrum of {base_vars[var_idx]}")
+            plt.ylabel(f"Power Spectral Density")
+            plt.xlabel("Scale")
+            plt.xscale("log")
+            plt.yscale("log")
+            plt.legend()
+            plt.savefig(config['output_plots'] + '/' + metric['folder'] + '/' +  metric['name'] + '_' + base_vars[var_idx] +'.pdf')  

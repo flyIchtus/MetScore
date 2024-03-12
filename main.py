@@ -91,7 +91,7 @@ def run_experiment(experiment_config, output_folder,index):
         experiment_set.run(index)
         return (experiment_config, True, None)  # Indique que l'expérience a réussi, sans exception
     except Exception as e:
-        return (experiment_config, False, e)  # Indique que l'expérience a écho
+        return (experiment_config, False, e)  # Indique que l'expérience a échoué
 
 
 
