@@ -65,6 +65,7 @@ def main():
         logger.debug(experiments)
         logger.debug("###### Metrics ##########")
         logger.debug(metrics)
+        logger.debug(config['number_dates'])
         assert 'output_plots' in config, f"output_plots path must be specified in {args.config}"
         if not os.path.exists(config['output_plots']):
             os.mkdir(config['output_plots'])

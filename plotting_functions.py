@@ -258,7 +258,7 @@ def plot_rankHistogram(experiments, metric, config):
         for exp_idx, exp in enumerate(experiments):
             fig,axs = plt.subplots(figsize = (9,7))
             ind = np.arange(N_bins[exp_idx])
-            plt.bar(ind, rank_histo[exp_idx,:,var_idx,0:N_bins[exp_idx]].sum(axis=0))
+            plt.bar(ind, rank_histo[exp_idx,:,var_idx].mean(axis=0))
             plt.title(exp['name'] + ' ' + var_names_m[var_idx],fontdict=font)
             #plt.xticks( fontsize ='18')
             plt.tick_params(bottom = False, labelbottom = False)
@@ -384,19 +384,19 @@ def plot_ROC(experiments, metric, config):
             plt.savefig(config['output_plots'] + '/' + metric['folder'] + '/' + 'AROC_' + str(threshold) + '_' + case_name_thresholds[var_idx] +'.pdf')
 
 def plot_spectralCompute(experiments, metric, config):
-        spectral = np.zeros((len(experiments),3, 90))
-        for exp_idx, exp in enumerate(experiments):
-            spectral[exp_idx] = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')
+    spectral = np.zeros((len(experiments),3, 90))
+    for exp_idx, exp in enumerate(experiments):
+        spectral[exp_idx] = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')
 
-        scale = np.linspace(2 * np.pi / 2.6, 45 * 256 // 128 * 2 * np.pi / 2.6, 45 * 256 // 128)
-        for var_idx in range(config['var_number']):
-            fig,axs = plt.subplots(figsize = (9,7))
-            for exp_idx, exp in enumerate(experiments):
-                plt.plot(scale, spectral[exp_idx][var_idx], label=exp['short_name'], color=color_p[exp_idx], linestyle=line[exp_idx])
-            plt.title(f"Power Spectrum of {base_vars[var_idx]}")
-            plt.ylabel(f"Power Spectral Density")
-            plt.xlabel("Scale")
-            plt.xscale("log")
-            plt.yscale("log")
-            plt.legend()
-            plt.savefig(config['output_plots'] + '/' + metric['folder'] + '/' +  metric['name'] + '_' + base_vars[var_idx] +'.pdf')  
+    scale = np.linspace(2 * np.pi / 2.6, 45 * 256 // 128 * 2 * np.pi / 2.6, 45 * 256 // 128)
+    for var_idx in range(config['var_number']):
+        fig,axs = plt.subplots(figsize = (9,7))
+        for exp_idx, exp in enumerate(experiments):
+            plt.plot(scale, spectral[exp_idx][var_idx], label=exp['short_name'], color=color_p[exp_idx], linestyle=line[exp_idx])
+        plt.title(f"Power Spectrum of {base_vars[var_idx]}")
+        plt.ylabel(f"Power Spectral Density")
+        plt.xlabel("Scale")
+        plt.xscale("log")
+        plt.yscale("log")
+        plt.legend()
+        plt.savefig(config['output_plots'] + '/' + metric['folder'] + '/' +  metric['name'] + '_' + base_vars[var_idx] +'.pdf')  
