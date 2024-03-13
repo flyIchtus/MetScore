@@ -88,12 +88,16 @@ class DateDataloader(DataLoader):
 
     def __next__(self):
         if self.current_index < self._data_length:
-            fake_samples = np.array([self.fake_dataset[ self.current_index + i] for i in range(self.batch_size)])
-            obs_samples = np.array([self.obs_dataset[self.current_index + i] for i in range(self.batch_size)])
-            real_samples = np.array([self.real_dataset[self.current_index + i] for i in range(self.batch_size)])
-            self.current_index += min(self.batch_size, self._data_length - self.current_index)
-            logging.debug(f"{self.name} : fake data min {fake_samples[0].min()}, max {fake_samples[0].max()}")
-            return fake_samples[0], real_samples[0], obs_samples
+            try:
+                fake_samples = np.array([self.fake_dataset[ self.current_index + i] for i in range(self.batch_size)])
+                obs_samples = np.array([self.obs_dataset[self.current_index + i] for i in range(self.batch_size)])
+                real_samples = np.array([self.real_dataset[self.current_index + i] for i in range(self.batch_size)])
+                self.current_index += min(self.batch_size, self._data_length - self.current_index)
+                return fake_samples[0], real_samples[0], obs_samples
+            except FileNotFoundError as e:
+                logging.warning(f"{self.name} :  File not found, {e}")
+                self.current_index += min(self.batch_size, self._data_length - self.current_index)
+                return None,None,None
         else:
             raise StopIteration
 
