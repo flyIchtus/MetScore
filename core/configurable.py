@@ -128,6 +128,6 @@ def _check_config(cls, config_data, typed=False):
     if missing_keys:
         raise ValueError(f"Missing required keys for class {cls.__name__}: {', '.join(missing_keys)}")
 
-    invalid_keys = set(config_data.keys()) - set(required_keys) - set(cls.__dict__)
-    if invalid_keys:
-        raise ValueError(f"Invalid keys in configuration for class {cls.__name__}: {', '.join(invalid_keys)}")
+    #invalid_keys = set(config_data.keys()) - set(required_keys) - set(cls.__dict__)
+    #if invalid_keys:
+    #    raise ValueError(f"Invalid keys in configuration for class {cls.__name__}: {', '.join(invalid_keys)}")

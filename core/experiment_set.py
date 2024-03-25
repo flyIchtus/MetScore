@@ -71,6 +71,8 @@ class ExperimentSet(Configurable):
         """
         if not os.path.exists(self.current_path):
             os.makedirs(self.current_path)
+            with open(os.path.join(self.current_path, 'config.yml'), 'w') as f:
+                f.write(yaml.dump(self.config_data))
         else:
             logging.warning(f"Folder {self.current_path} already exists. Checking for existing config file.")
             try:
@@ -80,6 +82,7 @@ class ExperimentSet(Configurable):
                 raise FileNotFoundError(f"Folder {self.current_path} already exists, but no config file found."
                                         f"Please remove the folder or rename it or change {self.config_data['name']} in"
                                         f"config.")
+
             existing_metrics = existing_config_data['metrics']['metrics_list']
             new_metrics = self.config_data['metrics']['metrics_list']
 
@@ -90,18 +93,25 @@ class ExperimentSet(Configurable):
                 raise ValueError(f"Folder {self.current_path} already exists, but config files do not match."
                                  f"Existing config: {existing_config_data}. New config: {self.config_data}")
             else:
-                if existing_metrics == new_metrics:
+                existing_names = {m['name'] for m in existing_metrics}
+                new_names = {m['name'] for m in new_metrics}
+                intersect = existing_names.intersection(new_names)
+                if len(intersect)>0:
                     raise ValueError(
-                        f"Folder {self.current_path} already exists, and metrics and config are the same.")
+                        f"Folder {self.current_path} already exists, metrics coincide (common metric names : {intersect}) and config are the same.")
                 else:
                     current_metrics = []
                     for metric in new_metrics:
-                        if metric not in existing_metrics:
-                            current_metrics.append(metric)
-                            logging.debug(f"Added new metric: {metric}")
+                        current_metrics.append(metric)
+                        logging.debug(f"Added new metric: {metric}")
+                self.config_data['metrics']['metrics_list'] = current_metrics + existing_metrics
+                with open(os.path.join(self.current_path, 'config.yml'), 'w') as f:
+                    f.write(yaml.dump(self.config_data))
                 self.config_data['metrics']['metrics_list'] = current_metrics
                 logging.info(
                     f"Folder {self.current_path} already exists. Running only new metrics: {current_metrics}")
+
+        
 
     def run(self, index):
         """
