@@ -20,7 +20,7 @@ font = {'family': 'serif',
 
 ##### ESTHETICS AND TITLE NAMES
 base_vars = ['u','v','t2m']
-color_p = ['black', 'royalblue', 'darkgreen', 'darkorange', 'red', 'cyan', 'gold', 'pink', 'tan', 'slategray', 'purple', 'palegreen', 'orchid', 'crimson', 'firebrick']
+color_p = ['black', 'royalblue', 'red', 'darkgreen', 'darkorange', 'cyan', 'gold', 'pink', 'tan', 'slategray', 'purple', 'palegreen', 'orchid', 'crimson', 'firebrick']
 line = ['solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'solid','solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'solid',]
 case_name = [['ff=5 (km/h)', 'ff=10 (km/h)', 'ff=15 (km/h)', 'ff=20 (km/h)', 'ff=30 (km/h)', 'ff=40 (km/h)'],
             ['', '', '', '', '', ''], 
@@ -186,8 +186,8 @@ def plot_skillSpread(experiments, metric, config):
 def plot_brierScore(experiments, metric, config):
     Brier_scores = np.zeros((len(experiments), config['number_dates'] * config['lead_times'], 6, config['var_number'], config['size_H'], config['size_W']), dtype = ('float32'))
     Brier_scores_LT = np.zeros((len(experiments), config['number_dates'], config['lead_times'], 6, config['var_number'],  config['size_H'], config['size_W']), dtype = ('float32'))
-
     for exp_idx, exp in enumerate(experiments):
+        print(exp)
         Brier_scores[exp_idx] = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')
         
     Brier_scores_LT = group_by_leadtime(Brier_scores,Brier_scores_LT,config)
@@ -246,6 +246,7 @@ def plot_brierScore(experiments, metric, config):
 #### RANK HISTOGRAM
 
 def plot_rankHistogram(experiments, metric, config):
+
     rank_histo = np.zeros((len(experiments), config['number_dates'] * config['lead_times'], config['var_number'], config['N_bins_max']))
 
     for exp_idx, exp in enumerate(experiments):
