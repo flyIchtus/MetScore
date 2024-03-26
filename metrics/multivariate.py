@@ -74,18 +74,18 @@ def var2Var_hist(data, bins, density=True):
         bins : the bins either outputted by histogram2d or those
                 passed as array inputs
     """
-    channels=data.shape[1]
-    var_couples=combinations_with_replacement(range(channels), 2)
-    ncouples=channels*(channels-1)//2
+    channels = data.shape[1]
+    var_couples = combinations_with_replacement(range(channels), 2)
+    ncouples = channels*(channels-1)//2
     
     if type(bins)==int :
-        Bins=np.zeros((ncouples*2,bins+1))
-        bivariates=np.zeros((ncouples,bins,bins))
+        Bins = np.zeros((ncouples*2,bins+1))
+        bivariates = np.zeros((ncouples,bins,bins))
         
     
     
     elif type(bins)==np.ndarray:
-        Bins=bins
+        Bins = bins
         bivariates=np.zeros((ncouples,Bins.shape[1]-1, Bins.shape[1]-1))
         
     k=0
@@ -174,38 +174,39 @@ def define_levels(bivariates, nlevels):
     
     Shape=bivariates.shape
     assert len(Shape)==3
-    inter=bivariates.reshape(Shape[0],Shape[1]*Shape[2])
+    inter = bivariates.reshape(Shape[0],Shape[1]*Shape[2])
     
     
     levels=np.zeros((Shape[0],nlevels))
     
     for i in range(Shape[0]):
-        b=np.sort(inter[i])
+        b = np.sort(inter[i])
 
-        usable_data=b[b>0].shape[0]
+        usable_data = b[b>0].shape[0]
         
-        N_values=usable_data//nlevels
+        N_values = usable_data // nlevels
         assert N_values>2
-        levels[i]=np.log(b[b>0][::N_values])[:nlevels]
-    
+        levels[i] = np.log(b[b>0][::N_values])[:nlevels]
     return levels
 
-
-
-def space2batch(data):
+def space2batch(data, offset):
 
     Shape=data.shape
     assert len(Shape)==4
     
     data_list = []
     for i in range(Shape[1]):
-        data_list.append(np.expand_dims(data[:,i,:,:].reshape(Shape[0] * Shape[2] * Shape[3]), axis= 1))
+        for i in range(Shape[1]):
+        if offset>0:
+            data_list.append(np.expand_dims(data[:,i,offset:-offset,offset:-offset].reshape(Shape[0] * (Shape[2] - 2 * offset) * (Shape[3] - 2 * offset)), axis= 1))
+        else:
+            data_list.append(np.expand_dims(data[:,i].reshape(Shape[0] * (Shape[2]) * (Shape[3])), axis= 1))
     
     a = np.concatenate(data_list, axis = 1)
     return a
 
 
-def multi_variate_correlations(data_real, data_fake):
+def multi_variate_correlations(data_real, data_fake, density=True, offset=0):
     """
     To be used in the metrics evaluation framework
     data_r, data_f : numpy arrays, shape B xC x H xW
@@ -218,22 +219,22 @@ def multi_variate_correlations(data_real, data_fake):
     
     """
     
-    channels=data_fake.shape[1]
-    ncouples2=channels*(channels-1)
+    channels = data_fake.shape[1]
+    ncouples2 = channels * (channels-1)
     
     
-    bins=np.linspace(tuple([-1 for i in range(ncouples2)]), tuple([1 for i in range(ncouples2)]),101, axis=1)
+    bins = np.linspace(tuple([-1 for i in range(ncouples2)]), tuple([1 for i in range(ncouples2)]),101, axis=1)
     
-    data_f=space2batch(data_fake)
-    data_r=space2batch(data_real)
+    data_f = space2batch(data_fake)
+    data_r = space2batch(data_real)
+
     logging.debug(f"data_f shape {data_f.shape}")
     logging.debug(f"data_r shape {data_r.shape}")
     
    
-    bivariates_f, bins_f=var2Var_hist(data_f,bins)
-    bivariates_r, bins_r=var2Var_hist(data_r,bins)
-    
-    out_rf=np.zeros((2, ncouples2//2,bivariates_f.shape[-1],bivariates_f.shape[-1]))
+    bivariates_f, bins_f = var2Var_hist(data_f,bins)
+    bivariates_r, bins_r = var2Var_hist(data_r,bins)
+    out_rf = np.zeros((2, ncouples2//2,bivariates_f.shape[-1],bivariates_f.shape[-1]))
     out_rf[0]=bivariates_r
     out_rf[1]=bivariates_f
     logging.debug(f"out shape {out_rf.shape}")

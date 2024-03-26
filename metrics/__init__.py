@@ -6,7 +6,7 @@ import metrics.brier_score as BS
 import metrics.general_metrics as GM
 import metrics.length_scales as ls
 import metrics.mean_bias as mb
-import metrics.multivariate as multiv
+import metrics.multivariate_sns as multiv
 import metrics.quantiles_metric as quant
 import metrics.rank_histogram as RH
 import metrics.rel_diagram as RD
@@ -19,6 +19,7 @@ import metrics.wasserstein_distances as WD
 from metrics import CRPS_calc
 from metrics import area_proportion as ap
 from metrics import object_detection as obj
+
 from metrics.metrics import Metric, PreprocessCondObs, PreprocessDist, PreprocessStandalone
 
 
@@ -210,7 +211,7 @@ class MultivarCorr(PreprocessDist):
         real_data = processed_data['real_data']
         fake_data = processed_data['fake_data']
 
-        return multiv.multi_variate_correlations(real_data, fake_data)
+        return multiv.multi_variate_correlations(real_data, fake_data, self.variables)
 
 #######################################################################
 #######################################################################
