@@ -1,13 +1,25 @@
 import numpy as np
 
-def obs_clean(obs: object, crop_indices: object) -> object:
+import numpy as np
+
+def obs_clean(obs, crop_indices):
     """
-    observation has to be one of the observation files from the database with name YYYYMMDD_LT.npy
-    
-    *** Indices of H and W where observation is available should be determined somehow...
-    *** It is probably necessary to have a map of the domain with the latitute at the center of each "pixel"
-    This is prototypical but it should probably look like this:
-    Sorting the observations by longitude in order to check for duplicates
+    Clean and process observation data from a given file.
+
+    This function sorts the observations by longitude, filters the observations based on the specified latitude and
+    longitude boundaries, averages duplicate observations, and creates an observation matrix with the same shape as
+    the fake/real ensemble.
+
+    Parameters:
+        obs (np.ndarray): Observation data of shape (N_obs, 3), where the first column represents longitude, the second
+                          column represents latitude, and the third column represents the measurement.
+        crop_indices (np.ndarray): An array of shape (4,) specifying the indices of the top-left and bottom-right
+                                   corners of the cropped area in the AROME grid.
+
+    Returns:
+        np.ndarray: A cleaned and processed observation matrix of shape (3, size, size), where the first channel
+                    corresponds to the third column of the input observations, the second channel corresponds to the
+                    second column, and the third channel corresponds to the first column.
     """
     ind = np.argsort(obs[:, 0])
     obs = obs[ind]
@@ -28,21 +40,11 @@ def obs_clean(obs: object, crop_indices: object) -> object:
     Lon_min = Lon_min_AROME + crop_indices[2] * (Lon_max_AROME - Lon_min_AROME) / n_lon_AROME
     Lon_max = Lon_min_AROME + crop_indices[3] * (Lon_max_AROME - Lon_min_AROME) / n_lon_AROME
 
-    # Lat_min = 42.44309623430962
-    # Lon_min = 2.8617305976806424
-    # Lat_max = 45.63863319386332
-    # Lon_max = 6.058876003568244
-
     dlat = (Lat_max - Lat_min) / size
     dlon = (Lon_max - Lon_min) / size
 
     obs_reduced = []
     indices_obs = []
-
-    """
-    
-    Pixel to lat_lon equivalence
-    """
 
     for i in range(N_obs):
         if (obs[i, 0] > Lon_min and obs[i, 0] < Lon_max) and (obs[i, 1] > Lat_min and obs[i, 1] < Lat_max):
@@ -55,9 +57,7 @@ def obs_clean(obs: object, crop_indices: object) -> object:
     obs_reduced = np.array(obs_reduced, dtype='float32')
 
     len_obs_reduced = obs_reduced.shape[0]
-    """
-    averaging duplicates
-    """
+
     obs_r_clean = []
     indices_o_clean = []
     j = 0
@@ -66,39 +66,29 @@ def obs_clean(obs: object, crop_indices: object) -> object:
         if (i == j):
             sum_measurements = sum_measurements + obs_reduced[i, 2::]
             j = i + 1
-            # logging.debug("observation before", obs_reduced[i, 2::], i)
-            if i != len_obs_reduced - 1:  ## last element....
-                # logging.debug(i, j)
+            if i != len_obs_reduced - 1:
                 while (j < len_obs_reduced) and (
-                        indices_obs[i, 0] == indices_obs[j, 0] and indices_obs[i, 1] == indices_obs[
-                    j, 1]):
+                        indices_obs[i, 0] == indices_obs[j, 0] and indices_obs[i, 1] == indices_obs[j, 1]):
                     sum_measurements = sum_measurements + obs_reduced[j, 2::]
                     j = j + 1
 
-            observation = sum_measurements / (j - i)
-            sum_measurements = np.zeros((3))
-            obs_r_clean.append(observation)
-            indices_o_clean.append(indices_obs[i])
+                observation = sum_measurements / (j - i)
+                sum_measurements = np.zeros((3))
+                obs_r_clean.append(observation)
+                indices_o_clean.append(indices_obs[i])
 
     indices_o_clean = np.array(indices_o_clean, dtype='int')
     obs_r_clean = np.array(obs_r_clean, dtype='float32')
-    """
-    Creating the observation matrix with the same shape as the fake/real ensemble
-    
-    The strategy is to put NaN everywhere where observation is missing or where the observation is corrupted
-
-    This only works for 3 variables. For now I don't think its necessary to go further.
-    """
 
     Ens_observation = np.empty((3, size, size))
     Ens_observation[:] = np.nan
 
-    Ens_observation[0, indices_o_clean[:, 0], indices_o_clean[:, 1]] = obs_r_clean[:, 2]  #
-    Ens_observation[1, indices_o_clean[:, 0], indices_o_clean[:, 1]] = obs_r_clean[:, 1]  #
-    Ens_observation[2, indices_o_clean[:, 0], indices_o_clean[:, 1]] = obs_r_clean[:, 0]  #
+    Ens_observation[0, indices_o_clean[:, 0], indices_o_clean[:, 1]] = obs_r_clean[:, 2]
+    Ens_observation[1, indices_o_clean[:, 0], indices_o_clean[:, 1]] = obs_r_clean[:, 1]
+    Ens_observation[2, indices_o_clean[:, 0], indices_o_clean[:, 1]] = obs_r_clean[:, 0]
 
-    Ens_observation[Ens_observation > 1000.] = np.nan  ## filtering missing readings
-    Ens_observation[1][Ens_observation[0] < 2.] = np.nan  ## filtering dd when ff<2m/s
+    Ens_observation[Ens_observation > 1000.] = np.nan
+    Ens_observation[1][Ens_observation[0] < 2.] = np.nan
 
     return Ens_observation
 

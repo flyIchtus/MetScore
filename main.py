@@ -1,3 +1,9 @@
+"""
+main.py
+
+Module to run experiments based on provided configurations.
+"""
+
 import argparse
 import concurrent
 import logging
@@ -11,19 +17,27 @@ import yaml
 
 from core.experiment_set import ExperimentSet
 
-
 def load_yaml(yaml_path):
+    """
+    Load YAML data from a file.
+
+    Args:
+        yaml_path (str): Path to the YAML file.
+
+    Returns:
+        dict: The loaded YAML data.
+    """
     with open(yaml_path, 'r') as yaml_file:
         yaml_data = yaml.safe_load(yaml_file)
     return yaml_data
 
-
 def setup_logger(debug=False):
     """
     Configure a logger with specified console and file handlers.
+
     Args:
         debug (bool): Whether to enable debug logging.
-        log_file (str): The name of the log file.
+
     Returns:
         logging.Logger: The configured logger.
     """
@@ -39,8 +53,10 @@ def setup_logger(debug=False):
     logger.addHandler(console_handler)
     return logger
 
-
 def main():
+    """
+    Main function to parse command line arguments, load configuration, and run experiments.
+    """
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Run experiments.")
     parser.add_argument("--config", type=str, default="config.yaml", help="Path to the configuration file")
@@ -87,15 +103,25 @@ def main():
     if failure_str:
         logger.error("Failed experiments:" + failure_str)
 
+def run_experiment(experiment_config, output_folder, index):
+    """
+    Run an experiment based on the provided configuration.
 
-def run_experiment(experiment_config, output_folder,index):
+    Args:
+        experiment_config (dict): Configuration for the experiment.
+        output_folder (str): Path to the output folder.
+        index (int): Index of the experiment.
+
+    Returns:
+        tuple: A tuple containing the experiment_config, a boolean indicating success, and exception information if any.
+    """
     try:
         experiment_set = ExperimentSet.fromConfig(experiment_config, output_folder=output_folder)
         experiment_set.run(index)
-        return (experiment_config, True, None)  # Indique que l'expérience a réussi, sans exception
+        return (experiment_config, True, None)  # Indicate que l'expérience a réussi, sans exception
     except Exception as e:
         tb = traceback.format_exc()
-        return experiment_config, False, (e, tb)  # Indique que l'expérience a écho
+        return experiment_config, False, (e, tb)  # Indicate que l'expérience a échoué
 
 if __name__ == "__main__":
     main()
