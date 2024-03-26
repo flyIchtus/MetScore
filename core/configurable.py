@@ -124,10 +124,13 @@ def _check_config(cls, config_data, typed=False):
     while hasattr(current_class, 'required_keys'):
         required_keys += current_class.required_keys
         current_class = current_class.__base__
+
+    invalid_keys = set(config_data.keys()) - set(required_keys) - set(cls.__dict__)
+    if invalid_keys:
+        raise Warning(f"Supplementary keys in configuration for class {cls.__name__}: {', '.join(invalid_keys)}")
+    
     missing_keys = [key for key in required_keys if key not in config_data]
     if missing_keys:
         raise ValueError(f"Missing required keys for class {cls.__name__}: {', '.join(missing_keys)}")
 
-    #invalid_keys = set(config_data.keys()) - set(required_keys) - set(cls.__dict__)
-    #if invalid_keys:
-    #    raise ValueError(f"Invalid keys in configuration for class {cls.__name__}: {', '.join(invalid_keys)}")
+    
