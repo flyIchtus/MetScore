@@ -130,6 +130,8 @@ class ExperimentSet(Configurable):
 
         # Iterate through the dataloader and process batches
         for (batch_fake, batch_real, batch_obs) in tqdm(self.dataloader, desc=f"{self.name}: Processing batches"):
+            # the if statement is here in case a file is missing in the dataset
+            # in which case the dataloader returns a None
             if not ((batch_fake is None) and (batch_real is None) and (batch_obs is None)):
                 for metric in self.batched_metrics:
                     logging.debug(f"Running Metric {type(metric)}")
