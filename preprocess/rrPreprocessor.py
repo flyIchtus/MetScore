@@ -27,6 +27,7 @@ class rrPreprocessor(Preprocessor):
         self.sizeH = sizeH
         self.sizeW = sizeW
         self.variables = variables
+        self.var_indices = config_data['real_var_indices']
         self.normalization = config_data['normalization']
         self.crop_size = (self.sizeH, self.sizeW)
         self.maxs, self.mins, self.means, self.stds = self.init_normalization()
@@ -37,15 +38,6 @@ class rrPreprocessor(Preprocessor):
         normalization_type = self.normalization["type"]
         if normalization_type == "mean":
             means, stds = self.load_stat_files(normalization_type, "mean", "std")
-
-            means[1] = 7.13083249e-01
-            means[2] = -1.99056945e-01
-            means[3] = 2.86256141e+02
-
-            stds[1] = 37.12370493
-            stds[2] = 33.48502573
-            stds[3] = 46.278571
-            logging.warning("Means and stds values are changed manually. we need to fix this")
             return None, None, means, stds
         elif normalization_type == "minmax":
             maxs, mins = self.load_stat_files(normalization_type, "max", "min")
@@ -72,15 +64,16 @@ class rrPreprocessor(Preprocessor):
             std_or_min_filename += "_ppx"
         mean_or_max_filename += ".npy"
         std_or_min_filename += ".npy"
+        logging.debug(f"{mean_or_max_filename}", f"{std_or_min_filename}")
         logging.debug(f"Normalization set to {normalization_type}")
         stat_folder = self.config_data["stat_folder"]
         file_path = os.path.join(self.config_data["real_data_dir"], stat_folder, mean_or_max_filename)
         means_or_maxs = np.load(file_path).astype('float32')
-        logging.debug(f"{str1} file found")
+        logging.debug(f"{str1} file found, {means_or_maxs.shape}")
 
         file_path = os.path.join(self.config_data["real_data_dir"], stat_folder, std_or_min_filename)
         stds_or_mins = np.load(file_path).astype('float32')
-        logging.debug(f"{str2} file found")
+        logging.debug(f"{str2} file found, {stds_or_mins.shape}")
         return means_or_maxs, stds_or_mins
 
     def detransform(self, data):
@@ -91,6 +84,7 @@ class rrPreprocessor(Preprocessor):
             self.means = np.zeros_like(self.means)
         if norm_type == "mean":
             if not per_pixel:
+                logging.debug('detransforming')
                 data = data * self.stds[np.newaxis, self.real_var_indices, np.newaxis, np.newaxis] + self.means[
                     np.newaxis, self.real_var_indices, np.newaxis, np.newaxis]
             else:

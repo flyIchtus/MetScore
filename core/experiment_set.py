@@ -55,11 +55,11 @@ class ExperimentSet(Configurable):
         # Separate batched and non-batched metrics
         self.batched_metrics = [metric for metric in self.metrics if metric.isBatched]
         self.not_batched_metrics = [metric for metric in self.metrics if not metric.isBatched]
-
+        self.config_data = config_data
         # Determine if cache should be used based on the presence of non-batched metrics
-        use_cache = self.not_batched_metrics is not []
+        use_cache = (self.not_batched_metrics!=[])
         logging.info(f"Using cache: {use_cache}")
-
+        
         # Update the dataloaders configuration with the main configuration data
         self.config_data['dataloaders'].update(self.config_data)
         self.dataloader = DataLoader.from_typed_config(self.config_data['dataloaders'], use_cache=use_cache)
@@ -130,12 +130,13 @@ class ExperimentSet(Configurable):
 
         # Iterate through the dataloader and process batches
         for (batch_fake, batch_real, batch_obs) in tqdm(self.dataloader, desc=f"{self.name}: Processing batches"):
-            for metric in self.batched_metrics:
-                logging.debug(f"Running Metric {type(metric)}")
-                # Calculate the metric for the current batch
-                res = metric.calculate(batch_real, batch_fake, batch_obs)
-                # Append the result to the corresponding list in batched_metric_results
-                batched_metric_results[metric.name].append(res)
+            # the if statement is here in case a file is missing in the dataset
+            # in which case the dataloader returns a None
+            if not ((batch_fake is None) and (batch_real is None) and (batch_obs is None)):
+                for metric in self.batched_metrics:
+                    logging.debug(f"Running Metric {type(metric)}")
+                    res = metric.calculate(batch_real, batch_fake, batch_obs)
+                    batched_metric_results[metric.name].append(res)
 
         # Save batched metric results as numpy arrays
         for metric_name, results in tqdm(batched_metric_results.items(), desc=f"{self.name}: Saving batched results"):
