@@ -55,7 +55,6 @@ class ExperimentSet(Configurable):
         # Separate batched and non-batched metrics
         self.batched_metrics = [metric for metric in self.metrics if metric.isBatched]
         self.not_batched_metrics = [metric for metric in self.metrics if not metric.isBatched]
-        self.config_data = config_data
         # Determine if cache should be used based on the presence of non-batched metrics
         use_cache = (self.not_batched_metrics!=[])
         logging.info(f"Using cache: {use_cache}")

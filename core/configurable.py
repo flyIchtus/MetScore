@@ -1,4 +1,5 @@
 import yaml
+import logging
 
 
 class Configurable:
@@ -127,7 +128,7 @@ def _check_config(cls, config_data, typed=False):
 
     invalid_keys = set(config_data.keys()) - set(required_keys) - set(cls.__dict__)
     if invalid_keys:
-        raise Warning(f"Supplementary keys in configuration for class {cls.__name__}: {', '.join(invalid_keys)}")
+        logging.debug(f"Supplementary keys in configuration for class {cls.__name__}: {', '.join(invalid_keys)}")
     
     missing_keys = [key for key in required_keys if key not in config_data]
     if missing_keys:

@@ -163,10 +163,10 @@ class PreprocessDist(Metric):
             **kwargs: Additional keyword arguments.
         """
         super().__init__(isBatched, **kwargs)
-        if self.isOnReal:
-            raise Warning(f"Metric {self} is defined with 'isOnReal' argument, but this is a distance metric.\
-                                 Argument `isOnReal` reset to default.")
-            self.isOnReal = False
+        #if self.isOnReal:
+        #    raise Warning(f"Metric {self} is defined with 'isOnReal' argument, but this is a distance metric.\
+        #                         Argument `isOnReal` reset to default.")
+        #    self.isOnReal = False
 
     def _preprocess(self, real_data=None, fake_data=None, obs_data=None):
         """
