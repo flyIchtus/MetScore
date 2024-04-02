@@ -1,7 +1,6 @@
 import yaml
 import logging
 
-
 class Configurable:
     """
     Base class for configurable objects.

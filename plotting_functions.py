@@ -424,13 +424,13 @@ def plot_SWD(experiments, metric, config):
 
 def plot_MultivarCorr(experiments, metric, config):
     multivar = np.zeros((len(experiments),3,100,100))
-    multivar_bins = np.zeros((1,100,100))
+
+    multivar_bins = np.zeros((6,101))
     Xs=['u', 'u', 'v']
     Ys=['v','t2m', 't2m']
     Xsindices = [0,0,1]
     Ysindices = [1,2,2]
     ncouples = 3
-    
     for exp_idx, exp in enumerate(experiments):
         if "AROME" in exp['name']:
             exp_arome = exp_idx
@@ -459,41 +459,4 @@ def plot_MultivarCorr(experiments, metric, config):
           cb.ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
           cb.set_label('Density (log scale)', fontweight='bold', fontsize='large', rotation=270)
         fig.tight_layout(rect=(0.0,0.0,0.9,0.95))
-        plt.savefig(config['output_plots'] + '/' + metric['folder'] + '/' +  metric['name'] + exp['name']'.pdf')
-    
-
-def plot2D_histo(var2var_f, var2var_r, levels, output_dir, add_name):
-    """
-    
-    better use density based histograms rather than counting histograms for this function
-    
-    Inputs :
-        data : numpy array, B x C
-        
-    """
-    Xs=['u', 'u', 'v']
-    Ys=['v','t2m', 't2m']
-    bivariates_f, bins_f=var2var_f
-    bivariates_r, bins_r=var2var_r
-    
-    assert bivariates_f.shape==bivariates_r.shape
-    
-    ncouples=bivariates_f.shape[0]
-    
-    fig,axs=plt.subplots(1, ncouples, figsize=(4*ncouples,2*ncouples), sharex=True, sharey=True)
-    for i in range(ncouples):
-       cs=axs[i].contourf(bins_r[2*i][:-1], bins_r[2*i+1][:-1],bivariates_r[i], cmap='plasma', levels=levels[i])
-       axs[i].contour(bins_f[2*i][:-1], bins_f[2*i+1][:-1], bivariates_f[i],cmap='Greys', levels=levels[i])
-       axs[i].set_xlabel(Xs[i], fontsize='large', fontweight='bold')
-       axs[i].set_ylabel(Ys[i], fontsize='large', fontweight='bold')
-
-       if i==ncouples-1:
-          cbax=fig.add_axes([0.9,0.1,0.02,0.83])
-          cb=fig.colorbar(cs, cax=cbax)
-          cb.ax.tick_params(labelsize=10)
-          cb.ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-          cb.set_label('Density (log scale)', fontweight='bold', fontsize='large', rotation=270)
-    fig.tight_layout(rect=(0.0,0.0,0.9,0.95))
-    plt.savefig(output_dir+'multi_plot_'+add_name+'.png')
-    
-    plt.close()
+        plt.savefig(config['output_plots'] + '/' + metric['folder'] + '/' +  metric['name'] + exp['name'] + '.pdf')
