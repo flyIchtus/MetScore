@@ -424,13 +424,13 @@ def plot_SWD(experiments, metric, config):
 
 def plot_MultivarCorr(experiments, metric, config):
     multivar = np.zeros((len(experiments),3,100,100))
+
     multivar_bins = np.zeros((6,101))
     Xs=['u', 'u', 'v']
     Ys=['v','t2m', 't2m']
     Xsindices = [0,0,1]
     Ysindices = [1,2,2]
     ncouples = 3
-
     for exp_idx, exp in enumerate(experiments):
         if "AROME" in exp['name']:
             exp_arome = exp_idx
@@ -459,4 +459,4 @@ def plot_MultivarCorr(experiments, metric, config):
           cb.ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
           cb.set_label('Density (log scale)', fontweight='bold', fontsize='large', rotation=270)
         fig.tight_layout(rect=(0.0,0.0,0.9,0.95))
-        plt.savefig(config['output_plots'] + '/' + metric['folder'] + '/' +  metric['name'] + exp['name']'.pdf')
+        plt.savefig(config['output_plots'] + '/' + metric['folder'] + '/' +  metric['name'] + exp['name'] + '.pdf')

@@ -277,14 +277,20 @@ class Dataset(Configurable):
         all_data = []
         if not self.is_dataset_cached():
             for idx in tqdm(range(len(self)), desc=f"{self.name} : Collecting uncached data"):
-                file_path = self._get_filename(idx)
-                data = self._load_and_preprocess(file_path)
-                all_data.append(data)
+                try:
+                    file_path = self._get_filename(idx)
+                    data = self._load_and_preprocess(file_path)
+                    all_data.append(data)
+                except FileNotFoundError as e:
+                    logging.warning(f"FileNotFound {e}, continuing")
         else:
             for idx in tqdm(range(len(self)), desc=f"{self.name} : Getting data from cache"):
-                file_path = self._get_filename(idx)
-                data = self.cache.get_from_cache(file_path)
-                all_data.append(data)
+                try:
+                    file_path = self._get_filename(idx)
+                    data = self.cache.get_from_cache(file_path)
+                    all_data.append(data)
+                except FileNotFoundError as e:
+                    logging.warning(f"FileNotFound {e}, continuing")
         return np.concatenate(all_data, axis=0)
 
     def __getitem__(self, items):
@@ -384,14 +390,20 @@ class ObsDataset(DateDataset):
         all_data = []
         if not self.is_dataset_cached():
             for idx in tqdm(range(len(self)), desc=f"{self.name} : Collecting uncached data"):
-                file_path = self._get_filename(idx)
-                data = self._load_and_preprocess(file_path)
-                all_data.append(data[np.newaxis, :, :, :])
+                try:
+                    file_path = self._get_filename(idx)
+                    data = self._load_and_preprocess(file_path)
+                    all_data.append(data[np.newaxis, :, :, :])
+                except FileNotFoundError as e:
+                    logging.warning(f"FileNotFound {e}, continuing")
         else:
             for idx in tqdm(range(len(self)), desc=f"{self.name} : Getting data from cache"):
-                file_path = self._get_filename(idx)
-                data = self.cache.get_from_cache(file_path)
-                all_data.append(data[np.newaxis, :, :, :])
+                try:
+                    file_path = self._get_filename(idx)
+                    data = self.cache.get_from_cache(file_path)
+                    all_data.append(data[np.newaxis, :, :, :])
+                except FileNotFoundError as e:
+                    logging.warning(f"FileNotFound {e}, continuing")
         return np.concatenate(all_data, axis=0)
 
 
@@ -473,16 +485,22 @@ class RandomDataset(Dataset):
         all_data = []
         if not self.is_dataset_cached():
             for idx in tqdm(range(len(self)), desc=f"{self.name} : Collecting uncached data"):
-                file_path = self._get_filename(idx)
-                data = self._load_and_preprocess(file_path)[np.newaxis, :, :, :] \
+                try:
+                    file_path = self._get_filename(idx)
+                    data = self._load_and_preprocess(file_path)[np.newaxis, :, :, :] \
                     if self.file_size == 1 else self._load_and_preprocess(file_path)
-                all_data.append(data)
+                    all_data.append(data)
+                except FileNotFoundError as e:
+                    logging.warning(f"FileNotFound {e}, continuing")
         else:
             for idx in tqdm(range(len(self)), desc=f"{self.name} : Getting data from cache"):
-                file_path = self._get_filename(idx)
-                data = self.cache.get_from_cache(file_path)[np.newaxis, :, :, :] \
-                    if self.file_size == 1 else self.cache.get_from_cache(file_path)
-                all_data.append(data)
+                try:
+                    file_path = self._get_filename(idx)
+                    data = self.cache.get_from_cache(file_path)[np.newaxis, :, :, :] \
+                        if self.file_size == 1 else self.cache.get_from_cache(file_path)
+                    all_data.append(data)
+                except FileNotFoundError as e:
+                    logging.warning(f"FileNotFound {e}, continuing")
         return np.concatenate(all_data, axis=0)
 
 

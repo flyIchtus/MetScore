@@ -101,7 +101,7 @@ def main():
     if success_str:
         logger.info("Successful experiments:" + success_str)
     if failure_str:
-        logger.error("Failed experiments:" + failure_str)
+        logger.exception("Failed experiments:" + failure_str)
 
 def run_experiment(experiment_config, output_folder, index):
     """
