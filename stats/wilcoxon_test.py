@@ -27,17 +27,17 @@ def computeStats(experiments, scores_LT, config):
             print(exp['short_name'], var_idx)
             diff = scores_LT[exp_idx + 1,:,:,var_idx] - scores_LT[0,:,:,var_idx]
             res_diff = wilcoxon(diff,axis=0,zero_method='zsplit')
-            print("res_diff shape", res_diff.statistic)
+            print("res_diff shape", res_diff.statistic[:15])
             results_var.append(res_diff.statistic[np.newaxis,:])
             # rejecting the null hypothesis <=> distributions are different
             decision_different = np.where((res_diff.pvalue<=0.05), True, False)
-            print("decision different",decision_different)
+            print("decision different",decision_different[:15])
             res_greater = wilcoxon(diff, axis=0, alternative='greater',zero_method='zsplit')
             decision_greater = np.where((res_greater.pvalue<=0.05), True, False)
-            print("decision greater",decision_greater)
+            print("decision greater",decision_greater[:15])
             res_less = wilcoxon(diff, axis=0, alternative='less',zero_method='zsplit')
             decision_less = np.where((res_less.pvalue<=0.05), True, False)
-            print("decision less",decision_less)
+            print("decision less",decision_less[:15])
             stats_decision.append((decision_different))
             #(decision_different + 2 * decision_greater + 3 * decision_less)
         
@@ -89,13 +89,24 @@ def load_and_format_scores(experiments, metric, config):
             scores[exp_idx+1] = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy').squeeze()
         scores_LT = group_by_leadtime(scores, scores_LT,config)
         return [scores_LT]
+    elif len(Shape)==6:
+        scores = np.zeros((len(experiments), config['number_dates'] * config['lead_times'],Shape[1], config['var_number']))
+        scores[0] = np.nanmean(data_model[:,:,0],axis=(-2,-1))
+        for exp_idx, exp in enumerate(experiments[1:]):
+            scores[exp_idx+1] = np.nanmean(np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')[:,:,0],axis=(-2,-1))
+        scores_LT = np.split(scores,Shape[1],axis=2)
+        print(len(scores_LT), scores_LT[0].shape)
+        return scores_LT
+
 
 def significance(experiments, metric, config):
 
     scores_list = load_and_format_scores(experiments, metric, config)
     print(len(scores_list))
     for score_idx, scores_LT in enumerate(scores_list):
-        decisions, results = computeStats(experiments, scores_LT.squeeze(), config)
+        if scores_LT.shape!=4:
+            scores_LT = scores_LT.squeeze()
+        decisions, results = computeStats(experiments, scores_LT, config)
         print(decisions.shape, results.shape)
         
         np.save(f"{config['output_plots']}/{metric['folder']}/{metric['name']}_decisions_{score_idx}.npy",decisions)

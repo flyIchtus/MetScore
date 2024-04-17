@@ -393,7 +393,7 @@ def plot_rankHistogram(experiments, metric, config):
 
     for exp_idx, exp in enumerate(experiments):
         for var_idx in range(config['var_number']):
-            fig,axs = plt.subplots(figsize = (9,7))
+            fig,axs = plt.subplots(figsize = (7,7))
             
             
             rank_histo = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')
@@ -401,14 +401,15 @@ def plot_rankHistogram(experiments, metric, config):
             print('rankhisto shape', rank_histo.shape)
             
             rank_histo_plot = rank_histo[:,var_idx].sum(axis=0)
-            deltas = rH.unreliability(rank_histo_plot[np.newaxis,:],config['number_dates'] * config['lead_times'])
+            deltas = rH.unreliability(rank_histo_plot[np.newaxis,:],rank_histo.shape[0])
             print(var_idx, deltas)
+            plt.axhline(y=(1.0/exp['N_ens']),color='black',label='perfect')
             plt.bar(ind, rank_histo[:,var_idx].mean(axis=0))
             plt.title(f"{exp['short_name']} {var_names_m[var_idx]}",fontdict=font)
             #plt.xticks( fontsize ='18')
             plt.tick_params(bottom = False, labelbottom = False)
             plt.xlabel('Rank', fontsize= '18')
-            plt.ylabel('Number of Observations', fontsize= '18')
+            plt.ylabel('Fraction of Observations', fontsize= '18')
             axs.tick_params(length=12, width=1)
             plt.yticks(fontsize ='16')
             plt.savefig(config['output_plots'] + '/' + metric['folder'] + '/' + metric['name'] + '_' + case_name_thresholds[var_idx] + '_'+ exp['short_name']+'.pdf')
@@ -426,16 +427,23 @@ def plot_relDiagram(experiments, metric, config):
     for exp_idx, exp in enumerate(experiments):
         rel_diag_scores[exp_idx] = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')
 
+    try:
+        signs = [np.load(f"{config['output_plots']}/{metric['folder']}/{metric['name']}_decisions_{thr}.npy").squeeze() for thr in range(6)]
+    except FileNotFoundError:
+        print('computing significance')
+        wct.significance(experiments, metric,config)
+        signs = [np.load(f"{config['output_plots']}/{metric['folder']}/{metric['name']}_decisions_{thr}.npy").squeeze() for thr in range(6)]
+
     for threshold in range(6):
         for var_idx in range(config['var_number']):
             fig,axs = plt.subplots(figsize = (9,7))
             for exp_idx, exp in enumerate(experiments):
-                O_tr = rel_diag_scores[exp_idx,:-2,threshold,1,var_idx]
-                X_prob = rel_diag_scores[exp_idx,:-2,threshold,0,var_idx]
+                O_tr = rel_diag_scores[exp_idx,:,threshold,1,var_idx]
+                X_prob = rel_diag_scores[exp_idx,:,threshold,0,var_idx]
                 
                 for z in range(bins.shape[0]-1):
                     
-                    obs = copy.deepcopy(O_tr[np.where((X_prob >= bins[z]) & (X_prob < bins[z+1]), True, False)])
+                    obs = O_tr[np.where((X_prob >= bins[z]) & (X_prob < bins[z+1]), True, False)]
                     obs = obs[~np.isnan(obs)]
                     freq_obs[z] = obs.sum()/obs.shape[0]
                 plt.plot(bins[:-1]+0.05, freq_obs, label=exp['short_name'], color=color_p[exp_idx], linestyle=line[exp_idx])
