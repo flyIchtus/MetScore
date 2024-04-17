@@ -248,7 +248,7 @@ class RandomDataloader(DataLoader):
         self.real_dataset = RandomDataset.fromConfig(config_data['real_dataset_config'], use_cache=use_cache)
         self.fake_dataset = RandomDataset.fromConfig(config_data['fake_dataset_config'], use_cache=use_cache)
         self._data_length = min(len(self.real_dataset), len(self.fake_dataset))
-        logging.debug(f"{self.name} : Dataset length is {self._data_length}")
+        logging.debug(f"Dataset length is {self._data_length}")
 
     def __next__(self):
         if self.current_index < self._data_length:

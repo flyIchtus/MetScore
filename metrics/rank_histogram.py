@@ -49,7 +49,7 @@ def rank_histo(obs_data, fake_data):
     return bins
 
 
-def unreliability(rankHisto):
+def unreliability(rankHisto, N_obs):
     """
     Inputs :
         
@@ -63,11 +63,11 @@ def unreliability(rankHisto):
     """
     C, N_bins = rankHisto.shape
 
-    delta0 = 1 / (N_bins)
+    delta0 = N_obs * (N_bins - 1)  / (N_bins)
 
     delta = np.zeros((C,))
 
     for var_idx in range(C):
-        delta[var_idx] = ((rankHisto[var_idx,:] - delta0) ** 2).sum()
+        delta[var_idx] = ((rankHisto[var_idx,:] - (N_obs /N_bins)) ** 2).mean()
 
     return delta, delta0, delta / delta0
