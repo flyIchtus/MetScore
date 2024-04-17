@@ -595,4 +595,96 @@ class MixDataset(DateDataset):
         else:
             preprocessed_data = self.cache.get_from_cache(file_path['real'])
         return preprocessed_data
-# endregion
+
+class ModDataset(DateDataset):
+    """
+    dataset where fake data are modified by another source of fake data in a preselected way
+    Allows for debiasing in particular
+    """
+    required_keys = ['data_folder', 'mod_data_folder', 'filename_mod_format']
+
+    def __init__(self, config_data, use_cache=True, **kwargs):
+        super().__init__(config_data, use_cache, **kwargs)
+
+        self.filename_format = config_data.get('filename_format', "genFsemble_{date}_{formatted_index}_{inv_step}_{cond_members}_{N_ens}")
+        self.filename_mod_format = config_data.get('filename_mod_format', "invertFsemble_{date}_{formatted_index}_{inv_step}_{cond_members}_{N_ens}")
+        
+    def _get_fake_filename(self, index):
+        format_variables = [var.strip('}{') for var in re.findall(r'{(.*?)}', self.filename_format)]
+        kwargs = {}
+
+        if 'formatted_index' in format_variables:
+            format_variables.remove('formatted_index')
+            formatted_index = (index % self.Lead_Times + 1) * self.dh
+            kwargs = {'formatted_index': formatted_index}
+
+        if 'date' in format_variables:
+            format_variables.remove('date')
+            date = self.liste_dates_rep[index]
+            kwargs = kwargs | {'date': date}
+
+        kwargs = kwargs | {var: getattr(self, var, '') for var in format_variables}
+
+        return self._get_full_path(
+            self.filename_format.format(**kwargs)
+        )
+    
+    def _get_full_path(self, filename, extension=".npy", mod=False):
+        if mod:
+            return os.path.join(self.mod_data_folder, f"{filename}{extension}")
+        return os.path.join(self.data_folder, f"{filename}{extension}")
+
+    def _get_mod_filename(self, index):
+        format_variables = [var.strip('}{') for var in re.findall(r'{(.*?)}', self.filename_mod_format)]
+        kwargs = {}
+
+        if 'formatted_index' in format_variables:
+            format_variables.remove('formatted_index')
+            formatted_index = (index % self.Lead_Times + 1) * self.dh
+            kwargs = {'formatted_index': formatted_index}
+
+        if 'date' in format_variables:
+            format_variables.remove('date')
+            date = self.liste_dates_rep[index]
+            kwargs = kwargs | {'date': date}
+
+        kwargs = kwargs | {var: getattr(self, var, '') for var in format_variables}
+
+        return self._get_full_path(
+            self.filename_mod_format.format(**kwargs), mod=True
+        )
+    
+    def _get_filename(self, index):
+        fake_filename = self._get_fake_filename(index)
+        mod_filename = self._get_mod_filename(index)
+        return {"fake_path" : fake_filename, "mod_path" : mod_filename}
+
+    def _load_and_preprocess(self, file_path):
+        if not self.cache.is_cached(file_path["fake_path"]):
+            data = self._load_file(file_path)
+            preprocessed_data = {'fake' : self._preprocess_batch(data['fake']),
+                                 'mod' : self._preprocess_batch(data['mod'])}
+            self.cache.add_to_cache(file_path["fake_path"], preprocessed_data)
+        else:
+            preprocessed_data = self.cache.get_from_cache(file_path["fake_path"])
+        return preprocessed_data
+        
+    def _load_file(self, file_path):
+        return {"fake" : np.load(file_path["fake_path"]), "mod" : np.load(file_path["mod_path"]) }
+
+    def get_all_data(self):
+        all_data_fake = []
+        all_data_mod = []
+        if not self.is_dataset_cached():
+            for idx in tqdm(range(len(self)), desc=f"{self.name} : Collecting uncached data"):
+                file_path = self._get_filename(idx)
+                data = self._load_and_preprocess(file_path["fake_path"])
+                all_data_fake.append(data['fake'])
+                all_data_mod.append(data['mod'])
+        else:
+            for idx in tqdm(range(len(self)), desc=f"{self.name} : Getting data from cache"):
+                file_path = self._get_filename(idx)
+                data = self.cache.get_from_cache(file_path["fake_path"])
+                all_data_fake.append(data['fake'])
+                all_data_mod.append(data['mod'])
+        return np.concatenate(all_data_fake,axis=0), np.concatenate(all_data_mod,axis=0)
