@@ -19,6 +19,7 @@ import metrics.wasserstein_distances as WD
 from metrics import CRPS_calc
 from metrics import area_proportion as ap
 from metrics import object_detection as obj
+
 from metrics.metrics import Metric, PreprocessCondObs, PreprocessDist, PreprocessStandalone
 
 
@@ -372,7 +373,6 @@ class rankHistogram(PreprocessCondObs):
         obs_data = processed_data['obs_data']
 
         return RH.rank_histo(obs_data,exp_data)
-
 
 #####################################################################
 ############################ Reliability ############################
