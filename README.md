@@ -29,7 +29,7 @@ pip install -r requirements.txt
 |&ensp;&ensp;&boxvr;&nbsp; main.py | Executable script reading a config file and launching an experiment |
 |&ensp;&ensp;&boxvr;&nbsp; plotting_autom.py | Executable script plotting score data for several score experiments |
 |&ensp;&ensp;&boxvr;&nbsp; plotting_functions.py | Functions to plot for each metric where a "standard way" of plotting can be defined. |
-
+|&ensp;&ensp;&boxvr;&nbsp; diagclass.puml | Visualisation scheme for the class diagram of the whole code. |
 ## Usage
 ### Command line
 ```bash
