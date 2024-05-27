@@ -24,10 +24,14 @@ pip install -r requirements.txt
 | Path | Description |
 | --- | --- |
 |MetScore|Root folder of the repository|
+|&ensp;&ensp;&boxvr;&nbsp; config | Where to store config files and main code for Configurable class|
 |&ensp;&ensp;&boxvr;&nbsp; core |Core dataset / dataloading logic|
 |&ensp;&ensp;&boxvr;&nbsp; metrics | Individual implementation of metrics functions and main catalogue of metrics|
-|&ensp;&ensp;&boxvr;&nbsp; config | Where to store config files and main code for Configurable class|
-
+|&ensp;&ensp;&boxvr;&nbsp; preprocess | Classes and catalogue of preprocessors|
+|&ensp;&ensp;&boxvr;&nbsp; stats | Functions to make statistical analysis (significance) |
+|&ensp;&ensp;&boxvr;&nbsp; main.py | Executable script reading a config file and launching an experiment |
+|&ensp;&ensp;&boxvr;&nbsp; plotting_autom.py | Executable script plotting score data for several score experiments |
+|&ensp;&ensp;&boxvr;&nbsp; plotting_functions.py | Functions to plot for each metric where a "standard way" of plotting can be defined. |
 
 ## Usage
 ### Command line
