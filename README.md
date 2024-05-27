@@ -21,17 +21,17 @@ pip install -r requirements.txt
 ```
 
 ## Usage
-# Command line
+### Command line
 ```bash
 python main.py --config config/config.yaml
 ```
-# Input and outputs
+### Input and outputs
 By default, your data is supposed to be stored as .npy files. Data is either forecasts, analysis or observations, which can be indexed by both a date and lead time/validity. Samples can feature any number of weather variables.
 The precise way the data is organized inside the file can be user-defined (see section on contribution strategy), but usually it is supposed to have either a "one file per sample" organization (meaning one date and lead time per sample).
 
 ## Build your config file
 
-# Config file definition
+### Config file definition
 The config file is intended to:
 - define "Experiments" to be run in parallel
 - define, for each Experiments, the Datasets you want to compute metrics on and the way data is presented to the metrics (Dataloaders)
@@ -47,15 +47,15 @@ Provided you have predefined the functions you want to implement, getting the wh
 
 ## MetScore runtime tricks
 
-# Uniqueness of the configuration
+### Uniqueness of the configuration
 The desired behaviour is the code forbidding the rewrite of already computed score files. Therefore, if you run the code twice and provide the exact same configuration file, an exception will be raised. To get around:
 
 - relocate the
 - rename your Experiments, so that the code nows it is doing "something new"
 - delete the previous
 
-# Parallel execution
+### Parallel execution
 
-# Caching
+### Caching
 
-## Detailed
+### Detailed
