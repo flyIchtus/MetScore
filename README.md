@@ -1,7 +1,9 @@
 # MetScore
 
 Building a modulable, efficient score lib for the analysis of high-res, limited area model weather fields, devoted to compare physics-based NWP models and data-driven emulators. A strong focus is given on metrics applying to ensembles, but deterministic systems can also be evaluated.
+
 The project is a joint effort of Météo-France GMAP/PREV research team and the CNRS PNRIA consortium (GENS project).
+
 The intended use mode is research / experimental validation of ideas. Adjusting the functionalities to your needs is encouraged. 
 
 This code is provided with no warranty of any kind, and is under APACHE2.0 license.
@@ -59,10 +61,12 @@ However, depending on the chosen metrics, the corresponding data may not be used
 __Batched metrics__ apply to fixed, given situations, e.g. identified by a date/leadtime timestamp.
 Therefore they apply to batches of the full dataset, hence their name. 
 CRPS is a good example, as it compares one ensemble to one observation on a given date/leadtime.
+
 __Non-batched metrics__ apply to "global" datasets, seen as "climatological" distributions. The ordering of the data samples or batches does not count.
 Global bias, power spectra, wasserstein distances are such metrics. These metrics usually are not computed "per-timestamp".
 
 __Standalone metrics__ require a single source of data to be computed, they do not *compare* two sources of data.
+
 __Distance metrics__ are just the opposite.
 E.g : power spectra or ensemble variance are standalone metrics, wasserstein distances or CRPS are distance metrics; CRPS is a distance metric.
 
