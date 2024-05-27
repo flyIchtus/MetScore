@@ -55,7 +55,7 @@ def decision_leadtimes(scores):
 def load_and_format_scores(experiments, metric, config):
     exp = experiments[0]
     print(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')
-    data_model = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')
+    data_model = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')[:config['number_dates'] * config['lead_times']]
     Shape = data_model.shape
     print(f"Scores {metric['name']} loaded, model {Shape}")
     if len(Shape)==4:
@@ -65,7 +65,7 @@ def load_and_format_scores(experiments, metric, config):
 
         scores[0] = np.nanmean(data_model,axis=(-2,-1))
         for exp_idx, exp in enumerate(experiments[1:]):
-            scores[exp_idx+1] = np.nanmean(np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy'),axis=(-2,-1))
+            scores[exp_idx+1] = np.nanmean(np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')[:config['number_dates'] * config['lead_times']],axis=(-2,-1))
         scores_LT = group_by_leadtime(scores, scores_LT,config)
         return [scores_LT]
     elif len(Shape)==5:
@@ -75,7 +75,7 @@ def load_and_format_scores(experiments, metric, config):
 
         scores[0] = np.nanmean(data_model,axis=(-2,-1))
         for exp_idx, exp in enumerate(experiments[1:]):
-            scores[exp_idx+1] = np.nanmean(np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy'),axis=(-2,-1))
+            scores[exp_idx+1] = np.nanmean(np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')[:config['number_dates'] * config['lead_times']],axis=(-2,-1))
         scores_LT = np.split(group_by_leadtime(scores, scores_LT,config),Shape[1],axis=3)
         print(len(scores_LT), scores_LT[0].shape)
         return scores_LT
@@ -86,7 +86,7 @@ def load_and_format_scores(experiments, metric, config):
 
         scores[0] = (data_model).squeeze()
         for exp_idx, exp in enumerate(experiments[1:]):
-            scores[exp_idx+1] = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy').squeeze()
+            scores[exp_idx+1] = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')[:config['number_dates'] * config['lead_times']].squeeze()
         scores_LT = group_by_leadtime(scores, scores_LT,config)
         return [scores_LT]
 

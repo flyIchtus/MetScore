@@ -9,3 +9,4 @@ pyproj
 properscoring
 geopy
 astropy
+CRPS
