@@ -6,7 +6,7 @@ The intended use mode is research / experimental validation of ideas. Adjusting 
 
 This code is provided with no warranty of any kind, and is under APACHE2.0 license.
 
-Main contributors:
+Main contributors to the initial version:
  - Julien Rabault (@JulienRabault), PNRIA, CNRS
  - Clément Brochet (@flyIchtus), GMAP/PREV, Météo-France
  - Gabriel Moldovan (@gabrieloks), GMAP/PREV Météo-France (currently works @ ECMWF)
