@@ -8,7 +8,6 @@ This code is provided with no warranty of any kind, and is under APACHE2.0 licen
 
 Main contributors:
  - Julien Rabault (@JulienRabault), PNRIA, CNRS
- - Cyril Regan (@cyril-data), PNRIA, CNRS
  - Clément Brochet (@flyIchtus), GMAP/PREV, Météo-France
  - Gabriel Moldovan (@gabrieloks), GMAP/PREV Météo-France (currently works @ ECMWF)
  
@@ -60,14 +59,26 @@ Each of these objects is "Configurable" (this is an ABC), meaning you can define
 ### Real, fake, observations
 The code expects the existence of 3 sources of data (Datasets objects):
 
-- *real* designates the outputs of a physics-based NWP system, serving as a baseline or reference
-- *fake* designates the outputs of a data-driven emulator "faking" the NWP system (typically as expected in a GAN).
-- *observations* designs "ground truth", against which both datasets above are evaluated
+- __real__ designates the outputs of a physics-based NWP system, serving as a baseline or reference
+- __fake__ designates the outputs of a data-driven emulator "faking" the NWP system (typically as expected in a GAN).
+- __observations__ designates "ground truth", against which both datasets above are evaluated
 
 Therefore it is necessary to provide all 3 objects in the config file. 
-However, depending on the chosen metrics, the corresponding data may not be
+However, depending on the chosen metrics, the corresponding data may not be used during scoring computation.
 
 ### Metrics : Batched and non-batched, distance and standalone
+
+__Batched metrics__ apply to fixed, given situations, e.g. identified by a date/leadtime timestamp.
+Therefore they apply to batches of the full dataset, hence their name. 
+CRPS is a good example, as it compares one ensemble to one observation on a given date/leadtime.
+__Non-batched metrics__ apply to "global" datasets, seen as "climatological" distributions. The ordering of the data samples or batches does not count.
+Global bias, power spectra, wasserstein distances are such metrics. These metrics usually are not computed "per-timestamp".
+
+__Standalone metrics__ require a single source of data to be computed, they do not *compare* two sources of data.
+__Distance metrics__ are just the opposite.
+E.g : power spectra or ensemble variance are standalone metrics, wasserstein distances or CRPS are distance metrics; CRPS is a distance metric.
+
+As you can spot in the above examples, the "batched/non-batched" and "distance/standalone" distinctions are uncorrelated.
 
 ## MetScore runtime tricks
 
@@ -85,14 +96,12 @@ If non-batched (~global) metrics are computed, these computations takes place *a
 
 ### Parallel execution
 The "unit" for parallel computing is the Experiment object. If you specify several Experiments in the same config, one process will be started per experiment.
-Experiments refer to one datum of Dataloader/Dataset[s]/Preprocessor[s]/Metric[s] in the config file.
+Experiments refer to one datum of *Dataloader/Dataset[s]/Preprocessor[s]/Metric[s]* in the config file.
 Starting many experiments in parallel is a reasonable efficient strategy, but keep in mind the compute/memory costs for each experiments add up, and that the caching mechanism can lead to memory leaks on large datasets if too many experiments are launched concurrently.
-
-
 
 ## Flexible contribution strategy
 
-The object-oriented structure of the code means you can, and are invited to, *add functionalities through subclassing and inheritance*.
+The object-oriented structure of the code means you can, and are invited to, __add functionalities through subclassing and inheritance__.
 The purpose is to make much of the code extendable, either to add a sampling strategy, preprocess your inputs in different ways, add innovative metrics, add new sources of observations.
 Provided you have predefined the functions you want to implement, getting the whole system working should take no more than half a day work for the most substantial modifications.
 
