@@ -1,7 +1,13 @@
 # MetScore
 
-Building a modulable, efficient score lib for the analysis of high-res weather fields from sockets
+Building a modulable, efficient score lib for the analysis of high-res weather fields from sockets.
+
 The project is a joint effort of Météo-France GMAP/PREV research team and the CNRS PNRIA consortium (GENS project).
+
+The intended use mode is research / experimental validation of ideas. Adjusting the functionalities to your needs is encouraged.
+
+This code is provided with no warranty of any kind, and is under APACHE2.0 license.
+
 Main contributors:
  - Julien Rabault (@JulienRabault), PNRIA, CNRS
  - Cyril Regan (@cyril-data), PNRIA, CNRS
@@ -33,20 +39,23 @@ The config file is intended to:
 - define the Metrics you want to compute on the given data
 Each of these objects is "Configurable" (this is an ABC), meaning you can define their attributes in the config file.
 
-# Uniqueness of the configuration
-The desired behaviour is the code forbidding the rewrite of already computed score files.
-
-
-## Score runtime tricks
-
-# Parallel execution
-
-# Caching
-
 ## Flexible contribution strategy
 
 The object-oriented structure of the code means you can, and are invited to, *add functionalities through subclassing and inheritance*.
 The purpose is to make much of the code extendable, either to add a sampling strategy, preprocess your inputs in different ways, add innovative metrics, add new sources of observations.
 Provided you have predefined the functions you want to implement, getting the whole system working should take no more than half a day work for substantial modifications.
 
-##
+## MetScore runtime tricks
+
+# Uniqueness of the configuration
+The desired behaviour is the code forbidding the rewrite of already computed score files. Therefore, if you run the code twice and provide the exact same configuration file, an exception will be raised. To get around:
+
+- relocate the
+- rename your Experiments, so that the code nows it is doing "something new"
+- delete the previous
+
+# Parallel execution
+
+# Caching
+
+## Detailed
