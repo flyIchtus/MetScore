@@ -42,18 +42,6 @@ The precise way the data is organized inside the file can be user-defined (see s
 There is one output per metric, computed on the dataset provided, stored in .npy format.
 The precise shape of the output depends on the chosen metric.
 
-## Build your config file
-
-### Config file definition
-The config file is intended to:
-- define "Experiments" to be run in parallel
-- define, for each Experiments, the Datasets you want to compute metrics on and the way data is presented to the metrics (Dataloaders)
-- define the way you want to preprocess your data (Preprocessors)
-- define the Metrics you want to compute on the given data
-Each of these objects is "Configurable" (this is an ABC), meaning you can define their attributes in the config file.
-
-### Main configuration fields
-
 ## Useful notions
 
 ### Real, fake, observations
@@ -79,6 +67,20 @@ __Distance metrics__ are just the opposite.
 E.g : power spectra or ensemble variance are standalone metrics, wasserstein distances or CRPS are distance metrics; CRPS is a distance metric.
 
 As you can spot in the above examples, the "batched/non-batched" and "distance/standalone" distinctions are uncorrelated.
+
+## Build your config file
+
+### Config file definition
+The config file is intended to:
+- define "Experiments" to be run in parallel
+- define, for each Experiments, the Datasets you want to compute metrics on and the way data is presented to the metrics (Dataloaders)
+- define the way you want to preprocess your data (Preprocessors)
+- define the Metrics you want to compute on the given data
+Each of these objects is "Configurable" (this is an ABC), meaning you can define their attributes in the config file.
+
+### Main configuration fields
+
+see the comments in the example config file (./MetScore/config/config_example.yml).
 
 ## MetScore runtime tricks
 
@@ -106,7 +108,6 @@ The purpose is to make much of the code extendable, either to add a sampling str
 Provided you have predefined the functions you want to implement, getting the whole system working should take no more than half a day work for the most substantial modifications.
 
 ### Adding a new metric
-1) defining your metric
 
 ### Adding a new preprocessor
 
