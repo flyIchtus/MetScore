@@ -50,9 +50,10 @@ Provided you have predefined the functions you want to implement, getting the wh
 ### Uniqueness of the configuration
 The desired behaviour is the code forbidding the rewrite of already computed score files. Therefore, if you run the code twice and provide the exact same configuration file, an exception will be raised. To get around:
 
-- relocate the
-- rename your Experiments, so that the code nows it is doing "something new"
-- delete the previous
+- relocate the output folder, or rename it in the config file
+- rename your Experiments, so that the code knows it is doing "something new"
+- delete the previous Experiment folder
+- select only metrics you have not already computed in the following config file. The experiment log file will update accordingly.
 
 ### Parallel execution
 
