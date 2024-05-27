@@ -37,8 +37,11 @@ pip install -r requirements.txt
 python main.py --config config/config.yaml
 ```
 ### Input and outputs
-By default, your data is supposed to be stored as .npy files. Data is either made of forecasts, analysis or observations, which can be indexed by both a date and lead time/validity. Samples can feature any number of weather variables. 
-The precise way the data is organized inside the file can be user-defined (see section on contribution strategy), but usually it is supposed to have either a "one file per sample" organization (meaning one date and lead time, possibly one ensemble member per sample), or a "one file per ensembl"
+By default, your data is supposed to be stored as .npy files. Data is either made of forecasts, analysis or observations, which can be indexed by both a date and lead time/validity. Samples can feature any number of weather variables, with the common "channel-first" convention. 
+The precise way the data is organized inside the file can be user-defined (see section on contribution strategy), but usually it is supposed to have either a "one file per sample" organization (meaning one date and lead time, possibly one ensemble member per sample), or "one file per ensemble" (gathering N members in a single file).
+
+There is one output per metric, computed on the dataset provided, stored in .npy format.
+The precise shape of the output depends on the chosen metric.
 
 ## Build your config file
 
@@ -50,11 +53,7 @@ The config file is intended to:
 - define the Metrics you want to compute on the given data
 Each of these objects is "Configurable" (this is an ABC), meaning you can define their attributes in the config file.
 
-## Flexible contribution strategy
-
-The object-oriented structure of the code means you can, and are invited to, *add functionalities through subclassing and inheritance*.
-The purpose is to make much of the code extendable, either to add a sampling strategy, preprocess your inputs in different ways, add innovative metrics, add new sources of observations.
-Provided you have predefined the functions you want to implement, getting the whole system working should take no more than half a day work for substantial modifications.
+### Main configuration fields
 
 ## Useful notions
 
@@ -82,13 +81,28 @@ The desired behaviour is the code forbidding the rewrite of already computed sco
 
 ### Caching
 
+If non-batched (~global) metrics are computed, these computations takes place *after* the computation for batched metrics, so that the data loaded to compute the latter is not uselessly reloaded. To that end, a cache stores any pre-loaded data to re-use them in non-batched metrics computation. If no non-batched metric is selected, the cache does not activate, leading to a reduced memory consumption.
 
 ### Parallel execution
 The "unit" for parallel computing is the Experiment object. If you specify several Experiments in the same config, one process will be started per experiment.
 Experiments refer to one datum of Dataloader/Dataset[s]/Preprocessor[s]/Metric[s] in the config file.
 Starting many experiments in parallel is a reasonable efficient strategy, but keep in mind the compute/memory costs for each experiments add up, and that the caching mechanism can lead to memory leaks on large datasets if too many experiments are launched concurrently.
 
-###
+
+
+## Flexible contribution strategy
+
+The object-oriented structure of the code means you can, and are invited to, *add functionalities through subclassing and inheritance*.
+The purpose is to make much of the code extendable, either to add a sampling strategy, preprocess your inputs in different ways, add innovative metrics, add new sources of observations.
+Provided you have predefined the functions you want to implement, getting the whole system working should take no more than half a day work for the most substantial modifications.
+
+### Adding a new metric
+1) defining your metric
+
+### Adding a new preprocessor
+
+### Adding a new dataloading / dataset process
+
 
 ## Detailed view of the different abstract classes and their implementation
 
