@@ -56,7 +56,7 @@ def plot_biasEnsemble(experiments, metric, config):
     mean_bias_LT = np.zeros((len(experiments), config['number_dates'], config['lead_times'], config['var_number'],  config['size_H'], config['size_W']), dtype = ('float32'))
 
     for exp_idx, exp in enumerate(experiments):
-        mean_bias[exp_idx] = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')
+        mean_bias[exp_idx] = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')[:config['number_dates'] * config['lead_times']]
     
     mean_bias_LT = group_by_leadtime(mean_bias, mean_bias_LT, config)
 
@@ -110,7 +110,7 @@ def plot_ensembleCRPS(experiments, metric, config):
     print(significance.shape)
 
     for exp_idx, exp in enumerate(experiments):
-        crps = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')
+        crps = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')[:config['number_dates'] * config['lead_times']]
         crps_scores[exp_idx] = crps[:,:,0]
     crps_scores_LT = group_by_leadtime(crps_scores,crps_scores_LT,config)
 
@@ -165,7 +165,7 @@ def plot_ensembleCRPSunfair(experiments, metric, config):
     print(significance.shape)
 
     for exp_idx, exp in enumerate(experiments):
-        crps = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')
+        crps = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')[:config['number_dates'] * config['lead_times']]
         crps_scores[exp_idx] = crps[:,:,0]
     crps_scores_LT = group_by_leadtime(crps_scores,crps_scores_LT,config)
 
@@ -213,7 +213,7 @@ def plot_skillSpread(experiments, metric, config):
     s_p_scores_LT = np.zeros((len(experiments), config['number_dates'], config['lead_times'], 2, config['var_number'],  config['size_H'], config['size_W']), dtype = ('float32'))
 
     for exp_idx, exp in enumerate(experiments):
-        s_p_scores[exp_idx] = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')
+        s_p_scores[exp_idx] = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')[:config['number_dates'] * config['lead_times']]
     s_p_scores_LT = group_by_leadtime(s_p_scores, s_p_scores_LT, config)
 
     try:
@@ -235,17 +235,17 @@ def plot_skillSpread(experiments, metric, config):
                 print('markers_on',markers_on)
                 print('significance', significance_0[var_idx,exp_idx -1])
                 plt.plot(np.sqrt(np.nanmean(s_p_scores_LT[exp_idx,:,:,0,var_idx]**2., axis =(0,2,3))), 
-                        label=exp['short_name'], markevery=markers_on, marker="D", color=color_p[exp_idx], linestyle=line[exp_idx], linewidth=2.5)
+                        label=exp['short_name'], markevery=markers_on, marker="D", color=color_p[exp_idx], linestyle='solid', linewidth=4.5 - exp_idx)
                 
                 markers_on = significance_1[var_idx,min(0,exp_idx - 1)].nonzero()[0]
                 plt.plot(np.nanmean(np.sqrt(np.nanmean(s_p_scores_LT[exp_idx,:,:,1,var_idx], axis =(0))), axis=(-2,-1)),
-                        color=color_p[exp_idx], markevery=markers_on, marker="D",linestyle=line[exp_idx], linewidth=3.5)
+                        color=color_p[exp_idx], markevery=markers_on, marker="D",linestyle='dashed', linewidth=4.5 - 0.5 * exp_idx)
 
             else:
                 plt.plot(np.sqrt(np.nanmean(s_p_scores_LT[exp_idx,:,:,0,var_idx]**2., axis =(0,2,3))), 
                         label=exp['short_name'], color=color_p[exp_idx], linestyle=line[exp_idx], linewidth=2.5)
                 plt.plot(np.nanmean(np.sqrt(np.nanmean(s_p_scores_LT[exp_idx,:,:,1,var_idx], axis =(0))), axis=(-2,-1)),
-                        color=color_p[exp_idx], linestyle=line[exp_idx], linewidth=3.5)
+                        color=color_p[exp_idx], linestyle='dashed',linewidth=3.5)
 
         plt.xticks( fontsize ='18')
         axs.set_xticks(range(len(echeance)))
@@ -264,9 +264,10 @@ def plot_skillSpread(experiments, metric, config):
 def plot_brierScore(experiments, metric, config):
     Brier_scores = np.zeros((len(experiments), config['number_dates'] * config['lead_times'], 6, config['var_number'], config['size_H'], config['size_W']), dtype = ('float32'))
     Brier_scores_LT = np.zeros((len(experiments), config['number_dates'], config['lead_times'], 6, config['var_number'],  config['size_H'], config['size_W']), dtype = ('float32'))
+    print(Brier_scores.shape)
     for exp_idx, exp in enumerate(experiments):
         print(exp)
-        data = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')
+        data = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')[:config['number_dates'] * config['lead_times']]
         print(data.shape)
         Brier_scores[exp_idx] = data
         
@@ -277,52 +278,6 @@ def plot_brierScore(experiments, metric, config):
         print('computing significance')
         wct.significance(experiments, metric,config)
         signs = [np.load(f"{config['output_plots']}/{metric['folder']}/{metric['name']}_decisions_{thr}.npy").squeeze() for thr in range(6)]
-
-    """for threshold in range(6):
-        for var_idx in range(config['var_number']):
-            fig,axs = plt.subplots(figsize = (9,7))
-            for exp_idx,exp in enumerate(experiments):
-                if exp_idx>0:
-                    markers_on = signs[threshold][var_idx,min(0,exp_idx - 1)].nonzero()[0]
-                    print('markers_on',markers_on)
-                    print('significance', signs[threshold][var_idx,exp_idx -1])
-                    plt.plot(np.nanmean(Brier_scores_LT[exp_idx,:,:,threshold, var_idx], axis= (0,2,3)),
-                    label=exp['short_name'], color=color_p[exp_idx], markevery=markers_on, marker="D", linestyle=line[exp_idx])
-                else:
-                    plt.plot(np.nanmean(Brier_scores_LT[exp_idx,:,:,threshold, var_idx], axis= (0,2,3)),
-                    label=exp['short_name'], color=color_p[exp_idx], linestyle=line[exp_idx])
-                
-            plt.xticks( fontsize ='18')
-            axs.tick_params(direction='in', length=12, width=2)
-            plt.yticks(fontsize ='18')
-            plt.title(case_name[var_idx][threshold],fontdict = font)
-            plt.legend(fontsize = 10, ncol=1, frameon = False, loc='lower right')
-            plt.savefig(config['output_plots'] + '/' + metric['folder'] + '/' + metric['name']+ '_' + str(threshold) + '_' + case_name_thresholds[var_idx] +'.pdf')
-            plt.close()
-
-    for threshold in range(6):
-        for var_idx in range(config['var_number']):
-            fig,axs = plt.subplots(figsize = (9,7))
-            for exp_idx,exp in enumerate(experiments):
-                if exp_idx>0:
-                    markers_on = signs[threshold][var_idx,min(0,exp_idx - 1)].nonzero()[0]
-                    print('markers_on',markers_on)
-                    print('significance', signs[threshold][var_idx,exp_idx -1])
-                    plt.plot(np.nanmean(Brier_scores_LT[0,:,:,threshold, var_idx], axis= (0,2,3)) - np.nanmean(Brier_scores_LT[exp_idx,:,:,threshold, var_idx], 
-                        axis= (0,2,3)),
-                        label=exp['short_name'], color=color_p[exp_idx],markevery=markers_on, marker="D",linestyle=line[exp_idx], linewidth=3.0)
-                else:
-                    plt.plot(np.nanmean(Brier_scores_LT[0,:,:,threshold, var_idx], axis= (0,2,3)) - np.nanmean(Brier_scores_LT[exp_idx,:,:,threshold, var_idx], 
-                        axis= (0,2,3)),
-                        label=exp['short_name'], color=color_p[exp_idx],linestyle=line[exp_idx], linewidth=3.0)
-
-            plt.xticks( fontsize ='18')
-            axs.tick_params(direction='in', length=12, width=2)
-            plt.yticks(fontsize ='18')
-            plt.title(case_name[var_idx][threshold],fontdict = font)
-            plt.legend(fontsize = 10, ncol=1, frameon = False, loc='lower right')
-            plt.savefig(config['output_plots'] + '/' + metric['folder'] + '/' +  metric['name']+ '_diff_' + str(threshold) + '_' + case_name_thresholds[var_idx] +'.pdf')
-            plt.close()"""
     
     for var_idx in range(config['var_number']):
         fig,axs = plt.subplots(figsize = (9,7))
@@ -396,7 +351,7 @@ def plot_rankHistogram(experiments, metric, config):
             fig,axs = plt.subplots(figsize = (9,7))
             
             
-            rank_histo = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')
+            rank_histo = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')[:config['number_dates'] * config['lead_times']]
             ind = np.arange(rank_histo.shape[-1])
             print('rankhisto shape', rank_histo.shape)
             
@@ -415,6 +370,49 @@ def plot_rankHistogram(experiments, metric, config):
 
             gc.collect()
 
+    for exp_idx, exp in enumerate(experiments):
+        for var_idx in range(config['var_number']):
+            fig,axs = plt.subplots(figsize = (9,7))
+            
+            
+            rank_histo = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')[:config['number_dates'] * config['lead_times']]
+            ind = np.arange(rank_histo.shape[-1])
+            print('rankhisto shape', rank_histo.shape)
+            
+            
+            plt.bar(ind[1:-1], rank_histo[:,var_idx].mean(axis=0)[1:-1])
+            print("outliers inf", rank_histo[:,var_idx].mean(axis=0)[0])
+            print("outliers sup", rank_histo[:,var_idx].mean(axis=0)[-1])          
+            plt.title(f"{exp['short_name']} {var_names_m[var_idx]}",fontdict=font)
+            #plt.xticks( fontsize ='18')
+            plt.tick_params(bottom = False, labelbottom = False)
+            plt.xlabel('Rank', fontsize= '18')
+            plt.ylabel('Number of Observations', fontsize= '18')
+            axs.tick_params(length=12, width=1)
+            plt.yticks(fontsize ='16')
+            plt.savefig(config['output_plots'] + '/' + metric['folder'] + '/' + metric['name'] + '_' + case_name_thresholds[var_idx] + '_'+ exp['short_name']+'_wo_outliers.pdf')
+
+            gc.collect()
+            
+    for exp_idx, exp in enumerate(experiments):
+        for var_idx in range(config['var_number']):
+            fig,axs = plt.subplots(figsize = (9,7))
+            rank_histo = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')[:config['number_dates'] * config['lead_times']]
+            ind = np.arange(rank_histo.shape[-1])
+            print('rankhisto shape', rank_histo.shape)
+            freq = rank_histo[:,var_idx].mean(axis=0)
+            ref_freq = 1.0 / rank_histo.shape[-1]
+            plt.bar(ind, rank_histo[:,var_idx].mean(axis=0))        
+            plt.title(f"{exp['short_name']} {var_names_m[var_idx]}",fontdict=font)
+            #plt.xticks( fontsize ='18')
+            plt.tick_params(bottom = False, labelbottom = False)
+            plt.xlabel('Rank', fontsize= '18')
+            plt.ylabel('Number of Observations', fontsize= '18')
+            axs.tick_params(length=12, width=1)
+            plt.yticks(fontsize ='16')
+            plt.savefig(config['output_plots'] + '/' + metric['folder'] + '/' + metric['name'] + '_' + case_name_thresholds[var_idx] + '_'+ exp['short_name']+'_renorm.pdf')
+
+            gc.collect()
 ##################################################### REL DIAGRAM
 
 def plot_relDiagram(experiments, metric, config):
@@ -424,7 +422,7 @@ def plot_relDiagram(experiments, metric, config):
 
     rel_diag_scores = np.zeros((len(experiments), config['number_dates'] * config['lead_times'], 6, 2, config['var_number'], config['size_H'], config['size_W']))
     for exp_idx, exp in enumerate(experiments):
-        rel_diag_scores[exp_idx] = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')
+        rel_diag_scores[exp_idx] = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + metric['name'] + '.npy')[:config['number_dates'] * config['lead_times']]
 
     for threshold in range(6):
         for var_idx in range(config['var_number']):
@@ -467,7 +465,7 @@ def plot_ROC(experiments, metric, config):
     rel_diag_scores = np.zeros((len(experiments), config['number_dates'] * config['lead_times'], 6, 2, config['var_number'], config['size_H'], config['size_W']))
     
     for exp_idx, exp in enumerate(experiments):
-        rel_diag_scores[exp_idx] = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + 'relDiagram.npy') ### ATENTION ROC USES SCORES FROM REL_DIAG_SCORES
+        rel_diag_scores[exp_idx] = np.load(config['expe_folder'] + '/' + exp['name'] + '/' + 'relDiagram.npy')[:config['number_dates'] * config['lead_times']] ### ATENTION ROC USES SCORES FROM REL_DIAG_SCORES
 
     bins_roc = np.array([0.99, 0.93, 0.86, 0.79, 0.72, 0.65, 0.58, 0.51, 0.44, 0.37, 0.3, 0.23, 0.14, 0.07, 0.01])
 

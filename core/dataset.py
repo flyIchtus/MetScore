@@ -677,14 +677,20 @@ class ModDataset(DateDataset):
         all_data_mod = []
         if not self.is_dataset_cached():
             for idx in tqdm(range(len(self)), desc=f"{self.name} : Collecting uncached data"):
-                file_path = self._get_filename(idx)
-                data = self._load_and_preprocess(file_path["fake_path"])
-                all_data_fake.append(data['fake'])
-                all_data_mod.append(data['mod'])
+                try:
+                    file_path = self._get_filename(idx)
+                    data = self._load_and_preprocess(file_path["fake_path"])
+                    all_data_fake.append(data['fake'])
+                    all_data_mod.append(data['mod'])
+                except FileNotFoundError as e:
+                    logging.warning(f"FileNotFound {e}, continuing")
         else:
             for idx in tqdm(range(len(self)), desc=f"{self.name} : Getting data from cache"):
-                file_path = self._get_filename(idx)
-                data = self.cache.get_from_cache(file_path["fake_path"])
-                all_data_fake.append(data['fake'])
-                all_data_mod.append(data['mod'])
+                try:
+                    file_path = self._get_filename(idx)
+                    data = self.cache.get_from_cache(file_path["fake_path"])
+                    all_data_fake.append(data['fake'])
+                    all_data_mod.append(data['mod'])
+                except FileNotFoundError as e:
+                    logging.warning(f"FileNotFound {e}, continuing")
         return np.concatenate(all_data_fake,axis=0), np.concatenate(all_data_mod,axis=0)
