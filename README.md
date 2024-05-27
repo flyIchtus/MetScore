@@ -3,10 +3,10 @@
 Building a modulable, efficient score lib for the analysis of high-res weather fields from sockets
 The project is a joint effort of Météo-France GMAP/PREV research team and the CNRS PNRIA consortium (GENS project).
 Main contributors:
- Julien Rabault (@JulienRabault), PNRIA, CNRS
- Cyril Regan (@cyril-data), PNRIA, CNRS
- Clément Brochet (@flyIchtus), Météo-France
- Gabriel Moldovan (@gabrieloks), Météo-France (currently works @ ECMWF)
+ - Julien Rabault (@JulienRabault), PNRIA, CNRS
+ - Cyril Regan (@cyril-data), PNRIA, CNRS
+ - Clément Brochet (@flyIchtus), Météo-France
+ - Gabriel Moldovan (@gabrieloks), Météo-France (currently works @ ECMWF)
  
 ## Installation
 
