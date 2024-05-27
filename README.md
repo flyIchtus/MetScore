@@ -1,18 +1,16 @@
 # MetScore
 
-Building a modulable, efficient score lib for the analysis of high-res, limited area model weather fields, devoted to compare physics-based NWP models and.
-
+Building a modulable, efficient score lib for the analysis of high-res, limited area model weather fields, devoted to compare physics-based NWP models and data-driven emulators. A strong focus is given on metrics applying to ensembles, but deterministic systems can also be evaluated.
 The project is a joint effort of Météo-France GMAP/PREV research team and the CNRS PNRIA consortium (GENS project).
-
-The intended use mode is research / experimental validation of ideas. Adjusting the functionalities to your needs is encouraged. A strong focus is given on metrics applying to ensembles, but deterministic systems can also be evaluated.
+The intended use mode is research / experimental validation of ideas. Adjusting the functionalities to your needs is encouraged. 
 
 This code is provided with no warranty of any kind, and is under APACHE2.0 license.
 
 Main contributors:
  - Julien Rabault (@JulienRabault), PNRIA, CNRS
  - Cyril Regan (@cyril-data), PNRIA, CNRS
- - Clément Brochet (@flyIchtus), Météo-France
- - Gabriel Moldovan (@gabrieloks), Météo-France (currently works @ ECMWF)
+ - Clément Brochet (@flyIchtus), GMAP/PREV, Météo-France
+ - Gabriel Moldovan (@gabrieloks), GMAP/PREV Météo-France (currently works @ ECMWF)
  
 ## Installation
 
@@ -60,9 +58,17 @@ Provided you have predefined the functions you want to implement, getting the wh
 
 ## Useful notions
 
-# Real and fake
+### Real, fake, observations
+The code expects the existence of 3 sources of data (Datasets objects):
 
-# Batched and non-batched metrics
+- *real* designates the outputs of a physics-based NWP system, serving as a baseline or reference
+- *fake* designates the outputs of a data-driven emulator "faking" the NWP system (typically as expected in a GAN).
+- *observations* designs "ground truth", against which both datasets above are evaluated
+
+Therefore it is necessary to provide all 3 objects in the config file. 
+However, depending on the chosen metrics, the corresponding data may not be
+
+### Metrics : Batched and non-batched, distance and standalone
 
 ## MetScore runtime tricks
 
@@ -74,13 +80,16 @@ The desired behaviour is the code forbidding the rewrite of already computed sco
 - delete the previous Experiment folder
 - select only metrics you have not already computed in the following config file. The experiment log file will update accordingly.
 
+### Caching
+
+
 ### Parallel execution
 The "unit" for parallel computing is the Experiment object. If you specify several Experiments in the same config, one process will be started per experiment.
 Experiments refer to one datum of Dataloader/Dataset[s]/Preprocessor[s]/Metric[s] in the config file.
+Starting many experiments in parallel is a reasonable efficient strategy, but keep in mind the compute/memory costs for each experiments add up, and that the caching mechanism can lead to memory leaks on large datasets if too many experiments are launched concurrently.
 
-### Caching
-
-The computation of 
+###
 
 ## Detailed view of the different abstract classes and their implementation
 
+### Todo
