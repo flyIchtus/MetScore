@@ -23,8 +23,8 @@ pip install -r requirements.txt
 | Path | Description |
 | --- | --- |
 |MetScore|Root folder of the repository|
-|&ensp;&ensp;&boxvr;&nbsp; config | Where to store config files and main code for Configurable class|
-|&ensp;&ensp;&boxvr;&nbsp; core |Core dataset / dataloading logic|
+|&ensp;&ensp;&boxvr;&nbsp; config | Where to store config files |
+|&ensp;&ensp;&boxvr;&nbsp; core |Core configurable / dataset / dataloading logic|
 |&ensp;&ensp;&boxvr;&nbsp; metrics | Individual implementation of metrics functions and main catalogue of metrics|
 |&ensp;&ensp;&boxvr;&nbsp; preprocess | Classes and catalogue of preprocessors|
 |&ensp;&ensp;&boxvr;&nbsp; stats | Functions to make statistical analysis (significance) |
@@ -40,6 +40,8 @@ python main.py --config config/config.yaml
 ### Input and outputs
 By default, your data is supposed to be stored as .npy files. Data is either made of forecasts, analysis or observations, which can be indexed by both a date and lead time/validity. Samples can feature any number of weather variables, with the common "channel-first" convention. 
 The precise way the data is organized inside the file can be user-defined (see section on contribution strategy), but usually it is supposed to have either a "one file per sample" organization (meaning one date and lead time, possibly one ensemble member per sample), or "one file per ensemble" (gathering N members in a single file).
+
+It is also mandatory that you have for *real datasets* (see meaning below) a structured .csv file with named columns, as presented in *./MetScore/config/example_labels.csv*
 
 There is one output per metric, computed on the dataset provided, stored in .npy format.
 The precise shape of the output depends on the chosen metric.
