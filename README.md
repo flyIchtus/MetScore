@@ -123,3 +123,10 @@ Provided you have predefined the functions you want to implement, getting the wh
 ## Detailed view of the different abstract classes and their implementation
 
 ### Todo
+
+
+## Report issues
+
+--> The ISSUES section is made for you
+For specific questions, please FIRST file an issue, THEN write to clement dot brochet at meteo dot fr.
+Any mail unseconded by an issue will be discarded.
