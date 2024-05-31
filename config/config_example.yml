@@ -64,6 +64,7 @@ experiments: #list of experiments
         threshold: [[ 1.39, 2.78, 4.17, 5.56, 8.33, 11.11 ], [ 278.15, 283.15, 288.15, 293.15, 297.15, 303.15 ]] # thresholds, e.g for brier score or ROC curves
         var_channel: 1 # which dimension of the tensors corresponds to different variables
         obs_var_channel: 1 # same, for observation data
+        isOnReal: False # this args says whether the metrics should apply by default to evaluate "fake data", or "real data". Only apply to batched, non standalone metrics. Can be specified for metrics individually.
       metrics_list:
         - name: relDiagram
           type: relDiagram
@@ -144,6 +145,8 @@ experiments: #list of experiments
         threshold: [[ 1.39, 2.78, 4.17, 5.56, 8.33, 11.11 ], [ 278.15, 283.15, 288.15, 293.15, 297.15, 303.15 ]] # for brier score
         var_channel: 1 # which dimension of the tensors corresponds to different variables
         obs_var_channel: 1 # same, for observation data
+        isOnReal: False # this args says whether the metrics should apply by default to evaluate "fake data", or "real data". Only apply to batched, non standalone metrics. Can be specified for metrics individually.
+
       metrics_list:
         - name: relDiagram
           type: relDiagram
