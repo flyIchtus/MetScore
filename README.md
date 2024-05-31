@@ -18,6 +18,8 @@ Main contributors to the initial version:
 ```bash
 pip install -r requirements.txt
 ```
+This requires at least Python 3.9 to run.
+
 ## Code structure
 
 | Path | Description |
