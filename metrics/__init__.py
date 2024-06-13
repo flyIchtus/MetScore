@@ -490,7 +490,6 @@ class mse(PreprocessCondObs):
         else:
             exp_data = processed_data['real_data']
         obs_data = processed_data['obs_data']
-
         return MSE.mse(exp_data, obs_data)
 
 
