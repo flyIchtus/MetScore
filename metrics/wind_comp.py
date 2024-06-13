@@ -113,7 +113,8 @@ def computeWindDir(U, V, xRef=None, yRef=None, proj=None):
     @rtype: tuple
     @return: vitesse (m/s) et direction du vent exprimée en degrés météo (0 = vent du nord).
     """
-    ff = np.sqrt(U * U + V * V)
+    
+    ff = np.sqrt(np.maximum(U * U + V * V, np.zeros_like(U)))
 
     dd3 = (180 + 180 / np.pi * np.arctan2(U, V)) % 360
     # logging.debug(dd3)
