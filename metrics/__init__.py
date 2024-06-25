@@ -17,8 +17,11 @@ import metrics.spectral_variance as spvar
 import metrics.spectrum_analysis as spec
 import metrics.wasserstein_distances as WD
 from metrics import CRPS_calc
+from metrics import area_proportion as ap
 from metrics import object_detection as obj
+
 from metrics.metrics import Metric, PreprocessCondObs, PreprocessDist, PreprocessStandalone
+
 
 class W1CenterNUMPY(PreprocessDist):
     def __init__(self, *args, **kwargs):
@@ -126,7 +129,7 @@ class AreaProportion(PreprocessStandalone):
         super().__init__(isBatched=False, **kwargs)
 
     def _calculateCore(self, processed_data):
-        return ap.area_proportion(processed_data)
+        return ap.area_greater_than(processed_data, self.rr_idx)
 
 class QuantilesThresholded(PreprocessStandalone):
     """
@@ -136,7 +139,7 @@ class QuantilesThresholded(PreprocessStandalone):
         super().__init__(isBatched=False, **kwargs)
 
     def _calculateCore(self, processed_data):
-        return quant.quantiles_non_zero(processed_data)
+        return quant.quantiles_non_zero(processed_data, self.qlist)
 
 class ObjectsAttribution(PreprocessStandalone):
     def __init__(self,*args,**kwargs):
@@ -240,11 +243,10 @@ class ensembleCRPS(PreprocessCondObs):
 
 class crpsMultiDates(PreprocessCondObs):
 
-    required_keys = ['debiasing']
+    required_keys = ['debiasing','isOnReal']
 
     def __init__(self, *args, **kwargs):
         super().__init__(isBatched=True)
-
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -257,7 +259,7 @@ class crpsMultiDates(PreprocessCondObs):
 
 class crpsDiffMultiDates(PreprocessCondObs):
 
-    required_keys = ['debiasing']
+    required_keys = ['debiasing','isOnReal']
 
     def __init__(self, *args, **kwargs):
         super().__init__(isBatched=False)
@@ -292,6 +294,19 @@ class brierScore(PreprocessCondObs):
 
         return BS.brier_score(obs_data,exp_data,np.array(self.threshold))
 
+
+class brierSkillScore(PreprocessCondObs):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(isBatched=True)
+
+
+    def _calculateCore(self, processed_data):
+        real_data = processed_data['real_data']
+        fake_data = processed_data['fake_data']
+        obs_data = processed_data['obs_data']
+
+        return BS.brier_skill_score(obs_data,real_data,fake_data,np.array(self.threshold))
 #####################################################################
 ############################ Skill-Spread ###########################
 #####################################################################
@@ -310,7 +325,7 @@ class skillSpread(PreprocessCondObs):
 
 class skillSpreadDeviationMultidates(PreprocessCondObs):
 
-    required_keys = ['debiasing']
+    required_keys = ['debiasing','isOnReal']
 
     def __init__(self, *args, **kwargs):
         super().__init__(isBatched=True)
@@ -327,11 +342,10 @@ class skillSpreadDeviationMultidates(PreprocessCondObs):
 
 class thresholdedSkillSpreadDeviationMultidates(PreprocessCondObs):
 
-    required_keys = ['debiasing']
+    required_keys = ['debiasing','isOnReal']
 
     def __init__(self, *args, **kwargs):
         super().__init__(isBatched=True)
-
 
     def _calculateCore(self, processed_data):
         real_data = processed_data['real_data']
@@ -360,7 +374,6 @@ class rankHistogram(PreprocessCondObs):
 
         return RH.rank_histo(obs_data,exp_data)
 
-
 #####################################################################
 ############################ Reliability ############################
 #####################################################################
@@ -386,7 +399,7 @@ class relDiagram(PreprocessCondObs):
 #####################################################################
 
 class biasEnsemble(PreprocessCondObs):
-    required_keys = ['threshold']
+    required_keys = ['threshold', 'isOnReal']
 
     def __init__(self, *args, **kwargs):
         super().__init__(isBatched=True)
@@ -402,6 +415,9 @@ class biasEnsemble(PreprocessCondObs):
         return BE.bias_ens(obs_data,exp_data)
 
 class meanBias(PreprocessCondObs):
+
+    required_keys = ['isOnReal']
+
     def __init__(self, *args, **kwargs):
         super().__init__(isBatched=True)
 
@@ -424,7 +440,7 @@ class variance(PreprocessStandalone):
         super().__init__(isBatched=True)
 
     def _calculateCore(self, processed_data):
-        return GM.variance(processed_data)
+        return GM.simple_variance(processed_data)
 
 class varianceDiff(PreprocessDist):
     def __init__(self, *args, **kwargs):

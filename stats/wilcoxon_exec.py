@@ -8,7 +8,7 @@ import logging
 import sys
 import yaml
 
-import plotting_functions as plf
+import stats.wilcoxon_test as wct
 
 def load_yaml(yaml_path):
     with open(yaml_path, 'r') as yaml_file:
@@ -71,15 +71,12 @@ def main():
             os.mkdir(config['output_plots'])
         
         for metr_idx, metric in enumerate(metrics):
-            logger.info(f"metric {metric['name']} being plotted")
-            os.makedirs(os.path.join(config['output_plots'],metric['folder']),exist_ok=True)
-
-            plot_func = getattr(plf, f"plot_{metric['name']}")
+            logger.info(f"Stat test (Wilcoxon) for metric {metric['name']} being plotted")
             try:
-                plot_func(experiments, metric, config)
+                wct.significance(experiments, metric, config)
             except FileNotFoundError as e:
                 logger.info(e)
-                logger.info(f"Metric {metric['name']} : One of the experiments did not have the file needed. Cannot plot.")
+                logger.info(f"Metric {metric['name']} : One of the experiments did not have the file needed. Cannot stat test.")
          
         logger.info("Program completed.")
     except Exception as e:

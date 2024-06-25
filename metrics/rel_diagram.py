@@ -12,17 +12,17 @@ import numpy as np
 
 def rel_diag(obs_data, fake_data, parameters):
     """
-    
+
     Inputs :
-        
+
         fake_data : N x C x H x W array with N samples
-        
+
         obs_data : C x H x W array observation
-        
+
     Returns :
-        
-        rel : N_param x 2 x C x H x W   
-    
+
+        rel : N_param x 2 x C x H x W
+
     """
 
     N, C, H, W = fake_data.shape

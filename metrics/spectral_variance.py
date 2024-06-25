@@ -21,18 +21,16 @@ def spectrum_deviation(X):
 
 
 def spectrum_variance(X):
-
     X_var = np.expand_dims(X.var(axis=0), axis=0)
-    
+
     psd = spec.PowerSpectralDensity(X_var)
-    
+
     return psd
 
 
 def spectrum_std(X):
-
     X_var = np.expand_dims(X.std(axis=0), axis=0)
-    
+
     psd = spec.PowerSpectralDensity(X_var)
-    
+
     return psd
