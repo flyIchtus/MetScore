@@ -465,7 +465,18 @@ class RandomDataset(Dataset):
         kwargs = {}
         kwargs = kwargs | {var: getattr(self, var, '') for var in format_variables if var != "index"}
         kwargs['index'] = '*'
-        self.filelist = glob.glob(os.path.join(self.data_folder, self.filename_format.format(**kwargs)))
+        self.filelist = glob.glob(self.data_folder + self.filename_format.format(**kwargs))
+        try:
+            labels = list(pd.read_csv(config_data['path_to_csv']+ config_data['csv_file'])['Name'])
+            labels0 = [self.data_folder + fname +'.npy' for fname in labels]
+            logging.debug(f"length of labels {len(labels)}")
+            logging.debug(f"labels 0, {labels0[0]}")
+            logging.debug(f"filelist 0 {self.filelist[0]}")
+            self.filelist = list(set(labels0) & set(self.filelist))
+            logging.debug(f"final filelist length {len(self.filelist)}")
+        except KeyError:
+            logging.warning("No csv file found --> no specific data selection")
+            pass
         random.shuffle(self.filelist)
         self.filelist = self.filelist[:int(config_data['maxNsamples']) // config_data['file_size']]
 

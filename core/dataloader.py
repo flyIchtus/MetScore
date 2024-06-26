@@ -248,6 +248,8 @@ class RandomDataloader(DataLoader):
         self.real_dataset = RandomDataset.fromConfig(config_data['real_dataset_config'], use_cache=use_cache)
         self.fake_dataset = RandomDataset.fromConfig(config_data['fake_dataset_config'], use_cache=use_cache)
         self._data_length = min(len(self.real_dataset), len(self.fake_dataset))
+        logging.debug(f"real Dataset length is {len(self.real_dataset)}")
+        logging.debug(f"fake Dataset length is {len(self.fake_dataset)}")
         logging.debug(f"Dataset length is {self._data_length}")
 
     def __next__(self):
@@ -265,6 +267,8 @@ class RandomDataloader(DataLoader):
         real = self._real_dataset.get_all_data()
         fake = self._fake_dataset.get_all_data()
         real, fake = self.randomize_and_cut(real, fake)
+        logging.debug(f"real data shape {real.shape}")
+        logging.debug(f"fake data shape {fake.shape}")
         return real, fake, None
 
     def randomize_and_cut(self, data1, data2):
