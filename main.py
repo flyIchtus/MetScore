@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
 import yaml
-
+print ("hello world")
 from core.experiment_set import ExperimentSet
 
 def load_yaml(yaml_path):
