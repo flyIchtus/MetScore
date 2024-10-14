@@ -19,6 +19,7 @@ import metrics.wasserstein_distances as WD
 from metrics import CRPS_calc
 from metrics import area_proportion as ap
 from metrics import object_detection as obj
+from metrics import MSE
 
 from metrics.metrics import Metric, PreprocessCondObs, PreprocessDist, PreprocessStandalone
 
@@ -473,6 +474,25 @@ class relStdDiff(PreprocessDist):
         fake_data = processed_data['fake_data']
 
         return GM.relative_std_diff(real_data,fake_data)
+
+
+#####################################################################
+############################ Determinstic metrics ###################
+#####################################################################
+
+class mse(PreprocessCondObs):
+    def __init__(self, *args, **kwargs):
+        super().__init__(isBatched=True)
+
+    def _calculateCore(self, processed_data):
+        if not self.isOnReal:
+            exp_data = processed_data['fake_data']
+        else:
+            exp_data = processed_data['real_data']
+        obs_data = processed_data['obs_data']
+        return MSE.mse(exp_data, obs_data)
+
+
 
 #####################################################################
         ######################################################

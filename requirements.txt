@@ -1,5 +1,5 @@
 PyYaml==6.0.1
-torch==2.2.0+cu121
+torch==2.2.0
 numpy==1.26.4
 tqdm==4.66.1
 pandas==2.2.0
@@ -9,4 +9,5 @@ pyproj==3.6.1
 properscoring==0.1
 geopy==2.4.1
 astropy==6.0.0
+scikit-image
 CRPS
